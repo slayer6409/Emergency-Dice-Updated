@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C247D947-5D1A-411B-8D87-6F0BC33E5234}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MysteryDice</RootNamespace>
+    <AssemblyName>MysteryDice</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>portable</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\BepInEx\core\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx">
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\BepInEx\core\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="LethalLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\v55\BepInEx\plugins\Evaisa-LethalLib\LethalLib\LethalLib.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Unity.InputSystem, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Unity.InputSystem.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Netcode.Runtime">
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Unity.Netcode.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.AIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.UI.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Consts.cs" />
+    <Compile Include="Dice\RustyDie.cs" />
+    <Compile Include="Dice\SaintDie.cs" />
+    <Compile Include="Dice\SacrificerDie.cs" />
+    <Compile Include="Dice\DieBehaviour.cs" />
+    <Compile Include="Dice\EmergencyDie.cs" />
+    <Compile Include="Dice\ChronosDie.cs" />
+    <Compile Include="Dice\GamblerDie.cs" />
+    <Compile Include="Effects\NeckBreak.cs" />
+    <Compile Include="Effects\SelectEffect.cs" />
+    <Compile Include="Effects\Fly.cs" />
+    <Compile Include="Effects\LeverShake.cs" />
+    <Compile Include="Effects\InfiniteStaminaAll.cs" />
+    <Compile Include="Effects\InvertDoorLock.cs" />
+    <Compile Include="Effects\AlarmCurse.cs" />
+    <Compile Include="Effects\JumpscareGlitch.cs" />
+    <Compile Include="Effects\Armageddon.cs" />
+    <Compile Include="Effects\HyperShake.cs" />
+    <Compile Include="Effects\MovingLandmines.cs" />
+    <Compile Include="Effects\OutsideCoilhead.cs" />
+    <Compile Include="Effects\Pathfinder.cs" />
+    <Compile Include="Effects\InfiniteStamina.cs" />
+    <Compile Include="Effects\Purge.cs" />
+    <Compile Include="Effects\IncreasedRate.cs" />
+    <Compile Include="Effects\BrightFlashlight.cs" />
+    <Compile Include="Effects\Arachnophobia.cs" />
+    <Compile Include="Effects\Shotgun.cs" />
+    <Compile Include="Effects\ShipTurret.cs" />
+    <Compile Include="Effects\DoorMalfunction.cs" />
+    <Compile Include="Effects\TurretHell.cs" />
+    <Compile Include="Effects\SilentMine.cs" />
+    <Compile Include="Effects\ZombieToShip.cs" />
+    <Compile Include="Effects\Wormageddon.cs" />
+    <Compile Include="Effects\Beepocalypse.cs" />
+    <Compile Include="Effects\RebeliousCoilHeads.cs" />
+    <Compile Include="Effects\ReturnToShipTogether.cs" />
+    <Compile Include="Effects\TurnOffLights.cs" />
+    <Compile Include="Effects\HealAndRestore.cs" />
+    <Compile Include="Effects\ScrapJackpot.cs" />
+    <Compile Include="Effects\Swap.cs" />
+    <Compile Include="Effects\ModifyPitch.cs" />
+    <Compile Include="Effects\MineOverflowOutside.cs" />
+    <Compile Include="Effects\MineOverflow.cs" />
+    <Compile Include="Effects\OutsideBracken.cs" />
+    <Compile Include="Effects\InstaJester.cs" />
+    <Compile Include="Effects\BugPlague.cs" />
+    <Compile Include="Effects\FakeFireExits.cs" />
+    <Compile Include="Effects\FireExitBlock.cs" />
+    <Compile Include="Effects\ReturnToShip.cs" />
+    <Compile Include="Effects\TeleportInside.cs" />
+    <Compile Include="Effects\ZombieApocalypse.cs" />
+    <Compile Include="Effects\Revive.cs" />
+    <Compile Include="Effects\Detonate.cs" />
+    <Compile Include="Effects\IEffect.cs" />
+    <Compile Include="Libraries\WeightedList.cs" />
+    <Compile Include="MysteryDice.cs" />
+    <Compile Include="Networker.cs" />
+    <Compile Include="Patches\ChatPatch.cs" />
+    <Compile Include="Patches\FlashlightPatch.cs" />
+    <Compile Include="Patches\SpiderPatch.cs" />
+    <Compile Include="Patches\TimeOfDayPatch.cs" />
+    <Compile Include="Patches\TerminalPatch.cs" />
+    <Compile Include="Patches\TurretPatch.cs" />
+    <Compile Include="Patches\FireExitPatch.cs" />
+    <Compile Include="Patches\PlayerControllerBPatch.cs" />
+    <Compile Include="Patches\GameNetworkManagerPatch.cs" />
+    <Compile Include="Patches\BrackenPatch.cs" />
+    <Compile Include="Patches\GetEnemies.cs" />
+    <Compile Include="Patches\MaskedPatch.cs" />
+    <Compile Include="Patches\RoundManagerPatch.cs" />
+    <Compile Include="Patches\StartOfRoundPatch.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="Misc.cs" />
+    <Compile Include="Visual\ColorGradient.cs" />
+    <Compile Include="Visual\CycleSigns.cs" />
+    <Compile Include="Visual\Blinking.cs" />
+    <Compile Include="Visual\HaloSpin.cs" />
+    <Compile Include="Visual\Jumpscare.cs" />
+    <Compile Include="Visual\Spinner.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+    <ItemGroup>
+    <!-- will be automatically skipped for Visual Studio -->
+    <NetcodePatch Include="$(TargetPath)" />
+  </ItemGroup>
+  <PropertyGroup>
+    <!-- silence the warning message that should have led you to this documentation -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NCP0001</MSBuildWarningsAsMessages>
+  </PropertyGroup>
+  <Target Name="LegacyNetcodePatch" AfterTargets="NetcodePatch" Condition="'$(MSBuildRuntimeType)' != 'Core'">
+    <!-- run the CLI patcher only for MSBuilds that cannot load the dependencies -->
+    <Exec Command="netcode-patch -nv 1.5.2 &quot;$(TargetPath)&quot; @(ReferencePathWithRefAssemblies->'&quot;%(Identity)&quot;', ' ')"/>
+  </Target>
+</Project>
