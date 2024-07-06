@@ -4,6 +4,8 @@ This mod adds new items (equipment and scrap)
 
 ## Emergency Die
 
+Updated version of: https://github.com/Theronguard/Emergency-Dice
+
 ![](https://i.imgur.com/gGdBSz0.png)
 
 This is an item you can buy from the store.
