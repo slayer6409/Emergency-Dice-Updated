@@ -2,9 +2,12 @@
 
 This mod adds new items (equipment and scrap)
 
+I am not 100% sure, but I am currently having issues with syncing between clients, and I am not sure why, hopefully the current version fixes that.
+I am not to well versed in newcode so if someone wants to explain where I went wrong, please help me I'm going mad. 
+
 ## Emergency Die
 
-Updated version of: https://github.com/Theronguard/Emergency-Dice
+Updated version of: https://thunderstore.io/c/lethal-company/p/Theronguard/Emergency_Dice/
 
 ![](https://i.imgur.com/gGdBSz0.png)
 
@@ -109,6 +112,7 @@ Has negative outcomes.
 * Gives you a shotgun with ammo
 * Gives you the ability to fly with your sprint key
 * Allows you to pick any effect (both good and bad ones)
+* Spawns 2-4 random items from the shop
 
 ### Good
 
@@ -116,6 +120,7 @@ Has negative outcomes.
 * Heals all alive players and restores their batteries in every item
 * Gives you infinite stamina
 * Teleports you to the ship with your items
+* Spawns a random item from the shop
 
 ### Mixed
 
