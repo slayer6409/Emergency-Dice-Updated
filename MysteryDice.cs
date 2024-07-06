@@ -19,8 +19,8 @@ namespace MysteryDice
     public class MysteryDice : BaseUnityPlugin
     {
         private const string modGUID = "Theronguard.EmergencyDice";
-        private const string modName = "Emergency Dice";
-        private const string modVersion = "1.1.23";
+        private const string modName = "Emergency Dice Updated";
+        private const string modVersion = "1.2.3";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -149,7 +149,6 @@ namespace MysteryDice
 
             GamblerDie.useOutside = useDiceOutside.Value;
             ChronosDie.useOutside = useDiceOutside.Value;
-
 
             ConfigEntry<bool> debugDice = BepInExConfig.Bind<bool>(
                 "Admin",

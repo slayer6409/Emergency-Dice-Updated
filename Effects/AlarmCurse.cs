@@ -12,8 +12,8 @@ namespace MysteryDice.Effects
     {
         public string Name => "Alarm";
         public EffectType Outcome => EffectType.Bad;
-        public bool ShowDefaultTooltip => true;
-        public string Tooltip => "You emit annoying sounds";
+        public bool ShowDefaultTooltip => false;
+        public string Tooltip => "Do you hear that? ʘ‿ʘ";
 
         public static bool IsCursed = false;
         public static float CursedTimer = 0f;

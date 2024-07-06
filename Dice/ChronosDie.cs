@@ -30,6 +30,7 @@ namespace MysteryDice.Dice
 
         public override void Roll()
         {
+            
             float offset = TimeOfDay.Instance.normalizedTimeOfDay;
             WeightedList<int> weightedRolls = new WeightedList<int>();
             weightedRolls.Add(1, 1 + (int)(offset * 10f));

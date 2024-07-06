@@ -2,6 +2,7 @@
 using MysteryDice.Effects;
 using GameNetcodeStuff;
 using UnityEngine;
+using UnityEngine.Windows;
 
 namespace MysteryDice.Patches
 {
@@ -49,6 +50,8 @@ namespace MysteryDice.Patches
         [HarmonyPatch("Update")]
         public static void BreakNeckUpdate(PlayerControllerB __instance)
         {
+            if (NeckBreak.IsNeckBroken == 0) return;
+
             Transform cam = GameNetworkManager.Instance.localPlayerController.gameplayCamera.transform;
             switch (NeckBreak.IsNeckBroken) 
             {
@@ -60,8 +63,7 @@ namespace MysteryDice.Patches
                 default: NeckBreak.IsNeckBroken = 0; break;
 
             }
-
-            
         }
+
     }
 }

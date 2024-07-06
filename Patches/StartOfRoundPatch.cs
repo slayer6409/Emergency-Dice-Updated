@@ -97,7 +97,7 @@ namespace MysteryDice.Patches
             SelectEffect.CloseSelectMenu();
 
             NeckBreak.FixNeck();
-               
+
             Networker.Instance.StopAllCoroutines();
 
             if (Networker.Instance.IsServer)

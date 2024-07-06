@@ -70,22 +70,22 @@ namespace MysteryDice
         [ServerRpc(RequireOwnership = false)]
         public void LogEffectsToOwnerServerRPC(string playerName, string effectName)
         {
-            if(DieBehaviour.LogEffectsToConsole)
+            if (DieBehaviour.LogEffectsToConsole)
                 MysteryDice.CustomLogger.LogInfo($"[Debug] Player: {playerName} rolled {effectName}");
         }
 
         [ServerRpc(RequireOwnership = false)]
         public void RequestEffectConfigServerRPC(ulong playerID)
         {
-            foreach(var effect in DieBehaviour.AllowedEffects)
-                SendConfigClientRPC(playerID, effect.Name);   
+            foreach (var effect in DieBehaviour.AllowedEffects)
+                SendConfigClientRPC(playerID, effect.Name);
         }
 
         [ClientRpc]
-        public void SendConfigClientRPC(ulong playerID,string effectName)
+        public void SendConfigClientRPC(ulong playerID, string effectName)
         {
             if (IsServer) return;
-            if(GameNetworkManager.Instance.localPlayerController.playerClientId == playerID)
+            if (GameNetworkManager.Instance.localPlayerController.playerClientId == playerID)
             {
                 DieBehaviour.AllowedEffects.Add(
                     DieBehaviour.AllEffects.Where(x => x.Name == effectName).First()
@@ -99,7 +99,7 @@ namespace MysteryDice
         private static ulong PlayerIDToExplode;
         private static float ExplosionTimer = 0f;
 
-        
+
 
         public static bool IsPlayerAlive(PlayerControllerB player)
         {
@@ -170,7 +170,7 @@ namespace MysteryDice
         IEnumerator SpawnExplosionAfterSFX(Vector3 position)
         {
             yield return new WaitForSeconds(0.5f);
-            Landmine.SpawnExplosion(position, true, 1, 5,50,0,null,false);
+            Landmine.SpawnExplosion(position, true, 1, 5, 50, 0, null, false);
         }
         #endregion
 
@@ -249,7 +249,7 @@ namespace MysteryDice
         {
             //this is a bit inefficient
             GameObject[] potentialFireExitSlots = GameObject.FindObjectsOfType<GameObject>(true);
-            for(int i =0; i < potentialFireExitSlots.Length; i++)
+            for (int i = 0; i < potentialFireExitSlots.Length; i++)
             {
                 if (potentialFireExitSlots[i].name.Contains("AlleyExitDoorContainer"))
                     potentialFireExitSlots[i].SetActive(true);
@@ -353,7 +353,7 @@ namespace MysteryDice
         [ClientRpc]
         public void SyncItemWeightsClientRPC(NetworkObjectReference[] netObjs, float[] scrapWeights)
         {
-            for(int i=0;i<netObjs.Length; i++)
+            for (int i = 0; i < netObjs.Length; i++)
             {
                 if (netObjs[i].TryGet(out var networkObject))
                 {
@@ -383,7 +383,7 @@ namespace MysteryDice
                 if (!Misc.IsPlayerAliveAndControlled(player)) continue;
 
                 Heal(player);
-                HUDManager.Instance.UpdateHealthUI(player.health,false);
+                HUDManager.Instance.UpdateHealthUI(player.health, false);
 
                 foreach (var item in player.ItemSlots)
                 {
@@ -406,7 +406,7 @@ namespace MysteryDice
 
         #region TurnOffLights
 
-        [ServerRpc(RequireOwnership =false)]
+        [ServerRpc(RequireOwnership = false)]
         public void TurnOffAllLightsServerRPC()
         {
             TurnOffAllLightsClientRPC();
@@ -447,7 +447,7 @@ namespace MysteryDice
             }
         }
 
-        [ServerRpc(RequireOwnership =false)]
+        [ServerRpc(RequireOwnership = false)]
         public void EnableRebelServerRPC()
         {
             RebeliousCoilHeads.IsEnabled = true;
@@ -506,7 +506,7 @@ namespace MysteryDice
         [ClientRpc]
         public void DetonateAtPosClientRPC(Vector3 position)
         {
-            Landmine.SpawnExplosion(position, true, 1, 5,50,0,null,false);
+            Landmine.SpawnExplosion(position, true, 1, 5, 50, 0, null, false);
         }
         #endregion
 
@@ -533,7 +533,7 @@ namespace MysteryDice
 
         #region AlarmCurse
 
-        [ServerRpc(RequireOwnership=false)]
+        [ServerRpc(RequireOwnership = false)]
         public void AlarmCurseServerRPC(Vector3 position)
         {
             AlarmCurse.AlarmAudio(position);
@@ -569,14 +569,14 @@ namespace MysteryDice
 
         #region ZombieToShip
 
-        [ServerRpc(RequireOwnership=false)]
+        [ServerRpc(RequireOwnership = false)]
         public void ZombieToShipServerRPC(ulong userID)
         {
             ZombieToShip.ZombieUseServer(userID);
         }
 
         [ClientRpc]
-        public void ZombieSuitClientRPC(NetworkObjectReference netObj,int suitID)
+        public void ZombieSuitClientRPC(NetworkObjectReference netObj, int suitID)
         {
             ZombieToShip.ZombieSetSuit(netObj, suitID);
         }
@@ -590,7 +590,7 @@ namespace MysteryDice
         [ClientRpc]
         public void SyncSuitIDClientRPC(NetworkObjectReference zombieNet, int zombieSuitID)
         {
-            ZombieToShip.ZombieSetSuit(zombieNet,zombieSuitID);
+            ZombieToShip.ZombieSetSuit(zombieNet, zombieSuitID);
         }
         #endregion
 
@@ -606,7 +606,7 @@ namespace MysteryDice
         [ClientRpc]
         public void SilenceMinesClientRPC()
         {
-            if(!IsServer)
+            if (!IsServer)
                 StartCoroutine(SilentMine.SilenceAllMines(IsServer));
         }
         #endregion
@@ -678,7 +678,7 @@ namespace MysteryDice
 
         #region Purge
 
-        [ServerRpc(RequireOwnership =false)]
+        [ServerRpc(RequireOwnership = false)]
         public void PurgeServerRPC()
         {
             PurgeClientRPC();
@@ -791,7 +791,7 @@ namespace MysteryDice
             {
                 if (!(enemy is SpringManAI)) continue;
 
-                if(enemy.NetworkObjectId == netID)
+                if (enemy.NetworkObjectId == netID)
                 {
                     OutsideCoilhead.SetNavmesh(enemy, true);
                     enemy.EnableEnemyMesh(true, false);
@@ -839,7 +839,7 @@ namespace MysteryDice
         {
             if (IsServer) return;
 
-            foreach(LandmineMovement mine in GameObject.FindObjectsOfType<LandmineMovement>())
+            foreach (LandmineMovement mine in GameObject.FindObjectsOfType<LandmineMovement>())
             {
                 if (mine.LandmineScr.NetworkObjectId != mineID) continue;
 
@@ -849,7 +849,7 @@ namespace MysteryDice
                 mine.BlockedID = blockedid;
                 mine.CalculateNewPath();
             }
-            
+
         }
         #endregion
 
@@ -903,6 +903,7 @@ namespace MysteryDice
 
         #endregion
 
+      
         #region Neck Break
         [ServerRpc(RequireOwnership = false)]
         public void NeckBreakRandomPlayerServerRpc()
@@ -919,11 +920,42 @@ namespace MysteryDice
             if (StartOfRound.Instance == null) return;
             if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
 
-            if(playerId == GameNetworkManager.Instance.localPlayerController.playerClientId)
+            if (playerId == GameNetworkManager.Instance.localPlayerController.playerClientId)
             {
                 NeckBreak.BreakNeck();
             }
         }
+        #endregion
+
+        #region Random Store Item
+
+        [ServerRpc(RequireOwnership = false)]
+        public void RandomStoreItemRpc(ulong playerID)
+        {
+            if (StartOfRound.Instance == null) return;
+            if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
+            RandomStoreItem.SpawnItem(playerID, getRandomBuyableItem());
+        }
+        
+        public void RandomStoreItemsRpc(ulong playerID, int totalItems)
+        {
+            if (StartOfRound.Instance == null) return;
+            if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
+            List<Item> items = new List<Item>();
+            for (int i = 0; i < totalItems; i++)
+            {
+                items.Add(getRandomBuyableItem());
+            }
+            RandomGreatStoreItem.SpawnItem(playerID, items);
+        }
+        public Item getRandomBuyableItem()
+        {
+            Terminal terminal = GameObject.FindObjectOfType<Terminal>();
+            int i = UnityEngine.Random.Range(0, terminal.buyableItemsList.Count());
+            return terminal.buyableItemsList[i];
+        }
+
+
         #endregion
 
     }

@@ -277,6 +277,8 @@ namespace MysteryDice.Dice
             AllEffects.Add(new ZombieApocalypse());
             AllEffects.Add(new Revive());
             AllEffects.Add(new Detonate());
+            AllEffects.Add(new RandomStoreItem());
+            AllEffects.Add(new RandomGreatStoreItem());
 
             foreach(var effect in AllEffects)
             {
