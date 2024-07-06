@@ -3,7 +3,7 @@
 This mod adds new items (equipment and scrap)
 
 I am not 100% sure, but I am currently having issues with syncing between clients, and I am not sure why, hopefully the current version fixes that.
-I am not to well versed in newcode so if someone wants to explain where I went wrong, please help me I'm going mad. 
+I am not to well versed in netcode so if someone wants to explain where I went wrong, please help me I'm going mad. 
 
 ## Emergency Die
 
