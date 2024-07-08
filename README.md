@@ -3,6 +3,7 @@
 This mod adds new items (equipment and scrap)
 
 I FINALLY FIGURED OUT WHY IT WASN'T WORKING!!!
+TURNS OUT I AM JUST DUMB!!! YAY!!!
 
 ## Emergency Die
 
