@@ -16,10 +16,17 @@ namespace MysteryDice.Effects
         public string Tooltip => "Many random store items for you!";
         public void Use()
         {
-            Networker.Instance.RandomStoreItemsRpc(GameNetworkManager.Instance.localPlayerController.playerClientId, UnityEngine.Random.Range(2,5));
+            Networker.Instance.RandomStoreItemsServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, UnityEngine.Random.Range(2,5));
         }
-        public static void SpawnItem(ulong playerID, List<Item> items)
+        public static void SpawnItem(ulong playerID, int icount)
         {
+            Terminal terminal = GameObject.FindObjectOfType<Terminal>();
+            List<Item> items = new List<Item>();
+            for (int i = 0; i < icount; i++)
+            {
+                int e = UnityEngine.Random.Range(0, terminal.buyableItemsList.Count());
+                items.Add(terminal.buyableItemsList[e]);
+            }
             foreach (Item item in items) 
             {
                 GameObject obj = UnityEngine.Object.Instantiate(item.spawnPrefab,

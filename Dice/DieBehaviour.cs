@@ -91,17 +91,13 @@ namespace MysteryDice.Dice
 
         public virtual IEnumerator UseTimer(ulong userID)
         {
-            float spinSeconds = 3f;
-            if (randomUseTimer)
-            {
-                spinSeconds = (float)UnityEngine.Random.Range(0, 10);
-            }
+            float spinTime = UnityEngine.Random.Range(0, 11);
+            if (!randomUseTimer) spinTime = 3f;
+            DiceModel.GetComponent<Spinner>().StartHyperSpinning(spinTime);
 
-            DiceModel.GetComponent<Spinner>().StartHyperSpinning(spinSeconds);
+            yield return new WaitForSeconds(spinTime);
 
-            yield return new WaitForSeconds(spinSeconds);
-
-            Landmine.SpawnExplosion(gameObject.transform.position, true, 0, 0, 0,0,null,false);
+            Landmine.SpawnExplosion(gameObject.transform.position, true, 0, 0, 0, 0, null, false);
             DestroyObject();
 
             if (GameNetworkManager.Instance.localPlayerController.playerClientId == userID)
@@ -123,8 +119,7 @@ namespace MysteryDice.Dice
         [ServerRpc(RequireOwnership = false)]
         public virtual void SyncDropServerRPC(ulong userID)
         {
-            if (!IsHost)
-                DropAndBlock(userID);
+            if (!IsHost)  DropAndBlock(userID); 
 
             SyncDropClientRPC(userID);
         }
@@ -279,8 +274,17 @@ namespace MysteryDice.Dice
             AllEffects.Add(new Detonate());
             AllEffects.Add(new RandomStoreItem());
             AllEffects.Add(new RandomGreatStoreItem());
+            AllEffects.Add(new BatteryDrain());
+            AllEffects.Add(new EveryoneToSomeone());
+            AllEffects.Add(new LightBurden());
+            AllEffects.Add(new ItemDuplicator());
+            AllEffects.Add(new HeavyBurden());
+            AllEffects.Add(new Drunk());
+            //AllEffects.Add(new Invincibility());
+            //AllEffects.Add(new ItemSwap()); //Need to fix
+            //AllEffects.Add(new GoldenTouch());
 
-            foreach(var effect in AllEffects)
+            foreach (var effect in AllEffects)
             {
                 ConfigEntry<bool> cfg = MysteryDice.BepInExConfig.Bind<bool>("Allowed Effects",
                     effect.Name,

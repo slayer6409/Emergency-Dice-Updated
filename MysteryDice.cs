@@ -12,6 +12,7 @@ using System;
 using BepInEx.Configuration;
 using MysteryDice.Patches;
 using System.Collections.Generic;
+using BepInEx.Bootstrap;
 
 namespace MysteryDice
 {
@@ -20,7 +21,7 @@ namespace MysteryDice
     {
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.2.3";
+        private const string modVersion = "1.2.6";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -89,6 +90,14 @@ namespace MysteryDice
             harmony.PatchAll();
             CustomLogger.LogInfo("The Emergency Dice mod was initialized!");
         }
+        public static Assembly GetAssembly(string name)
+        {
+            if (Chainloader.PluginInfos.ContainsKey(name))
+            {
+                return Chainloader.PluginInfos[name].Instance.GetType().Assembly;
+            }
+            return null;
+        }
 
         private static void NetcodeWeaver()
         {
@@ -133,13 +142,21 @@ namespace MysteryDice
 
             HyperShake.maxForce = maxHyperShake.Value;
 
-            ConfigEntry<bool> randomDiceTime = BepInExConfig.Bind<bool>(
+            ConfigEntry<bool> randomSpinTime = BepInExConfig.Bind<bool>(
                 "Misc",
-                "Random Dice Spin Time",
-                false,
-                "Makes each dice spin for a random amount of time.");
+                "Have a random spin time",
+                true,
+                "Makes the dice spin a random amount of time before rolling.");
 
-            DieBehaviour.randomUseTimer = randomDiceTime.Value;
+            DieBehaviour.randomUseTimer = randomSpinTime.Value;
+
+            ConfigEntry<bool> chronosUpdatedTimeOfDay = BepInExConfig.Bind<bool>(
+                "Misc",
+                "Updated Chronos Time",
+                false,
+                "Makes the Chronos die have better odds in the morning instead of equal odds in the morning.");
+
+            ChronosDie.differentTimes = chronosUpdatedTimeOfDay.Value;
 
             ConfigEntry<bool> useDiceOutside = BepInExConfig.Bind<bool>(
                 "Misc",

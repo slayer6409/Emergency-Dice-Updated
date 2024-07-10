@@ -108,6 +108,15 @@
     <Compile Include="Dice\EmergencyDie.cs" />
     <Compile Include="Dice\ChronosDie.cs" />
     <Compile Include="Dice\GamblerDie.cs" />
+    <Compile Include="Effects\BatteryDrain.cs" />
+    <Compile Include="Effects\Drunk.cs" />
+    <Compile Include="Effects\EveryoneToSomeone.cs" />
+    <Compile Include="Effects\GoldenTouch.cs" />
+    <Compile Include="Effects\HeavyBurden.cs" />
+    <Compile Include="Effects\Invincibility.cs" />
+    <Compile Include="Effects\ItemDuplicator.cs" />
+    <Compile Include="Effects\ItemSwap.cs" />
+    <Compile Include="Effects\LightBurden.cs" />
     <Compile Include="Effects\NeckBreak.cs" />
     <Compile Include="Effects\RandomGreatStoreItem.cs" />
     <Compile Include="Effects\RandomStoreItem.cs" />

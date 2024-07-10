@@ -8,11 +8,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Audio;
 using static MysteryDice.Effects.MovingLandmines;
 
 namespace MysteryDice
@@ -58,6 +60,7 @@ namespace MysteryDice
             Armageddon.BoomTimer();
             HyperShake.FixedUpdate();
             LeverShake.FixedUpdate();
+            Drunk.FixedUpdate();
         }
         void Update()
         {
@@ -115,7 +118,7 @@ namespace MysteryDice
                 ExplosionTimer -= Time.fixedDeltaTime;
 
                 if (ExplosionTimer < 0f)
-                    DetonatePlayerClientRpc(PlayerIDToExplode);
+                    DetonatePlayerClientRPC(PlayerIDToExplode);
             }
         }
         public void StartDoomCountdown(ulong playerID)
@@ -138,19 +141,28 @@ namespace MysteryDice
 
             List<PlayerControllerB> validPlayers = new List<PlayerControllerB>();
 
+            validPlayers = getValidPlayers();
+
+            PlayerControllerB theUnluckyOne = validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)];
+            StartDoomCountdown(theUnluckyOne.playerClientId);
+        }
+
+        public List<PlayerControllerB> getValidPlayers()
+        {
+
+            List<PlayerControllerB> validPlayers = new List<PlayerControllerB>();
+
             foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
             {
                 PlayerControllerB player = playerPrefab.GetComponent<PlayerControllerB>();
                 if (Misc.IsPlayerAliveAndControlled(player))
                     validPlayers.Add(player);
             }
-
-            PlayerControllerB theUnluckyOne = validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)];
-            StartDoomCountdown(theUnluckyOne.playerClientId);
+            return validPlayers;
         }
 
         [ClientRpc]
-        public void DetonatePlayerClientRpc(ulong clientID)
+        public void DetonatePlayerClientRPC(ulong clientID)
         {
             if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
 
@@ -218,6 +230,21 @@ namespace MysteryDice
         public void TeleportToShipClientRPC(ulong clientID)
         {
             ReturnToShip.TeleportPlayerToShip(clientID);
+        }
+        #endregion
+
+        #region Teleport To Player
+
+        [ServerRpc(RequireOwnership = false)]
+        public void TeleportToPlayerServerRPC(ulong clientID,ulong to)
+        {
+            TeleportToPlayerClientRPC(clientID,to);
+        }
+
+        [ClientRpc]
+        public void TeleportToPlayerClientRPC(ulong clientID, ulong to)
+        {
+            EveryoneToSomeone.TeleportPlayerToPlayer(clientID, to);
         }
         #endregion
 
@@ -903,7 +930,6 @@ namespace MysteryDice
 
         #endregion
 
-      
         #region Neck Break
         [ServerRpc(RequireOwnership = false)]
         public void NeckBreakRandomPlayerServerRpc()
@@ -930,33 +956,161 @@ namespace MysteryDice
         #region Random Store Item
 
         [ServerRpc(RequireOwnership = false)]
-        public void RandomStoreItemRpc(ulong playerID)
+        public void RandomStoreItemServerRPC(ulong playerID)
         {
             if (StartOfRound.Instance == null) return;
             if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
-            RandomStoreItem.SpawnItem(playerID, getRandomBuyableItem());
+            RandomStoreItem.SpawnItem(playerID);
         }
-        
-        public void RandomStoreItemsRpc(ulong playerID, int totalItems)
+        [ServerRpc(RequireOwnership = false)]
+        public void RandomStoreItemsServerRPC(ulong playerID, int totalItems)
         {
             if (StartOfRound.Instance == null) return;
             if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
-            List<Item> items = new List<Item>();
-            for (int i = 0; i < totalItems; i++)
-            {
-                items.Add(getRandomBuyableItem());
-            }
-            RandomGreatStoreItem.SpawnItem(playerID, items);
-        }
-        public Item getRandomBuyableItem()
-        {
-            Terminal terminal = GameObject.FindObjectOfType<Terminal>();
-            int i = UnityEngine.Random.Range(0, terminal.buyableItemsList.Count());
-            return terminal.buyableItemsList[i];
+            
+            RandomGreatStoreItem.SpawnItem(playerID, totalItems);
         }
 
 
         #endregion
+
+        #region Item Swap
+        [ServerRpc(RequireOwnership = false)]
+        public void ItemSwapServerRPC()
+        {
+            ItemSwapClientRPC();
+        }
+
+        [ClientRpc]
+        public void ItemSwapClientRPC()
+        {
+            PlayerControllerB p1, p2;
+            p1 = Misc.GetRandomAlivePlayer();
+            p2 = Misc.GetRandomAlivePlayer();
+            if (getValidPlayers().Count == 1) return;
+            while (p1 == p2)
+            {
+                p1 = Misc.GetRandomAlivePlayer();
+                p2 = Misc.GetRandomAlivePlayer();
+            }
+            ItemSwap.itemSwap(p1.playerClientId, p2.playerClientId);
+        }
+        #endregion
+
+        #region Golden Touch
+
+        public PlayerControllerB getRandomPlayer()
+        {
+            var players = getValidPlayers();
+            if (!players.Any()) return null;
+            PlayerControllerB player = players[UnityEngine.Random.Range(0,players.Count)];
+            return player;
+        }
+
+
+        [ServerRpc(RequireOwnership = false)]
+        public void GoldenTouchServerRPC()
+        {
+            GoldenTouchClientRPC();
+        }
+
+        [ClientRpc]
+        public void GoldenTouchClientRPC()
+        {
+            GoldenTouch.DoubleRandom(Misc.GetRandomAlivePlayer().playerClientId);
+        }
+        #endregion
+
+        #region Light Burden
+
+        [ServerRpc(RequireOwnership = false)]
+        public void LightBurdenServerRPC()
+        {
+            LightBurdenClientRPC();
+        }
+
+        [ClientRpc]
+        public void LightBurdenClientRPC()
+        {
+            LightBurden.lessenWeight(Misc.GetRandomAlivePlayer().playerClientId);
+        }
+        #endregion
+
+        #region Item Duplicator
+
+        [ServerRpc(RequireOwnership = false)]
+        public void ItemDuplicatorServerRPC()
+        {
+            ItemDuplicatorClientRPC();
+        }
+
+        [ClientRpc]
+        public void ItemDuplicatorClientRPC()
+        {
+            ItemDuplicator.duplicateItems(Misc.GetRandomAlivePlayer().playerClientId);
+        }
+        #endregion
+
+        #region Battery Drain
+
+        [ServerRpc(RequireOwnership = false)]
+        public void BatteryDrainServerRPC()
+        {
+            BatteryDrainClientRPC();
+        }
+
+        [ClientRpc]
+        public void BatteryDrainClientRPC()
+        {
+            BatteryDrain.removeCharge(Misc.GetRandomAlivePlayer().playerClientId);
+        }
+        #endregion
+
+        #region Heavy Burden
+
+        [ServerRpc(RequireOwnership = false)]
+        public void HeavyBurdenServerRPC()
+        {
+            HeavyBurdenClientRPC();
+        }
+
+        [ClientRpc]
+        public void HeavyBurdenClientRPC()
+        {
+            HeavyBurden.increaseWeight(Misc.GetRandomAlivePlayer().playerClientId);
+        }
+        #endregion
+
+        #region Drunk
+
+        [ServerRpc(RequireOwnership = false)]
+        public void DrunkServerRPC(ulong userID)
+        {
+            DrunkClientRPC(userID);
+        }
+
+        [ClientRpc]
+        public void DrunkClientRPC(ulong userID)
+        {
+            Drunk.startDrinking(userID);
+        }
+        #endregion
+        
+        #region Invincible
+
+        [ServerRpc(RequireOwnership = false)]
+        public void InvincibleServerRPC(ulong userID)
+        {
+            InvincibleClientRPC(userID);
+        }
+
+        [ClientRpc]
+        public void InvincibleClientRPC(ulong userID)
+        {
+            Invincibility.InvincibilityStart(userID);
+        }
+        #endregion
+
 
     }
 }

@@ -16,6 +16,7 @@ namespace MysteryDice.Patches
         [HarmonyPrefix]
         private static void ChatTesting(HUDManager __instance)
         {
+
             if (!AllowChatDebug) return;
 
             string txt = __instance.chatTextField.text.ToLower();
