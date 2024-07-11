@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace MysteryDice.Effects
@@ -21,35 +23,28 @@ namespace MysteryDice.Effects
         }
 
 
-        public static void DoubleRandom(ulong userID)
+        public static int GetRandomItem(ulong userID)
         {
             PlayerControllerB player = null;
 
             // Find the player by userID
-            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
-            {
-                PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
-                if (playerComp.playerClientId == userID)
-                {
-                    player = playerComp;
-                    break;
-                }
-            }
+            player = Misc.GetRandomAlivePlayer();
 
             if (player == null)
             {
                 Debug.LogError("Player not found.");
-                return;
+                return -1;
             }
 
-            // Create a list of valid items with non-zero scrapValue
-            List<GrabbableObject> validItems = new List<GrabbableObject>();
+            // Create a dictionary of valid items with non-zero scrapValue and their slots
+            Dictionary<GrabbableObject, int> validItems = new Dictionary<GrabbableObject, int>();
 
-            foreach (var item in player.ItemSlots)
+            for (int i = 0; i < player.ItemSlots.Length; i++)
             {
+                var item = player.ItemSlots[i];
                 if (item != null && item.scrapValue > 0)
                 {
-                    validItems.Add(item);
+                    validItems.Add(item, i);
                 }
             }
 
@@ -57,17 +52,13 @@ namespace MysteryDice.Effects
             if (validItems.Count == 0)
             {
                 Debug.LogError("No valid items with non-zero scrapValue found.");
-                return;
+                return -1;
             }
 
-            // Select a random item from the valid items list
             int randomIndex = UnityEngine.Random.Range(0, validItems.Count);
-            GrabbableObject randomItem = validItems[randomIndex];
+            var randomItem = validItems.ElementAt(randomIndex);
 
-            // Double the scrapValue of the selected item
-            randomItem.scrapValue *= 2;
-
-            Debug.Log($"Doubled the scrapValue of item {randomItem.name} to {randomItem.scrapValue}");
+            return randomItem.Value;
         }
     }
 }

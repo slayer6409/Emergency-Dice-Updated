@@ -1,4 +1,5 @@
 ﻿using GameNetcodeStuff;
+using LethalLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,29 @@ namespace MysteryDice.Effects
         {
             Networker.Instance.ItemSwapServerRPC();
         }
+        private static void SwapSlots(PlayerControllerB player, PlayerControllerB player2, int slot)
+        {
+            var p1Item = player.ItemSlots[slot];
+            var p2Item = player2.ItemSlots[slot];
+
+            // Swap the items in the slots
+            player.ItemSlots[slot] = p2Item;
+            player2.ItemSlots[slot] = p1Item;
+
+            // Update HUD icons if the players are owners
+            if (player.IsOwner)
+            {
+                HUDManager.Instance.itemSlotIcons[slot].sprite = p2Item.itemProperties.itemIcon;
+                HUDManager.Instance.itemSlotIcons[slot].enabled = p2Item != null;
+            }
+            if (player2.IsOwner)
+            {
+                HUDManager.Instance.itemSlotIcons[slot].sprite = p1Item.itemProperties.itemIcon;
+                HUDManager.Instance.itemSlotIcons[slot].enabled = p1Item != null;
+            }
+
+        }
+
         public static void itemSwap(ulong p1, ulong p2)
         {
             PlayerControllerB player1 = null;
@@ -53,9 +77,7 @@ namespace MysteryDice.Effects
 
             for (int i = 0; i < player1.ItemSlots.Length; i++)
             {
-                GrabbableObject temp = player1.ItemSlots[i];
-                player1.ItemSlots[i] = player2.ItemSlots[i];
-                player2.ItemSlots[i] = temp;
+                SwapSlots(player1, player2, i);
             }
         }
     }

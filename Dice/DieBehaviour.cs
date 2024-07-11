@@ -85,14 +85,13 @@ namespace MysteryDice.Dice
 
                 ulong dropperID = playerHeldBy.playerClientId;
                 GameNetworkManager.Instance.localPlayerController.DiscardHeldObject(true, null, GetItemFloorPosition(DiceModel.transform.parent.position), false);
-                SyncDropServerRPC(dropperID);
+                SyncDropServerRPC(dropperID,UnityEngine.Random.Range(0,10));
             }
         }
 
-        public virtual IEnumerator UseTimer(ulong userID)
+        public virtual IEnumerator UseTimer(ulong userID, int spinTime)
         {
-            float spinTime = UnityEngine.Random.Range(0, 11);
-            if (!randomUseTimer) spinTime = 3f;
+            if (!randomUseTimer) spinTime = 3;
             DiceModel.GetComponent<Spinner>().StartHyperSpinning(spinTime);
 
             yield return new WaitForSeconds(spinTime);
@@ -117,24 +116,24 @@ namespace MysteryDice.Dice
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public virtual void SyncDropServerRPC(ulong userID)
+        public virtual void SyncDropServerRPC(ulong userID, int Timer)
         {
-            if (!IsHost)  DropAndBlock(userID); 
+            if (!IsHost)  DropAndBlock(userID, Timer); 
 
-            SyncDropClientRPC(userID);
+            SyncDropClientRPC(userID, Timer);
         }
         [ClientRpc]
-        public virtual void SyncDropClientRPC(ulong userID)
+        public virtual void SyncDropClientRPC(ulong userID, int Timer)
         {
-            DropAndBlock(userID);
+            DropAndBlock(userID, Timer);
         }
 
-        public virtual void DropAndBlock(ulong userID)
+        public virtual void DropAndBlock(ulong userID, int Timer)
         {
             grabbable = false;
             grabbableToEnemies = false;
             DiceModel.SetActive(true);
-            StartCoroutine(UseTimer(userID));
+            StartCoroutine(UseTimer(userID, Timer));
         }
         public virtual void DestroyObject()
         {
@@ -280,9 +279,14 @@ namespace MysteryDice.Dice
             AllEffects.Add(new ItemDuplicator());
             AllEffects.Add(new HeavyBurden());
             AllEffects.Add(new Drunk());
-            //AllEffects.Add(new Invincibility());
-            //AllEffects.Add(new ItemSwap()); //Need to fix
-            //AllEffects.Add(new GoldenTouch());
+            //AllEffects.Add(new ItemSwap()); //Need to be fixed
+            AllEffects.Add(new GoldenTouch());
+            AllEffects.Add(new Reroll());
+            if (MysteryDice.lethalThingsPresent)
+            {
+                AllEffects.Add(new TPTraps());
+                AllEffects.Add(new MovingTPTraps());
+            }
 
             foreach (var effect in AllEffects)
             {

@@ -34,14 +34,15 @@ namespace MysteryDice
         public static Sprite WarningBracken, WarningJester, WarningDeath, WarningLuck;
 
         public static Item DieEmergency, DieGambler, DieChronos, DieSacrificer, DieSaint, DieRusty, PathfinderSpawner;
-        
+        public static bool lethalThingsPresent = false;
         public static ConfigFile BepInExConfig = null;
+        public static Assembly lethalThingsAssembly;
         void Awake()
         {
             CustomLogger = BepInEx.Logging.Logger.CreateLogSource(modGUID);
-
+            lethalThingsAssembly = GetAssembly("evaisa.lethalthings");
+            lethalThingsPresent = IsModPresent("evaisa.lethalthings", "Teleporter Traps rolls enabled.");
             BepInExConfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "Emergency Dice.cfg"), true);
-
             ModConfig();
             DieBehaviour.Config();
 
@@ -98,7 +99,12 @@ namespace MysteryDice
             }
             return null;
         }
-
+        private static bool IsModPresent(string name, string logMessage)
+        {
+            bool isPresent = Chainloader.PluginInfos.ContainsKey(name);
+            MysteryDice.CustomLogger.LogMessage(logMessage);
+            return isPresent;
+        }
         private static void NetcodeWeaver()
         {
             var types = Assembly.GetExecutingAssembly().GetTypes();
