@@ -12,8 +12,8 @@ namespace MysteryDice.Effects
     internal class TPTraps : IEffect
     {
         public string Name => "TP Traps";
-        public static int MinMinesToSpawn = 10;
-        public static int MaxMinesToSpawn = 50;
+
+        public static int MaxMinesToSpawn = 30;
         public EffectType Outcome => EffectType.Bad;
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "More Teleporter Traps spawned inside!";
@@ -25,41 +25,66 @@ namespace MysteryDice.Effects
 
         public static void SpawnTeleporterTraps(int amount)
         {
-            if (RoundManager.Instance == null || RoundManager.Instance.insideAINodes == null || GetEnemies.SpawnableTP == null || GetEnemies.SpawnableTP.prefabToSpawn == null || RoundManager.Instance.mapPropsContainer == null)
+            MysteryDice.CustomLogger.LogError("Spawn TP Traps called with: "+ amount);
+
+            if (RoundManager.Instance == null)
             {
+                MysteryDice.CustomLogger.LogError("RoundManager.Instance is null.");
                 return;
             }
 
+            if (RoundManager.Instance.insideAINodes == null)
+            {
+                MysteryDice.CustomLogger.LogError("RoundManager.Instance.insideAINodes is null.");
+                return;
+            }
+
+            if (GetEnemies.SpawnableTP == null)
+            {
+                MysteryDice.CustomLogger.LogError("GetEnemies.SpawnableTP is null.");
+                return;
+            }
+
+            if (GetEnemies.SpawnableTP.prefabToSpawn == null)
+            {
+                MysteryDice.CustomLogger.LogError("GetEnemies.SpawnableTP.prefabToSpawn is null.");
+                return;
+            }
+
+            if (RoundManager.Instance.mapPropsContainer == null)
+            {
+                MysteryDice.CustomLogger.LogError("RoundManager.Instance.mapPropsContainer is null.");
+                return;
+            }
             List<Vector3> positions = new List<Vector3>();
             int spawnedMines = 0;
-            List<GameObject> spawnPoints = RoundManager.Instance.insideAINodes.ToList();
-            int totalSpawnPoints = spawnPoints.Count;
-            while (spawnedMines < amount)
+
+            foreach (GameObject spawnpoint in RoundManager.Instance.insideAINodes)
             {
-                for (int i = 0; i < totalSpawnPoints && spawnedMines < amount; i++)
-                {
-                    Vector3 pos = spawnPoints[i].transform.position;
+                Vector3 pos = spawnpoint.transform.position;
 
-                    Vector3 position = RoundManager.Instance.GetRandomNavMeshPositionInRadiusSpherical(pos);
+                if (spawnedMines > amount) return;
 
-                    if (GetShortestDistanceSqr(position, positions) >= 1f)
-                    {
-                        GameObject gameObject = UnityEngine.Object.Instantiate(
-                            GetEnemies.SpawnableTP.prefabToSpawn,
-                            position,
-                            Quaternion.identity,
-                            RoundManager.Instance.mapPropsContainer.transform
-                        );
+                Vector3 position = RoundManager.Instance.GetRandomNavMeshPositionInRadiusSpherical(pos);
 
-                        positions.Add(position);
-                        gameObject.transform.eulerAngles = new Vector3(gameObject.transform.eulerAngles.x, UnityEngine.Random.Range(0, 360), gameObject.transform.eulerAngles.z);
-                        gameObject.GetComponent<NetworkObject>().Spawn(destroyWithScene: true);
-                        spawnedMines++;
-                    }
-                }
+                if (GetShortestDistanceSqr(position, positions) < 1f)
+                    continue;
+                
+                GameObject gameObject = UnityEngine.Object.Instantiate(
+                    GetEnemies.SpawnableTP.prefabToSpawn,
+                    position,
+                    Quaternion.identity,
+                    RoundManager.Instance.mapPropsContainer.transform
+                    );
+
+                positions.Add(position);
+                gameObject.transform.eulerAngles = new Vector3(gameObject.transform.eulerAngles.x, UnityEngine.Random.Range(0, 360), gameObject.transform.eulerAngles.z);
+                gameObject.GetComponent<NetworkObject>().Spawn(destroyWithScene: true);
+                spawnedMines++;
+
             }
-        }
 
+        }
         public static float GetShortestDistanceSqr(Vector3 position, List<Vector3> positions)
         {
             float shortestLength = float.MaxValue;

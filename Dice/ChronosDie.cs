@@ -7,6 +7,7 @@ namespace MysteryDice.Dice
     public class ChronosDie : DieBehaviour
     {
         public static bool useOutside = false;
+        public static bool differentTimes = false;
         public override void Start()
         {
             base.Start();
@@ -33,12 +34,37 @@ namespace MysteryDice.Dice
             
             float offset = TimeOfDay.Instance.normalizedTimeOfDay;
             WeightedList<int> weightedRolls = new WeightedList<int>();
-            weightedRolls.Add(1, 1 + (int)(offset * 10f));
-            weightedRolls.Add(2, 1 + (int)(offset * 8f));
-            weightedRolls.Add(3, 1 + (int)(offset * 6f));
-            weightedRolls.Add(4, 1 + (int)(offset * 3f));
-            weightedRolls.Add(5, 1 + (int)(offset * 1f));
-            weightedRolls.Add(6, 1);
+            if (!differentTimes) 
+            {
+                weightedRolls.Add(1, 1 + (int)(offset * 10f));
+                weightedRolls.Add(2, 1 + (int)(offset * 8f));
+                weightedRolls.Add(3, 1 + (int)(offset * 6f));
+                weightedRolls.Add(4, 1 + (int)(offset * 3f));
+                weightedRolls.Add(5, 1 + (int)(offset * 1f));
+                weightedRolls.Add(6, 1);
+            }
+            else if (differentTimes)
+            {
+                if(offset < .5f)
+                {
+
+                    weightedRolls.Add(1, 1 + (int)((1 - offset) * 10f));
+                    weightedRolls.Add(2, 1 + (int)((1 - offset) * 8f));
+                    weightedRolls.Add(3, 1 + (int)((1 - offset) * 6f));
+                    weightedRolls.Add(4, 1 + (int)(offset * 4f));
+                    weightedRolls.Add(5, 1 + (int)(offset * 2f));
+                    weightedRolls.Add(6, 1 + (int)offset);
+                }
+                else if(offset >= .5f)
+                {
+                    weightedRolls.Add(1, 1 + (int)(offset * 4f));
+                    weightedRolls.Add(2, 1 + (int)(offset * 2f));
+                    weightedRolls.Add(3, 1 + (int)offset);
+                    weightedRolls.Add(4, 1 + (int)((1 - offset) * 6f));
+                    weightedRolls.Add(5, 1 + (int)((1 - offset) * 8f));
+                    weightedRolls.Add(6, 1 + (int)((1 - offset) * 10f));
+                }
+            }
 
             bool isOutside = !GameNetworkManager.Instance.localPlayerController.isInsideFactory;
 
@@ -60,17 +86,10 @@ namespace MysteryDice.Dice
                 Misc.SafeTipMessage($"Penalty", "Next time roll it inside :)");
                 return;
             }
-<<<<<<< Updated upstream
-
             if (randomEffect.ShowDefaultTooltip)
                 ShowDefaultTooltip(randomEffect.Outcome, diceRoll);
             else
                 Misc.SafeTipMessage($"Rolled {diceRoll}", randomEffect.Tooltip);
         }
-=======
-                ShowDefaultTooltip(randomEffect, diceRoll);
-            }
-        
->>>>>>> Stashed changes
     }
 }

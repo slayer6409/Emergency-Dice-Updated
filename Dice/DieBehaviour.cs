@@ -20,7 +20,7 @@ namespace MysteryDice.Dice
         public static List<IEffect> AllowedEffects = new List<IEffect>();
 
         public static bool LogEffectsToConsole = false;
-        public static ShowEffect showE = ShowEffect.DEFAULT;
+
         protected GameObject DiceModel;
         public List<IEffect> Effects = new List<IEffect>();
         public Dictionary<int, EffectType[]> RollToEffect = new Dictionary<int, EffectType[]>();
@@ -29,13 +29,6 @@ namespace MysteryDice.Dice
 
         public PlayerControllerB PlayerUser = null;
 
-        public enum ShowEffect
-        {
-            ALL,
-            NONE,
-            DEFAULT,
-            RANDOM
-        }
         public virtual void SetupDiceEffects()
         {
             foreach (IEffect effect in AllowedEffects)
@@ -92,23 +85,18 @@ namespace MysteryDice.Dice
 
                 ulong dropperID = playerHeldBy.playerClientId;
                 GameNetworkManager.Instance.localPlayerController.DiscardHeldObject(true, null, GetItemFloorPosition(DiceModel.transform.parent.position), false);
-                SyncDropServerRPC(dropperID);
+                SyncDropServerRPC(dropperID,UnityEngine.Random.Range(0,10));
             }
         }
 
-        public virtual IEnumerator UseTimer(ulong userID)
+        public virtual IEnumerator UseTimer(ulong userID, int spinTime)
         {
-            float spinSeconds = 3f;
-            if (randomUseTimer)
-            {
-                spinSeconds = (float)UnityEngine.Random.Range(0, 10);
-            }
+            if (!randomUseTimer) spinTime = 3;
+            DiceModel.GetComponent<Spinner>().StartHyperSpinning(spinTime);
 
-            DiceModel.GetComponent<Spinner>().StartHyperSpinning(spinSeconds);
+            yield return new WaitForSeconds(spinTime);
 
-            yield return new WaitForSeconds(spinSeconds);
-
-            Landmine.SpawnExplosion(gameObject.transform.position, true, 0, 0, 0,0,null,false);
+            Landmine.SpawnExplosion(gameObject.transform.position, true, 0, 0, 0, 0, null, false);
             DestroyObject();
 
             if (GameNetworkManager.Instance.localPlayerController.playerClientId == userID)
@@ -128,25 +116,24 @@ namespace MysteryDice.Dice
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public virtual void SyncDropServerRPC(ulong userID)
+        public virtual void SyncDropServerRPC(ulong userID, int Timer)
         {
-            if (!IsHost)
-                DropAndBlock(userID);
+            if (!IsHost)  DropAndBlock(userID, Timer); 
 
-            SyncDropClientRPC(userID);
+            SyncDropClientRPC(userID, Timer);
         }
         [ClientRpc]
-        public virtual void SyncDropClientRPC(ulong userID)
+        public virtual void SyncDropClientRPC(ulong userID, int Timer)
         {
-            DropAndBlock(userID);
+            DropAndBlock(userID, Timer);
         }
 
-        public virtual void DropAndBlock(ulong userID)
+        public virtual void DropAndBlock(ulong userID, int Timer)
         {
             grabbable = false;
             grabbableToEnemies = false;
             DiceModel.SetActive(true);
-            StartCoroutine(UseTimer(userID));
+            StartCoroutine(UseTimer(userID, Timer));
         }
         public virtual void DestroyObject()
         {
@@ -181,7 +168,11 @@ namespace MysteryDice.Dice
 
             Networker.Instance.LogEffectsToOwnerServerRPC(PlayerUser.playerUsername, randomEffect.Name);
 
-            ShowDefaultTooltip(randomEffect, diceRoll);
+
+            if (randomEffect.ShowDefaultTooltip)
+                ShowDefaultTooltip(randomEffect.Outcome, diceRoll);
+            else
+                Misc.SafeTipMessage($"Rolled {diceRoll}", randomEffect.Tooltip);
         }
         public IEffect GetRandomEffect(int diceRoll, List<IEffect> effects)
         {
@@ -212,59 +203,26 @@ namespace MysteryDice.Dice
             }
 
         }
-        public static void ShowDefaultTooltip(IEffect effect, int diceRoll)
+        public static void ShowDefaultTooltip(EffectType effectType, int diceRoll)
         {
-            string effectTypeMessage = string.Empty;
-            EffectType effectType = effect.Outcome;
-            bool normalMessage = false;
-            string message = string.Empty;
             switch (effectType)
             {
                 case EffectType.Awful:
-                    effectTypeMessage = ":)";
+                    Misc.SafeTipMessage($"Rolled {diceRoll}", ":)");
                     break;
                 case EffectType.Bad:
-                    effectTypeMessage = "Uh oh";
+                    Misc.SafeTipMessage($"Rolled {diceRoll}", "Uh oh");
                     break;
                 case EffectType.Good:
-                    effectTypeMessage = "Enjoy.";
+                    Misc.SafeTipMessage($"Rolled {diceRoll}", "Enjoy.");
                     break;
                 case EffectType.Great:
-                    effectTypeMessage = "Lucky.";
+                    Misc.SafeTipMessage($"Rolled {diceRoll}", "Lucky.");
                     break;
                 case EffectType.Mixed:
-                    effectTypeMessage = "Debatable";
+                    Misc.SafeTipMessage($"Rolled {diceRoll}", "Debatable");
                     break;
             }
-
-            if (showE == ShowEffect.ALL)
-            {
-                normalMessage = true;
-                message = effect.Tooltip;
-                return;
-            }
-            else if (showE == ShowEffect.NONE)
-            {
-                message = effectTypeMessage;
-
-            }
-            else if (showE == ShowEffect.RANDOM)
-            {
-                int randint = UnityEngine.Random.Range(0, 101);
-                if (randint <= 45)
-                    message = effect.Tooltip;
-                else
-                    message = effectTypeMessage;
-            }
-            else if (showE == ShowEffect.DEFAULT)
-            {
-                if (effect.ShowDefaultTooltip)
-                    message = effectTypeMessage;
-                else
-                    message = effect.Tooltip;
-            }
-
-            Misc.SafeTipMessage($"Rolled {diceRoll}", message);
         }
 
         public static void Config()
@@ -315,8 +273,6 @@ namespace MysteryDice.Dice
             AllEffects.Add(new Detonate());
             AllEffects.Add(new RandomStoreItem());
             AllEffects.Add(new RandomGreatStoreItem());
-<<<<<<< Updated upstream
-=======
             AllEffects.Add(new BatteryDrain());
             AllEffects.Add(new EveryoneToSomeone());
             AllEffects.Add(new LightBurden());
@@ -330,12 +286,9 @@ namespace MysteryDice.Dice
             {
                 AllEffects.Add(new TPTraps());
                 AllEffects.Add(new MovingTPTraps());
-                AllEffects.Add(new TpOverflowOutside());
-                AllEffects.Add(new SilentTP());
             }
->>>>>>> Stashed changes
 
-            foreach(var effect in AllEffects)
+            foreach (var effect in AllEffects)
             {
                 ConfigEntry<bool> cfg = MysteryDice.BepInExConfig.Bind<bool>("Allowed Effects",
                     effect.Name,

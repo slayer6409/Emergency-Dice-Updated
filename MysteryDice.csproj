@@ -108,9 +108,19 @@
     <Compile Include="Dice\EmergencyDie.cs" />
     <Compile Include="Dice\ChronosDie.cs" />
     <Compile Include="Dice\GamblerDie.cs" />
+    <Compile Include="Effects\BatteryDrain.cs" />
+    <Compile Include="Effects\Drunk.cs" />
+    <Compile Include="Effects\EveryoneToSomeone.cs" />
+    <Compile Include="Effects\GoldenTouch.cs" />
+    <Compile Include="Effects\HeavyBurden.cs" />
+    <Compile Include="Effects\ItemDuplicator.cs" />
+    <Compile Include="Effects\ItemSwap.cs" />
+    <Compile Include="Effects\LightBurden.cs" />
+    <Compile Include="Effects\MovingTPTraps.cs" />
     <Compile Include="Effects\NeckBreak.cs" />
     <Compile Include="Effects\RandomGreatStoreItem.cs" />
     <Compile Include="Effects\RandomStoreItem.cs" />
+    <Compile Include="Effects\Reroll.cs" />
     <Compile Include="Effects\SelectEffect.cs" />
     <Compile Include="Effects\Fly.cs" />
     <Compile Include="Effects\LeverShake.cs" />
@@ -131,12 +141,7 @@
     <Compile Include="Effects\Shotgun.cs" />
     <Compile Include="Effects\ShipTurret.cs" />
     <Compile Include="Effects\DoorMalfunction.cs" />
-<<<<<<< Updated upstream
-=======
-    <Compile Include="Effects\SilentTP.cs" />
-    <Compile Include="Effects\TpOverflowOutside.cs" />
     <Compile Include="Effects\TPTraps.cs" />
->>>>>>> Stashed changes
     <Compile Include="Effects\TurretHell.cs" />
     <Compile Include="Effects\SilentMine.cs" />
     <Compile Include="Effects\ZombieToShip.cs" />
@@ -202,9 +207,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-<<<<<<< Updated upstream
-    <PostBuildEvent>copy "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll" "C:\Users\andre\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\v55\BepInEx\plugins\slayer6409-Emergency_Dice_Updated"</PostBuildEvent>
-=======
     <PostBuildEvent>cd C:\Users\andre\Documents\NetcodePatcher
 
 NetcodePatcher.dll $(TargetDir) deps
@@ -213,9 +215,8 @@ copy "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll"
 
 copy  "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll" "C:\Users\andre\Desktop\slayer6409-Emergency_Dice_Updated"
 
-copy  "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll" "C:\Users\andre\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\aaa\BepInEx\plugins\slayer6409-Emergency_Dice_Updated"
-copy  "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.pdb" "C:\Users\andre\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\aaa\BepInEx\plugins\slayer6409-Emergency_Dice_Updated"</PostBuildEvent>
->>>>>>> Stashed changes
+copy  "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll" "C:\Users\andre\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\aaa\BepInEx\plugins\slayer6409-Emergency_Dice_Updated"
+copy  "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.pdb" "C:\Users\andre\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\aaa\BepInEx\plugins\slayer6409-Emergency_Dice_Updated"</PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <!-- will be automatically skipped for Visual Studio -->

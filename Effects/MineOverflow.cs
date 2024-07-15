@@ -5,9 +5,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.AccessControl;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Assertions;
 
 namespace MysteryDice.Effects
 {
@@ -52,9 +54,9 @@ namespace MysteryDice.Effects
                 gameObject.transform.eulerAngles = new Vector3(gameObject.transform.eulerAngles.x, UnityEngine.Random.Range(0, 360), gameObject.transform.eulerAngles.z);
                 gameObject.GetComponent<NetworkObject>().Spawn(destroyWithScene: true);
                 spawnedMines++;
-
             }
         }
+       
 
         public static float GetShortestDistanceSqr(Vector3 position, List<Vector3> positions)
         {

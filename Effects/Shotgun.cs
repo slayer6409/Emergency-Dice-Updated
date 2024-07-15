@@ -1,5 +1,4 @@
-﻿using LethalLib.Modules;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
@@ -20,9 +19,6 @@ namespace MysteryDice.Effects
 
         public static void SpawnShotgun(ulong playerID)
         {
-
-            
-
             List<Item> items = UnityEngine.Resources.FindObjectsOfTypeAll<Item>().ToList();
             Item shotgun = items.FirstOrDefault(item => item.name.Equals("Shotgun"));
             Item ammo = items.FirstOrDefault(item => item.name.Equals("GunAmmo"));

@@ -29,13 +29,14 @@ namespace MysteryDice.Effects
             public Vector3[] paths = new Vector3[] { };
             NavMeshPath path;
 
-            const float DistanceTolerance = 4f;
+            const float DistanceTolerance = 1f;
             const float NewPathTime = 3f;
             float PathTimer = 0f;
             public int BlockedID = 0;
             public float MoveSpeed = 5f;
 
-            public object TeleporterTrapScr;
+            public object TeleporterTrapScr; // Using object for reflection-based access
+
             void Start()
             {
                 path = new NavMeshPath();
@@ -43,6 +44,12 @@ namespace MysteryDice.Effects
 
             public void FixedUpdate()
             {
+                // Use reflection to check if TeleporterTrapScr has triggered
+                if (CheckIfTriggered())
+                {
+                    Destroy(this);
+                    return;
+                }
 
                 if (Networker.Instance.IsServer)
                 {
@@ -55,7 +62,7 @@ namespace MysteryDice.Effects
                         TargetPosition = ainodes[UnityEngine.Random.Range(0, ainodes.Length)].transform.position;
                         CalculateNewPath();
                         MoveSpeed = UnityEngine.Random.Range(3f, 7f);
-                        Networker.Instance.SyncDataClientRPC(GetNetworkObjectId(), MoveSpeed, transform.position, TargetPosition, BlockedID);
+                        Networker.Instance.SyncDataTPClientRPC(GetNetworkObjectId(), MoveSpeed, transform.position, TargetPosition, BlockedID);
                     }
                 }
 
@@ -71,9 +78,13 @@ namespace MysteryDice.Effects
                 else
                     transform.position = transform.position + direction * MoveSpeed * Time.fixedDeltaTime;
 
+
+                if (endDistance < DistanceTolerance)
+                {
+                    TriggerTrap();
+                    Destroy(this.gameObject);
+                }
             }
-
-
 
             public void CalculateNewPath()
             {
@@ -104,6 +115,17 @@ namespace MysteryDice.Effects
                 }
             }
 
+            private bool CheckIfTriggered()
+            {
+                Type teleporterTrapType = TeleporterTrapScr.GetType();
+                PropertyInfo hasTriggeredProp = teleporterTrapType.GetProperty("hasTriggered", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (hasTriggeredProp != null)
+                {
+                    return (bool)hasTriggeredProp.GetValue(TeleporterTrapScr);
+                }
+                return false;
+            }
+
             private ulong GetNetworkObjectId()
             {
                 Type teleporterTrapType = TeleporterTrapScr.GetType();
@@ -114,7 +136,16 @@ namespace MysteryDice.Effects
                 }
                 return 0;
             }
-            
+
+            private void TriggerTrap()
+            {
+                Type teleporterTrapType = TeleporterTrapScr.GetType();
+                MethodInfo triggerTrapMethod = teleporterTrapType.GetMethod("TriggerTrap", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (triggerTrapMethod != null)
+                {
+                    triggerTrapMethod.Invoke(TeleporterTrapScr, null);
+                }
+            }
         }
     }
 }

@@ -12,11 +12,7 @@ using System;
 using BepInEx.Configuration;
 using MysteryDice.Patches;
 using System.Collections.Generic;
-<<<<<<< Updated upstream
-=======
 using BepInEx.Bootstrap;
-using UnityEngine.InputSystem;
->>>>>>> Stashed changes
 
 namespace MysteryDice
 {
@@ -25,37 +21,28 @@ namespace MysteryDice
     {
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-<<<<<<< Updated upstream
-        private const string modVersion = "1.2.3";
-=======
-        private const string modVersion = "1.2.11";
-
->>>>>>> Stashed changes
+        private const string modVersion = "1.2.6";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
         public static AssetBundle LoadedAssets;
 
-
         public static GameObject NetworkerPrefab, JumpscareCanvasPrefab, JumpscareOBJ, PathfinderPrefab, EffectMenuPrefab, EffectMenuButtonPrefab;
         public static Jumpscare JumpscareScript;
 
-
-        public static string debugKey = "<Keyboard>/numpadMinus"; 
-        public static InputAction debugMenuAction = null;
         public static AudioClip ExplosionSFX, DetonateSFX, MineSFX, AwfulEffectSFX, BadEffectSFX, GoodEffectSFX, JumpscareSFX, AlarmSFX, PurrSFX;
         public static Sprite WarningBracken, WarningJester, WarningDeath, WarningLuck;
-        
 
         public static Item DieEmergency, DieGambler, DieChronos, DieSacrificer, DieSaint, DieRusty, PathfinderSpawner;
-        
+        public static bool lethalThingsPresent = false;
         public static ConfigFile BepInExConfig = null;
+        public static Assembly lethalThingsAssembly;
         void Awake()
         {
             CustomLogger = BepInEx.Logging.Logger.CreateLogSource(modGUID);
-
+            lethalThingsAssembly = GetAssembly("evaisa.lethalthings");
+            lethalThingsPresent = IsModPresent("evaisa.lethalthings", "Teleporter Traps rolls enabled.");
             BepInExConfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "Emergency Dice.cfg"), true);
-
             ModConfig();
             DieBehaviour.Config();
 
@@ -101,23 +88,9 @@ namespace MysteryDice
 
             LoadDice();
 
-            debugMenuAction = new InputAction(binding: debugKey);
-            debugMenuAction.performed += _ => DebugMenu();
-            debugMenuAction.Enable();
-
             harmony.PatchAll();
             CustomLogger.LogInfo("The Emergency Dice mod was initialized!");
         }
-
-<<<<<<< Updated upstream
-=======
-        private void DebugMenu()
-        {
-            MysteryDice.CustomLogger.LogInfo("Button Hit");
-            if(!Networker.Instance.IsHost)return;
-            SelectEffect.ShowSelectMenu();
-        }
-
         public static Assembly GetAssembly(string name)
         {
             if (Chainloader.PluginInfos.ContainsKey(name))
@@ -132,7 +105,6 @@ namespace MysteryDice
             MysteryDice.CustomLogger.LogMessage(logMessage);
             return isPresent;
         }
->>>>>>> Stashed changes
         private static void NetcodeWeaver()
         {
             var types = Assembly.GetExecutingAssembly().GetTypes();
@@ -176,13 +148,21 @@ namespace MysteryDice
 
             HyperShake.maxForce = maxHyperShake.Value;
 
-            ConfigEntry<bool> randomDiceTime = BepInExConfig.Bind<bool>(
+            ConfigEntry<bool> randomSpinTime = BepInExConfig.Bind<bool>(
                 "Misc",
-                "Random Dice Spin Time",
-                false,
-                "Makes each dice spin for a random amount of time.");
+                "Have a random spin time",
+                true,
+                "Makes the dice spin a random amount of time before rolling.");
 
-            DieBehaviour.randomUseTimer = randomDiceTime.Value;
+            DieBehaviour.randomUseTimer = randomSpinTime.Value;
+
+            ConfigEntry<bool> chronosUpdatedTimeOfDay = BepInExConfig.Bind<bool>(
+                "Misc",
+                "Updated Chronos Time",
+                false,
+                "Makes the Chronos die have better odds in the morning instead of equal odds in the morning.");
+
+            ChronosDie.differentTimes = chronosUpdatedTimeOfDay.Value;
 
             ConfigEntry<bool> useDiceOutside = BepInExConfig.Bind<bool>(
                 "Misc",
@@ -209,38 +189,7 @@ namespace MysteryDice
                 "Enables chat commands for the admin. Mainly for debugging.");
 
             ChatPatch.AllowChatDebug = allowChatCommands.Value;
-            
 
-            ConfigEntry<string> adminKeybind = BepInExConfig.Bind<string>(
-                "Admin",
-                "Admin Keybind",
-                "<Keyboard>/numpadMinus",
-                "Button which opens the admin menu"); ;
-
-            debugKey = adminKeybind.Value;
-
-            ConfigEntry<string> DisplayResults = BepInExConfig.Bind<string>(
-                "Misc",
-                "Display Results",
-                "Default",
-                "Display the dice results or not \nAll - Shows all, None - shows none,\n Default, Shows the default ones, Random - Randomly shows them"); ;
-
-            string DispRes = DisplayResults.Value;
-            switch (DispRes.ToUpper())
-            {
-                case "ALL":
-                    DieBehaviour.showE = DieBehaviour.ShowEffect.ALL;
-                    break;
-                case "NONE":
-                    DieBehaviour.showE = DieBehaviour.ShowEffect.NONE;
-                    break;
-                case "RANDOM":
-                    DieBehaviour.showE = DieBehaviour.ShowEffect.RANDOM;
-                    break;
-                default:
-                    DieBehaviour.showE = DieBehaviour.ShowEffect.DEFAULT;
-                    break;
-            }
         }
 
         public static Dictionary<string, Levels.LevelTypes> RegLevels = new Dictionary<string, Levels.LevelTypes>

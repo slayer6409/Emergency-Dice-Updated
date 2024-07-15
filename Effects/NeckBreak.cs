@@ -14,7 +14,7 @@ namespace MysteryDice.Effects
         public static int IsNeckBroken = 0;
         public void Use()
         {
-            Networker.Instance.NeckBreakRandomPlayerServerRpc();
+            Networker.Instance.NeckBreakRandomPlayerServerRpc(GameNetworkManager.Instance.localPlayerController.playerClientId);
         }
 
         public static void BreakNeck()

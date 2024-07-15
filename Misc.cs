@@ -161,8 +161,6 @@ namespace MysteryDice
                     player.IsSpawned &&
                     player.isPlayerControlled;
         }
-<<<<<<< Updated upstream
-=======
 
         public static void AdjustWeight(ulong userID, float factor)
         {
@@ -184,13 +182,11 @@ namespace MysteryDice
                 return;
             }
 
-            float actualWeight = 0;
             float totalWeight = 0;
 
             foreach (var item in player.ItemSlots)
             {
                 if (item == null || item.itemProperties.weight == 0) continue;
-                actualWeight += item.itemProperties.weight;
                 float displayedWeight = Mathf.RoundToInt(Mathf.Clamp(item.itemProperties.weight - 1f, 0.0f, 100f) * 105f);
                 displayedWeight *= factor;
                 float carryWeight = (displayedWeight / 105f) + 1f;
@@ -199,8 +195,7 @@ namespace MysteryDice
                 totalWeight += item.itemProperties.weight;
             }
 
-            if(actualWeight!=0) player.carryWeight = totalWeight;
+            player.carryWeight = totalWeight;
         }
->>>>>>> Stashed changes
     }
 }
