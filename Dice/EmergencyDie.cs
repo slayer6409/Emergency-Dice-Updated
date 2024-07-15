@@ -25,10 +25,10 @@ namespace MysteryDice.Dice
             RollToEffect.Add(6, new EffectType[] { EffectType.Great });
         }
 
-        public override IEnumerator UseTimer(ulong userID)
+        public override IEnumerator UseTimer(ulong userID, int time)
         {
             DiceModel.GetComponent<Blinking>().BlinkingTime = 0.1f;
-            return base.UseTimer(userID);
+            return base.UseTimer(userID, time);
         }
 
         public override void DestroyObject()
