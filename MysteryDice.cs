@@ -12,6 +12,11 @@ using System;
 using BepInEx.Configuration;
 using MysteryDice.Patches;
 using System.Collections.Generic;
+<<<<<<< Updated upstream
+=======
+using BepInEx.Bootstrap;
+using UnityEngine.InputSystem;
+>>>>>>> Stashed changes
 
 namespace MysteryDice
 {
@@ -20,17 +25,27 @@ namespace MysteryDice
     {
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
+<<<<<<< Updated upstream
         private const string modVersion = "1.2.3";
+=======
+        private const string modVersion = "1.2.11";
+
+>>>>>>> Stashed changes
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
         public static AssetBundle LoadedAssets;
 
+
         public static GameObject NetworkerPrefab, JumpscareCanvasPrefab, JumpscareOBJ, PathfinderPrefab, EffectMenuPrefab, EffectMenuButtonPrefab;
         public static Jumpscare JumpscareScript;
 
+
+        public static string debugKey = "<Keyboard>/numpadMinus"; 
+        public static InputAction debugMenuAction = null;
         public static AudioClip ExplosionSFX, DetonateSFX, MineSFX, AwfulEffectSFX, BadEffectSFX, GoodEffectSFX, JumpscareSFX, AlarmSFX, PurrSFX;
         public static Sprite WarningBracken, WarningJester, WarningDeath, WarningLuck;
+        
 
         public static Item DieEmergency, DieGambler, DieChronos, DieSacrificer, DieSaint, DieRusty, PathfinderSpawner;
         
@@ -86,10 +101,38 @@ namespace MysteryDice
 
             LoadDice();
 
+            debugMenuAction = new InputAction(binding: debugKey);
+            debugMenuAction.performed += _ => DebugMenu();
+            debugMenuAction.Enable();
+
             harmony.PatchAll();
             CustomLogger.LogInfo("The Emergency Dice mod was initialized!");
         }
 
+<<<<<<< Updated upstream
+=======
+        private void DebugMenu()
+        {
+            MysteryDice.CustomLogger.LogInfo("Button Hit");
+            if(!Networker.Instance.IsHost)return;
+            SelectEffect.ShowSelectMenu();
+        }
+
+        public static Assembly GetAssembly(string name)
+        {
+            if (Chainloader.PluginInfos.ContainsKey(name))
+            {
+                return Chainloader.PluginInfos[name].Instance.GetType().Assembly;
+            }
+            return null;
+        }
+        private static bool IsModPresent(string name, string logMessage)
+        {
+            bool isPresent = Chainloader.PluginInfos.ContainsKey(name);
+            MysteryDice.CustomLogger.LogMessage(logMessage);
+            return isPresent;
+        }
+>>>>>>> Stashed changes
         private static void NetcodeWeaver()
         {
             var types = Assembly.GetExecutingAssembly().GetTypes();
@@ -166,7 +209,38 @@ namespace MysteryDice
                 "Enables chat commands for the admin. Mainly for debugging.");
 
             ChatPatch.AllowChatDebug = allowChatCommands.Value;
+            
 
+            ConfigEntry<string> adminKeybind = BepInExConfig.Bind<string>(
+                "Admin",
+                "Admin Keybind",
+                "<Keyboard>/numpadMinus",
+                "Button which opens the admin menu"); ;
+
+            debugKey = adminKeybind.Value;
+
+            ConfigEntry<string> DisplayResults = BepInExConfig.Bind<string>(
+                "Misc",
+                "Display Results",
+                "Default",
+                "Display the dice results or not \nAll - Shows all, None - shows none,\n Default, Shows the default ones, Random - Randomly shows them"); ;
+
+            string DispRes = DisplayResults.Value;
+            switch (DispRes.ToUpper())
+            {
+                case "ALL":
+                    DieBehaviour.showE = DieBehaviour.ShowEffect.ALL;
+                    break;
+                case "NONE":
+                    DieBehaviour.showE = DieBehaviour.ShowEffect.NONE;
+                    break;
+                case "RANDOM":
+                    DieBehaviour.showE = DieBehaviour.ShowEffect.RANDOM;
+                    break;
+                default:
+                    DieBehaviour.showE = DieBehaviour.ShowEffect.DEFAULT;
+                    break;
+            }
         }
 
         public static Dictionary<string, Levels.LevelTypes> RegLevels = new Dictionary<string, Levels.LevelTypes>

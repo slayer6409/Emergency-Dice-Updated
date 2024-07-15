@@ -161,5 +161,46 @@ namespace MysteryDice
                     player.IsSpawned &&
                     player.isPlayerControlled;
         }
+<<<<<<< Updated upstream
+=======
+
+        public static void AdjustWeight(ulong userID, float factor)
+        {
+            PlayerControllerB player = null;
+
+            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
+            {
+                PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
+                if (playerComp.playerClientId == userID)
+                {
+                    player = playerComp;
+                    break;
+                }
+            }
+
+            if (player == null)
+            {
+                Debug.LogError("Player not found.");
+                return;
+            }
+
+            float actualWeight = 0;
+            float totalWeight = 0;
+
+            foreach (var item in player.ItemSlots)
+            {
+                if (item == null || item.itemProperties.weight == 0) continue;
+                actualWeight += item.itemProperties.weight;
+                float displayedWeight = Mathf.RoundToInt(Mathf.Clamp(item.itemProperties.weight - 1f, 0.0f, 100f) * 105f);
+                displayedWeight *= factor;
+                float carryWeight = (displayedWeight / 105f) + 1f;
+                carryWeight = Mathf.Clamp(carryWeight, 1f, 10f); 
+                item.itemProperties.weight = carryWeight;
+                totalWeight += item.itemProperties.weight;
+            }
+
+            if(actualWeight!=0) player.carryWeight = totalWeight;
+        }
+>>>>>>> Stashed changes
     }
 }

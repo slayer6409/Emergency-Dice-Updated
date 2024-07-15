@@ -20,7 +20,7 @@ namespace MysteryDice.Dice
         public static List<IEffect> AllowedEffects = new List<IEffect>();
 
         public static bool LogEffectsToConsole = false;
-
+        public static ShowEffect showE = ShowEffect.DEFAULT;
         protected GameObject DiceModel;
         public List<IEffect> Effects = new List<IEffect>();
         public Dictionary<int, EffectType[]> RollToEffect = new Dictionary<int, EffectType[]>();
@@ -29,6 +29,13 @@ namespace MysteryDice.Dice
 
         public PlayerControllerB PlayerUser = null;
 
+        public enum ShowEffect
+        {
+            ALL,
+            NONE,
+            DEFAULT,
+            RANDOM
+        }
         public virtual void SetupDiceEffects()
         {
             foreach (IEffect effect in AllowedEffects)
@@ -174,11 +181,7 @@ namespace MysteryDice.Dice
 
             Networker.Instance.LogEffectsToOwnerServerRPC(PlayerUser.playerUsername, randomEffect.Name);
 
-
-            if (randomEffect.ShowDefaultTooltip)
-                ShowDefaultTooltip(randomEffect.Outcome, diceRoll);
-            else
-                Misc.SafeTipMessage($"Rolled {diceRoll}", randomEffect.Tooltip);
+            ShowDefaultTooltip(randomEffect, diceRoll);
         }
         public IEffect GetRandomEffect(int diceRoll, List<IEffect> effects)
         {
@@ -209,26 +212,59 @@ namespace MysteryDice.Dice
             }
 
         }
-        public static void ShowDefaultTooltip(EffectType effectType, int diceRoll)
+        public static void ShowDefaultTooltip(IEffect effect, int diceRoll)
         {
+            string effectTypeMessage = string.Empty;
+            EffectType effectType = effect.Outcome;
+            bool normalMessage = false;
+            string message = string.Empty;
             switch (effectType)
             {
                 case EffectType.Awful:
-                    Misc.SafeTipMessage($"Rolled {diceRoll}", ":)");
+                    effectTypeMessage = ":)";
                     break;
                 case EffectType.Bad:
-                    Misc.SafeTipMessage($"Rolled {diceRoll}", "Uh oh");
+                    effectTypeMessage = "Uh oh";
                     break;
                 case EffectType.Good:
-                    Misc.SafeTipMessage($"Rolled {diceRoll}", "Enjoy.");
+                    effectTypeMessage = "Enjoy.";
                     break;
                 case EffectType.Great:
-                    Misc.SafeTipMessage($"Rolled {diceRoll}", "Lucky.");
+                    effectTypeMessage = "Lucky.";
                     break;
                 case EffectType.Mixed:
-                    Misc.SafeTipMessage($"Rolled {diceRoll}", "Debatable");
+                    effectTypeMessage = "Debatable";
                     break;
             }
+
+            if (showE == ShowEffect.ALL)
+            {
+                normalMessage = true;
+                message = effect.Tooltip;
+                return;
+            }
+            else if (showE == ShowEffect.NONE)
+            {
+                message = effectTypeMessage;
+
+            }
+            else if (showE == ShowEffect.RANDOM)
+            {
+                int randint = UnityEngine.Random.Range(0, 101);
+                if (randint <= 45)
+                    message = effect.Tooltip;
+                else
+                    message = effectTypeMessage;
+            }
+            else if (showE == ShowEffect.DEFAULT)
+            {
+                if (effect.ShowDefaultTooltip)
+                    message = effectTypeMessage;
+                else
+                    message = effect.Tooltip;
+            }
+
+            Misc.SafeTipMessage($"Rolled {diceRoll}", message);
         }
 
         public static void Config()
@@ -279,6 +315,25 @@ namespace MysteryDice.Dice
             AllEffects.Add(new Detonate());
             AllEffects.Add(new RandomStoreItem());
             AllEffects.Add(new RandomGreatStoreItem());
+<<<<<<< Updated upstream
+=======
+            AllEffects.Add(new BatteryDrain());
+            AllEffects.Add(new EveryoneToSomeone());
+            AllEffects.Add(new LightBurden());
+            AllEffects.Add(new ItemDuplicator());
+            AllEffects.Add(new HeavyBurden());
+            AllEffects.Add(new Drunk());
+            //AllEffects.Add(new ItemSwap()); //Need to be fixed
+            AllEffects.Add(new GoldenTouch());
+            AllEffects.Add(new Reroll());
+            if (MysteryDice.lethalThingsPresent)
+            {
+                AllEffects.Add(new TPTraps());
+                AllEffects.Add(new MovingTPTraps());
+                AllEffects.Add(new TpOverflowOutside());
+                AllEffects.Add(new SilentTP());
+            }
+>>>>>>> Stashed changes
 
             foreach(var effect in AllEffects)
             {

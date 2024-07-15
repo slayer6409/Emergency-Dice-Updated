@@ -131,6 +131,12 @@
     <Compile Include="Effects\Shotgun.cs" />
     <Compile Include="Effects\ShipTurret.cs" />
     <Compile Include="Effects\DoorMalfunction.cs" />
+<<<<<<< Updated upstream
+=======
+    <Compile Include="Effects\SilentTP.cs" />
+    <Compile Include="Effects\TpOverflowOutside.cs" />
+    <Compile Include="Effects\TPTraps.cs" />
+>>>>>>> Stashed changes
     <Compile Include="Effects\TurretHell.cs" />
     <Compile Include="Effects\SilentMine.cs" />
     <Compile Include="Effects\ZombieToShip.cs" />
@@ -196,7 +202,20 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
+<<<<<<< Updated upstream
     <PostBuildEvent>copy "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll" "C:\Users\andre\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\v55\BepInEx\plugins\slayer6409-Emergency_Dice_Updated"</PostBuildEvent>
+=======
+    <PostBuildEvent>cd C:\Users\andre\Documents\NetcodePatcher
+
+NetcodePatcher.dll $(TargetDir) deps
+
+copy "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll" "C:\Users\andre\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\v55\BepInEx\plugins\slayer6409-Emergency_Dice_Updated"
+
+copy  "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll" "C:\Users\andre\Desktop\slayer6409-Emergency_Dice_Updated"
+
+copy  "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll" "C:\Users\andre\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\aaa\BepInEx\plugins\slayer6409-Emergency_Dice_Updated"
+copy  "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.pdb" "C:\Users\andre\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\aaa\BepInEx\plugins\slayer6409-Emergency_Dice_Updated"</PostBuildEvent>
+>>>>>>> Stashed changes
   </PropertyGroup>
   <ItemGroup>
     <!-- will be automatically skipped for Visual Studio -->

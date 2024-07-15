@@ -26,10 +26,10 @@ namespace MysteryDice.Dice
             RollToEffect.Add(6, new EffectType[] { EffectType.Great });
         }
 
-        public override IEnumerator UseTimer(ulong userID)
+        public override IEnumerator UseTimer(ulong userID,int Timer)
         {
             DiceModel.GetComponent<CycleSigns>().CycleTime = 0.1f;
-            return base.UseTimer(userID);
+            return base.UseTimer(userID,Timer);
         }
         public override void DestroyObject()
         {
@@ -59,10 +59,7 @@ namespace MysteryDice.Dice
                 return;
             }
 
-            if (randomEffect.ShowDefaultTooltip)
-                ShowDefaultTooltip(randomEffect.Outcome, diceRoll);
-            else
-                Misc.SafeTipMessage($"Rolled {diceRoll}", randomEffect.Tooltip);
+            ShowDefaultTooltip(randomEffect, diceRoll);
         }
     }
 }

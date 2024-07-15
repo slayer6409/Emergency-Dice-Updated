@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LethalLib.Modules;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
@@ -19,14 +20,17 @@ namespace MysteryDice.Effects
 
         public static void SpawnShotgun(ulong playerID)
         {
+
+            
+
             List<Item> items = UnityEngine.Resources.FindObjectsOfTypeAll<Item>().ToList();
             Item shotgun = items.FirstOrDefault(item => item.name.Equals("Shotgun"));
             Item ammo = items.FirstOrDefault(item => item.name.Equals("GunAmmo"));
 
             GameObject obj = UnityEngine.Object.Instantiate(shotgun.spawnPrefab,
-               Misc.GetPlayerByUserID(playerID).transform.position,
-               Quaternion.identity,
-               RoundManager.Instance.playersManager.propsContainer);
+                Misc.GetPlayerByUserID(playerID).transform.position,
+                Quaternion.identity,
+                RoundManager.Instance.playersManager.propsContainer);
 
             obj.GetComponent<GrabbableObject>().fallTime = 0f;
             obj.GetComponent<NetworkObject>().Spawn();
@@ -34,13 +38,13 @@ namespace MysteryDice.Effects
             int ammoAmount = UnityEngine.Random.Range(2, 6);
             for (int i = 0; i < ammoAmount; i++)
             {
-                GameObject ammoObj = UnityEngine.Object.Instantiate(ammo.spawnPrefab,
-                                   GameNetworkManager.Instance.localPlayerController.transform.position,
-                                   Quaternion.identity,
-                                   RoundManager.Instance.playersManager.propsContainer);
+                GameObject obj2 = UnityEngine.Object.Instantiate(ammo.spawnPrefab,
+                    Misc.GetPlayerByUserID(playerID).transform.position,
+                    Quaternion.identity,
+                    RoundManager.Instance.playersManager.propsContainer);
 
-                ammoObj.GetComponent<GrabbableObject>().fallTime = 0f;
-                ammoObj.GetComponent<NetworkObject>().Spawn();
+                obj2.GetComponent<GrabbableObject>().fallTime = 0f;
+                obj2.GetComponent<NetworkObject>().Spawn();
             }
         }
     }

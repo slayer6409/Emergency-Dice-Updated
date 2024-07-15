@@ -287,11 +287,31 @@ namespace MysteryDice
         }
         #endregion
 
+<<<<<<< Updated upstream
+=======
+        #region TPOverflow
+        [ServerRpc(RequireOwnership = false)]
+        public void TPOverflowServerRPC()
+        {
+            TPTraps.SpawnTeleporterTraps(UnityEngine.Random.Range(TPTraps.MinMinesToSpawn,TPTraps.MaxMinesToSpawn+1));
+        }
+        #endregion
+
+>>>>>>> Stashed changes
         #region MineOverflowOutside
         [ServerRpc(RequireOwnership = false)]
         public void MineOverflowOutsideServerRPC()
         {
             MineOverflowOutside.SpawnMoreMinesOutside();
+        }
+        #endregion
+
+        #region TPOverflowOutside
+        [ServerRpc(RequireOwnership = false)]
+        public void TPOverflowOutsideServerRPC()
+        {
+            int MinesToSpawn = UnityEngine.Random.Range(TpOverflowOutside.MinMinesToSpawn,TpOverflowOutside.MaxMinesToSpawn+1);
+            TpOverflowOutside.SpawnTPOutside(MinesToSpawn);
         }
         #endregion
 
@@ -611,6 +631,23 @@ namespace MysteryDice
         }
         #endregion
 
+        #region SilentTP
+
+        [ServerRpc(RequireOwnership = false)]
+        public void SilenceTPServerRPC()
+        {
+            StartCoroutine(SilentTP.SilenceAllTP(IsServer));
+            SilenceTPClientRPC();
+        }
+
+        [ClientRpc]
+        public void SilenceTPClientRPC()
+        {
+            if (!IsServer)
+                StartCoroutine(SilentTP.SilenceAllTP(IsServer));
+        }
+        #endregion
+
         #region TurretHell
 
         [ServerRpc(RequireOwnership = false)]
@@ -852,10 +889,97 @@ namespace MysteryDice
 
         }
         #endregion
+<<<<<<< Updated upstream
+=======
+
+        #region Moving traps
+>>>>>>> Stashed changes
 
         #region HyperShake
 
         [ServerRpc(RequireOwnership = false)]
+<<<<<<< Updated upstream
+=======
+        public void MovingTrapsInitServerRPC()
+        {
+            int RandomTraps = UnityEngine.Random.Range(5, 15);
+            TPTraps.SpawnTeleporterTraps(RandomTraps);
+            AddMovingTrapsClientRPC();
+        }
+
+        [ClientRpc]
+        public void AddMovingTrapsClientRPC()
+        {
+            StartCoroutine(WaitForTrapInit());
+        }
+
+        IEnumerator WaitForTrapInit()
+        {
+            yield return new WaitForSeconds(5f);
+
+            foreach (var trap in GameObject.FindObjectsOfType<Component>().Where(c => c.GetType().Name == "TeleporterTrap"))
+            {
+                if (trap == null)
+                {
+                    MysteryDice.CustomLogger.LogWarning("Trap is null.");
+                    continue;
+                }
+
+                var targetObject = trap.transform.parent?.gameObject ?? trap.gameObject;
+
+                if (targetObject.GetComponent<MovingTPTraps.TeleporterTrapMovement>() == null)
+                {
+                    var movementComponent = targetObject.AddComponent<MovingTPTraps.TeleporterTrapMovement>(); 
+                    movementComponent.TeleporterTrapScr = trap;
+
+                    if (movementComponent.TeleporterTrapScr == null)
+                    {
+                        MysteryDice.CustomLogger.LogWarning("Failed to set TeleporterTrapScr for trap: " + trap.name);
+                    }
+                    else
+                    {
+                        MysteryDice.CustomLogger.LogInfo("Successfully set TeleporterTrapScr for trap: " + trap.name);
+                    }
+                }
+                else
+                {
+                    MysteryDice.CustomLogger.LogInfo("Movement component already exists for trap: " + trap.name);
+                }
+            }
+        }
+
+        /// <summary>
+        /// this is inefficient, but stays for now
+        /// </summary>
+        /// <param name="trapID"></param>
+        /// <param name="speed"></param>
+        /// <param name="currentPosition"></param>
+        /// <param name="syncedPaths"></param>
+        /// <param name="blockedid"></param>
+        [ClientRpc]
+        public void SyncDataTPClientRPC(ulong trapID, float speed, Vector3 currentPosition, Vector3 targetPosition, int blockedid)
+        {
+            if (IsServer) return;
+
+            foreach (var trap in GameObject.FindObjectsOfType<MovingTPTraps.TeleporterTrapMovement>())
+            {
+                var networkObjectIdProp = trap.TeleporterTrapScr.GetType().GetProperty("NetworkObjectId", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (networkObjectIdProp != null && (ulong)networkObjectIdProp.GetValue(trap.TeleporterTrapScr) != trapID) continue;
+
+                trap.transform.position = currentPosition;
+                trap.TargetPosition = targetPosition;
+                trap.MoveSpeed = speed;
+                trap.BlockedID = blockedid;
+                trap.CalculateNewPath();
+            }
+        }
+
+    #endregion
+
+        #region HyperShake
+
+    [ServerRpc(RequireOwnership = false)]
+>>>>>>> Stashed changes
         public void HyperShakeServerRPC()
         {
             List<PlayerControllerB> validPlayers = new List<PlayerControllerB>();
