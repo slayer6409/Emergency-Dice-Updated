@@ -117,9 +117,11 @@
     <Compile Include="Effects\ItemSwap.cs" />
     <Compile Include="Effects\LightBurden.cs" />
     <Compile Include="Effects\MovingTPTraps.cs" />
+    <Compile Include="Effects\NeckSpin.cs" />
     <Compile Include="Effects\NeckBreak.cs" />
     <Compile Include="Effects\RandomGreatStoreItem.cs" />
     <Compile Include="Effects\RandomStoreItem.cs" />
+    <Compile Include="Effects\GiveAllDice.cs" />
     <Compile Include="Effects\Reroll.cs" />
     <Compile Include="Effects\SelectEffect.cs" />
     <Compile Include="Effects\Fly.cs" />
@@ -211,12 +213,7 @@
 
 NetcodePatcher.dll $(TargetDir) deps
 
-copy "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll" "C:\Users\andre\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\v55\BepInEx\plugins\slayer6409-Emergency_Dice_Updated"
-
-copy  "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll" "C:\Users\andre\Desktop\slayer6409-Emergency_Dice_Updated"
-
-copy  "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll" "C:\Users\andre\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\aaa\BepInEx\plugins\slayer6409-Emergency_Dice_Updated"
-copy  "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.pdb" "C:\Users\andre\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\aaa\BepInEx\plugins\slayer6409-Emergency_Dice_Updated"</PostBuildEvent>
+copy  "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll" "C:\Users\andre\Desktop\MysteryDice\Regular"</PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <!-- will be automatically skipped for Visual Studio -->

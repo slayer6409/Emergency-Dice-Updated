@@ -64,6 +64,17 @@ namespace MysteryDice.Patches
 
             }
         }
+        
+        [HarmonyPostfix]
+        [HarmonyPatch("Update")]
+        public static void NeckSpinUpdate(PlayerControllerB __instance)
+        {
+            if (NeckSpin.IsNeckSpinning == 0) return;
+
+            Transform cam = GameNetworkManager.Instance.localPlayerController.gameplayCamera.transform;
+            cam.eulerAngles += new Vector3(0,0,NeckSpin.neckChoiceSpeed);
+        }
+
 
     }
 }

@@ -98,6 +98,8 @@ namespace MysteryDice.Patches
 
             NeckBreak.FixNeck();
 
+            NeckSpin.FixNeck();
+
             Networker.Instance.StopAllCoroutines();
 
             if (Networker.Instance.IsServer)

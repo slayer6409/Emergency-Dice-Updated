@@ -195,13 +195,16 @@ namespace MysteryDice
 
             ReviveAllPlayersClientRpc();
         }
+
         [ClientRpc]
         public void ReviveAllPlayersClientRpc()
         {
             if (StartOfRound.Instance == null) return;
 
             StartOfRound.Instance.ReviveDeadPlayers();
+            HUDManager.Instance.UpdateHealthUI(100);
         }
+
         #endregion
 
         #region TeleportInside
@@ -888,118 +891,119 @@ namespace MysteryDice
 
         }
         #endregion
-#region Moving traps
+
+        #region Moving traps
 
 
-    [ServerRpc(RequireOwnership = false)]
-        public void MovingTrapsInitServerRPC()
-        {
-            // Assuming you have a similar method to spawn teleporter traps
-            TPTraps.SpawnTeleporterTraps(5);
-            AddMovingTrapsClientRPC();
-        }
-
-        [ClientRpc]
-        public void AddMovingTrapsClientRPC()
-        {
-            StartCoroutine(WaitForTrapInit());
-        }
-
-        IEnumerator WaitForTrapInit()
-        {
-            yield return new WaitForSeconds(5f);
-
-            foreach (var trap in GameObject.FindObjectsOfType<Component>().Where(c => c.GetType().Name == "TeleporterTrap"))
-            {
-                if (trap == null)
+            [ServerRpc(RequireOwnership = false)]
+                public void MovingTrapsInitServerRPC()
                 {
-                    MysteryDice.CustomLogger.LogWarning("Trap is null.");
-                    continue;
+                    // Assuming you have a similar method to spawn teleporter traps
+                    TPTraps.SpawnTeleporterTraps(5);
+                    AddMovingTrapsClientRPC();
                 }
 
-                var targetObject = trap.transform.parent?.gameObject ?? trap.gameObject;
-
-                if (targetObject.GetComponent<MovingTPTraps.TeleporterTrapMovement>() == null)
+                [ClientRpc]
+                public void AddMovingTrapsClientRPC()
                 {
-                    var movementComponent = targetObject.AddComponent<MovingTPTraps.TeleporterTrapMovement>(); 
-                    movementComponent.TeleporterTrapScr = trap;
+                    StartCoroutine(WaitForTrapInit());
+                }
 
-                    if (movementComponent.TeleporterTrapScr == null)
+                IEnumerator WaitForTrapInit()
+                {
+                    yield return new WaitForSeconds(5f);
+
+                    foreach (var trap in GameObject.FindObjectsOfType<Component>().Where(c => c.GetType().Name == "TeleporterTrap"))
                     {
-                        MysteryDice.CustomLogger.LogWarning("Failed to set TeleporterTrapScr for trap: " + trap.name);
-                    }
-                    else
-                    {
-                        MysteryDice.CustomLogger.LogInfo("Successfully set TeleporterTrapScr for trap: " + trap.name);
+                        if (trap == null)
+                        {
+                            MysteryDice.CustomLogger.LogWarning("Trap is null.");
+                            continue;
+                        }
+
+                        var targetObject = trap.transform.parent?.gameObject ?? trap.gameObject;
+
+                        if (targetObject.GetComponent<MovingTPTraps.TeleporterTrapMovement>() == null)
+                        {
+                            var movementComponent = targetObject.AddComponent<MovingTPTraps.TeleporterTrapMovement>(); 
+                            movementComponent.TeleporterTrapScr = trap;
+
+                            if (movementComponent.TeleporterTrapScr == null)
+                            {
+                                MysteryDice.CustomLogger.LogWarning("Failed to set TeleporterTrapScr for trap: " + trap.name);
+                            }
+                            else
+                            {
+                                MysteryDice.CustomLogger.LogInfo("Successfully set TeleporterTrapScr for trap: " + trap.name);
+                            }
+                        }
+                        else
+                        {
+                            MysteryDice.CustomLogger.LogInfo("Movement component already exists for trap: " + trap.name);
+                        }
                     }
                 }
-                else
+
+                /// <summary>
+                /// this is inefficient, but stays for now
+                /// </summary>
+                /// <param name="trapID"></param>
+                /// <param name="speed"></param>
+                /// <param name="currentPosition"></param>
+                /// <param name="syncedPaths"></param>
+                /// <param name="blockedid"></param>
+                [ClientRpc]
+                public void SyncDataTPClientRPC(ulong trapID, float speed, Vector3 currentPosition, Vector3 targetPosition, int blockedid)
                 {
-                    MysteryDice.CustomLogger.LogInfo("Movement component already exists for trap: " + trap.name);
+                    if (IsServer) return;
+
+                    foreach (var trap in GameObject.FindObjectsOfType<MovingTPTraps.TeleporterTrapMovement>())
+                    {
+                        var networkObjectIdProp = trap.TeleporterTrapScr.GetType().GetProperty("NetworkObjectId", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                        if (networkObjectIdProp != null && (ulong)networkObjectIdProp.GetValue(trap.TeleporterTrapScr) != trapID) continue;
+
+                        trap.transform.position = currentPosition;
+                        trap.TargetPosition = targetPosition;
+                        trap.MoveSpeed = speed;
+                        trap.BlockedID = blockedid;
+                        trap.CalculateNewPath();
+                    }
                 }
-            }
-        }
 
-        /// <summary>
-        /// this is inefficient, but stays for now
-        /// </summary>
-        /// <param name="trapID"></param>
-        /// <param name="speed"></param>
-        /// <param name="currentPosition"></param>
-        /// <param name="syncedPaths"></param>
-        /// <param name="blockedid"></param>
-        [ClientRpc]
-        public void SyncDataTPClientRPC(ulong trapID, float speed, Vector3 currentPosition, Vector3 targetPosition, int blockedid)
-        {
-            if (IsServer) return;
+            #endregion
 
-            foreach (var trap in GameObject.FindObjectsOfType<MovingTPTraps.TeleporterTrapMovement>())
+        #region HyperShake
+
+        [ServerRpc(RequireOwnership = false)]
+            public void HyperShakeServerRPC()
             {
-                var networkObjectIdProp = trap.TeleporterTrapScr.GetType().GetProperty("NetworkObjectId", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                if (networkObjectIdProp != null && (ulong)networkObjectIdProp.GetValue(trap.TeleporterTrapScr) != trapID) continue;
+                List<PlayerControllerB> validPlayers = new List<PlayerControllerB>();
 
-                trap.transform.position = currentPosition;
-                trap.TargetPosition = targetPosition;
-                trap.MoveSpeed = speed;
-                trap.BlockedID = blockedid;
-                trap.CalculateNewPath();
+                foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
+                {
+                    PlayerControllerB player = playerPrefab.GetComponent<PlayerControllerB>();
+                    if (Misc.IsPlayerAliveAndControlled(player))
+                        validPlayers.Add(player);
+                }
+
+                PlayerControllerB selectedPlayer = validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)];
+
+                HyperShakeClientRPC(selectedPlayer.playerClientId);
             }
-        }
 
-    #endregion
-
-    #region HyperShake
-
-    [ServerRpc(RequireOwnership = false)]
-        public void HyperShakeServerRPC()
-        {
-            List<PlayerControllerB> validPlayers = new List<PlayerControllerB>();
-
-            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
+            [ClientRpc]
+            public void HyperShakeClientRPC(ulong playerID)
             {
-                PlayerControllerB player = playerPrefab.GetComponent<PlayerControllerB>();
-                if (Misc.IsPlayerAliveAndControlled(player))
-                    validPlayers.Add(player);
+                if (GameNetworkManager.Instance.localPlayerController.playerClientId != playerID) return;
+
+                HyperShake.ShakeData shakeData = new HyperShake.ShakeData();
+                shakeData.Player = GameNetworkManager.Instance.localPlayerController;
+                shakeData.NextShakeTimer = 0f;
+                shakeData.ShakingTimer = 0f;
+                HyperShake.ShakingData = shakeData;
             }
 
-            PlayerControllerB selectedPlayer = validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)];
-
-            HyperShakeClientRPC(selectedPlayer.playerClientId);
-        }
-
-        [ClientRpc]
-        public void HyperShakeClientRPC(ulong playerID)
-        {
-            if (GameNetworkManager.Instance.localPlayerController.playerClientId != playerID) return;
-
-            HyperShake.ShakeData shakeData = new HyperShake.ShakeData();
-            shakeData.Player = GameNetworkManager.Instance.localPlayerController;
-            shakeData.NextShakeTimer = 0f;
-            shakeData.ShakingTimer = 0f;
-            HyperShake.ShakingData = shakeData;
-        }
-
-        #endregion
+            #endregion
 
         #region Lever Shake
 
@@ -1037,6 +1041,29 @@ namespace MysteryDice
             if (playerId == GameNetworkManager.Instance.localPlayerController.playerClientId)
             {
                 NeckBreak.BreakNeck();
+            }
+        }
+        #endregion
+
+        #region Neck Spin
+        [ServerRpc(RequireOwnership = false)]
+        public void NeckSpinRandomPlayerServerRpc(ulong player)
+        {
+            if (StartOfRound.Instance == null) return;
+            if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
+
+            NeckSpinRandomPlayerClientRpc(player);
+        }
+
+        [ClientRpc]
+        public void NeckSpinRandomPlayerClientRpc(ulong playerId)
+        {
+            if (StartOfRound.Instance == null) return;
+            if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
+
+            if (playerId == GameNetworkManager.Instance.localPlayerController.playerClientId)
+            {
+                NeckSpin.SpinNeck();
             }
         }
         #endregion
@@ -1180,9 +1207,18 @@ namespace MysteryDice
 
         #region Reroll
         [ServerRpc(RequireOwnership = false)]
-        public void RerollServerRPC(ulong userID, int dice)
+        public void RerollServerRPC(ulong userID)
         {
-            Reroll.DiceScrap(userID, dice);
+            Reroll.DiceScrap(userID);
+        }
+
+        #endregion
+
+        #region GiveAllDice
+        [ServerRpc(RequireOwnership = false)]
+        public void GiveAllDiceServerRPC(ulong userID, int dice)
+        {
+            GiveAllDice.DiceScrap(userID);
         }
 
         #endregion

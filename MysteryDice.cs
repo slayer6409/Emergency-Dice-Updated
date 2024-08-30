@@ -13,6 +13,8 @@ using BepInEx.Configuration;
 using MysteryDice.Patches;
 using System.Collections.Generic;
 using BepInEx.Bootstrap;
+using System.Diagnostics;
+using UnityEngine.InputSystem;
 
 namespace MysteryDice
 {
@@ -21,18 +23,20 @@ namespace MysteryDice
     {
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.2.6";
+        private const string modVersion = "1.2.11";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
         public static AssetBundle LoadedAssets;
 
+        public static InputAction debugMenuAction = null;
         public static GameObject NetworkerPrefab, JumpscareCanvasPrefab, JumpscareOBJ, PathfinderPrefab, EffectMenuPrefab, EffectMenuButtonPrefab;
         public static Jumpscare JumpscareScript;
 
         public static AudioClip ExplosionSFX, DetonateSFX, MineSFX, AwfulEffectSFX, BadEffectSFX, GoodEffectSFX, JumpscareSFX, AlarmSFX, PurrSFX;
         public static Sprite WarningBracken, WarningJester, WarningDeath, WarningLuck;
 
+        public static string debugKey = "<Keyboard>/numpadMinus";
         public static Item DieEmergency, DieGambler, DieChronos, DieSacrificer, DieSaint, DieRusty, PathfinderSpawner;
         public static bool lethalThingsPresent = false;
         public static ConfigFile BepInExConfig = null;
@@ -88,9 +92,25 @@ namespace MysteryDice
 
             LoadDice();
 
+            debugMenuAction = new InputAction(null, InputActionType.Value, debugKey);
+            debugMenuAction.performed += delegate
+            {
+                DebugMenu();
+            };
+            debugMenuAction.Enable();
             harmony.PatchAll();
             CustomLogger.LogInfo("The Emergency Dice mod was initialized!");
         }
+
+        private void DebugMenu()
+        {
+            CustomLogger.LogInfo((object)"Button Hit");
+            if (Networker.Instance.IsHost)
+            {
+                SelectEffect.ShowSelectMenu();
+            }
+        }
+
         public static Assembly GetAssembly(string name)
         {
             if (Chainloader.PluginInfos.ContainsKey(name))
@@ -190,6 +210,21 @@ namespace MysteryDice
 
             ChatPatch.AllowChatDebug = allowChatCommands.Value;
 
+            ConfigEntry<float> minNeckSpin = BepInExConfig.Bind<float>(
+                "NeckSpin",
+                "Neck Spin Min Speed",
+                0.01f,
+                "Changes the minimum speed that your neck can spin.");
+
+            NeckSpin.minSpin = minNeckSpin.Value;
+
+            ConfigEntry<float> maxNeckSpin = BepInExConfig.Bind<float>(
+                "NeckSpin",
+                "Neck Spin Max Speed",
+                0.3f,
+                "Changes the maximum speed that your neck can spin.");
+
+            NeckSpin.maxSpin = maxNeckSpin.Value;
         }
 
         public static Dictionary<string, Levels.LevelTypes> RegLevels = new Dictionary<string, Levels.LevelTypes>

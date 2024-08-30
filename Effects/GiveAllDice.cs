@@ -10,16 +10,16 @@ using UnityEngine;
 
 namespace MysteryDice.Effects
 {
-    internal class Reroll : IEffect
+    internal class GiveAllDice : IEffect
     {
-        public string Name => "Reroll";
+        public string Name => "ALL DICE";
         public EffectType Outcome => EffectType.Great;
         public bool ShowDefaultTooltip => false;
-        public string Tooltip => "Try Again";
+        public string Tooltip => "ALL DICE";
 
         public void Use()
         {
-            Networker.Instance.RerollServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            Networker.Instance.GiveAllDiceServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, UnityEngine.Random.Range(0, MysteryDice.RegisteredDice.Count()));
         }
         public static void DiceScrap(ulong userID)
         {
@@ -31,8 +31,10 @@ namespace MysteryDice.Effects
             List<NetworkObjectReference> netObjs = new List<NetworkObjectReference>();
             List<int> scrapValues = new List<int>();
             List<float> scrapWeights = new List<float>();
-
-            scrapToSpawn.Add(MysteryDice.RegisteredDice[UnityEngine.Random.Range(0,MysteryDice.RegisteredDice.Count)]);
+            foreach(var e in MysteryDice.RegisteredDice)
+            {
+                scrapToSpawn.Add(e);
+            }
             
             foreach (Item scrap in scrapToSpawn)
             {

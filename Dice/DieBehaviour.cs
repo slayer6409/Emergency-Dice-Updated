@@ -282,6 +282,8 @@ namespace MysteryDice.Dice
             //AllEffects.Add(new ItemSwap()); //Need to be fixed
             AllEffects.Add(new GoldenTouch());
             AllEffects.Add(new Reroll());
+            AllEffects.Add(new NeckSpin());
+            AllEffects.Add(new GiveAllDice());
             if (MysteryDice.lethalThingsPresent)
             {
                 AllEffects.Add(new TPTraps());
