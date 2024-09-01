@@ -87,7 +87,7 @@ namespace MysteryDice.Dice
                 return;
             }
             if (randomEffect.ShowDefaultTooltip)
-                ShowDefaultTooltip(randomEffect.Outcome, diceRoll);
+                ShowDefaultTooltip(randomEffect, diceRoll);
             else
                 Misc.SafeTipMessage($"Rolled {diceRoll}", randomEffect.Tooltip);
         }

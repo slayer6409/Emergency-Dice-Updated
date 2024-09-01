@@ -2,12 +2,12 @@
 
 This mod adds new items (equipment and scrap)
 
-I FINALLY FIGURED OUT WHY IT WASN'T WORKING!!!
-TURNS OUT I AM JUST DUMB!!! YAY!!!
-
 ## Emergency Die
 
 Updated version of: https://thunderstore.io/c/lethal-company/p/Theronguard/Emergency_Dice/
+Their Github Repo: https://github.com/Theronguard/Emergency-Dice
+
+Check out that mod if you don't want my changes! 
 
 ![](https://i.imgur.com/gGdBSz0.png)
 
@@ -113,6 +113,10 @@ Has negative outcomes.
 * Gives you the ability to fly with your sprint key
 * Allows you to pick any effect (both good and bad ones)
 * Spawns 2-4 random items from the shop
+* Duplicates your inventory on the ground
+* Gives you a random dice as a "Reroll"
+* Gives you a masterball (Needs LethalMon)
+* Gives you one of every dice
 
 ### Good
 
@@ -121,10 +125,19 @@ Has negative outcomes.
 * Gives you infinite stamina
 * Teleports you to the ship with your items
 * Spawns a random item from the shop
+* Makes everything in your inventory a bit lighter
+* Spawns a bunch of pokeballs of different tiers (Needs LethalMon)
+* Spawns Crystal Rays Inside (Needs LethalThings)
+
+
 
 ### Mixed
 
 * Swaps places with another player
+* Sends Everyone to a random player
+* Makes Everyone a bit drunk (TZP)
+* Delayed Roll
+* Spawns A few Lasso men inside
 
 ### Bad
 
@@ -143,6 +156,12 @@ Has negative outcomes.
 * Turns off all lights permanently
 * Makes you periodcally shake a lot
 * Makes the ship lever moving
+* Halves the battery percentage of all items in your inventory
+* Makes everything in your inventory a bit heavier
+* Spawns a bunch of Teleporter traps inside (Needs LethalThings)
+* Spawns Teleporter traps and makes all Teleporter traps move around (Needs LethalThings)
+* Makes your head spin 
+* Spawns a bunch of hoarding bugs outside
 
 ### Awful
 
@@ -160,6 +179,11 @@ Has negative outcomes.
 * Teleports you to the ship, but leaves a zombie in your place
 * Spawns a lot of mines outside
 * Breaks a neck of a random player
+* Spawns a bunch of teleporter traps outside(Needs Lethal Things installed)
+* Spawns a bunch of invisible teleporter traps(Needs Lethal Things installed)
+* Spawns a giant Inside
+* Spawns a bunch of Shrimp Inside (Needs LCOffice)
+* Spawns a few Spike traps outside
 
 ## More to come!
 

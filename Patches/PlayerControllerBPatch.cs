@@ -72,7 +72,7 @@ namespace MysteryDice.Patches
             if (NeckSpin.IsNeckSpinning == 0) return;
 
             Transform cam = GameNetworkManager.Instance.localPlayerController.gameplayCamera.transform;
-            cam.eulerAngles += new Vector3(0,0,NeckSpin.neckChoiceSpeed);
+            cam.eulerAngles += new Vector3(0,0,NeckSpin.neckChoiceSpeed*Time.deltaTime);
         }
 
 

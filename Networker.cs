@@ -98,6 +98,27 @@ namespace MysteryDice
         }
 
 
+        #region Delay
+        [ServerRpc]
+        public void DelayedReactionServerRPC(ulong userID)
+        {
+            StartCoroutine(delayed(userID));
+        }
+
+        IEnumerator delayed(ulong userID)
+        {
+            UnityEngine.Random.Range(15, 45);
+            yield return new WaitForSeconds(UnityEngine.Random.Range(15, 45));
+            DelayedReactionClientRPC(userID);
+        }
+
+        [ClientRpc]
+        public void DelayedReactionClientRPC(ulong userID)
+        {
+            Delay.DelayedReaction(userID);
+        }
+        #endregion
+
         #region Detonate
         private static Vector2 TimerRange = new Vector2(3f, 6f);
         private static ulong PlayerIDToExplode;
@@ -200,9 +221,20 @@ namespace MysteryDice
         public void ReviveAllPlayersClientRpc()
         {
             if (StartOfRound.Instance == null) return;
+            PlayerControllerB player = GameNetworkManager.Instance.localPlayerController;
+            StartOfRound.Instance.ReviveDeadPlayers(); 
+            if (player == GameNetworkManager.Instance.localPlayerController)
+            {
+                HUDManager.Instance.gasHelmetAnimator.SetBool("gasEmitting", false);
+                player.hasBegunSpectating = false;
+                HUDManager.Instance.RemoveSpectateUI();
+                HUDManager.Instance.gameOverAnimator.SetTrigger("revive");
+                player.hinderedMultiplier = 1f;
+                player.isMovementHindered = 0;
+                player.sourcesCausingSinking = 0;
+                HUDManager.Instance.HideHUD(false);
+            }
 
-            StartOfRound.Instance.ReviveDeadPlayers();
-            HUDManager.Instance.UpdateHealthUI(100);
         }
 
         #endregion
@@ -323,6 +355,41 @@ namespace MysteryDice
         public void TPOverflowServerRPC()
         {
             TPTraps.SpawnTeleporterTraps(TPTraps.MaxMinesToSpawn);
+        }
+        #endregion
+
+        #region TPOverflowOutside
+        [ServerRpc(RequireOwnership = false)]
+        public void TPOverflowOutsideServerRPC()
+        {
+            int MinesToSpawn = UnityEngine.Random.Range(TpOverflowOutside.MinMinesToSpawn, TpOverflowOutside.MaxMinesToSpawn + 1);
+            TpOverflowOutside.SpawnTPOutside(MinesToSpawn);
+        }
+        #endregion
+
+        #region SpikeOverflowOutside
+        [ServerRpc(RequireOwnership = false)]
+        public void SpikeOverflowOutsideServerRPC()
+        {
+            int MinesToSpawn = UnityEngine.Random.Range(SpikeOverflowOutside.MinMinesToSpawn, SpikeOverflowOutside.MaxMinesToSpawn + 1);
+            SpikeOverflowOutside.SpawnSpikeOutside(MinesToSpawn);
+        }
+        #endregion
+        
+        #region SilentTP
+
+        [ServerRpc(RequireOwnership = false)]
+        public void SilenceTPServerRPC()
+        {
+            StartCoroutine(SilentTP.SilenceAllTP(IsServer));
+            SilenceTPClientRPC();
+        }
+
+        [ClientRpc]
+        public void SilenceTPClientRPC()
+        {
+            if (!IsServer)
+                StartCoroutine(SilentTP.SilenceAllTP(IsServer));
         }
         #endregion
 
@@ -685,6 +752,20 @@ namespace MysteryDice
         }
         #endregion
 
+        #region Pokeballs
+
+        [ServerRpc(RequireOwnership = false)]
+        public void PokeballsServerRPC(ulong playerID)
+        {
+            CatchEmAll.SpawnPokeballs(playerID);
+        }
+        [ServerRpc(RequireOwnership = false)]
+        public void MasterballServerRPC(ulong playerID)
+        {
+            LegendaryCatch.SpawnMasterball(playerID);
+        }
+        #endregion
+
         #region Pathfinder
 
         [ServerRpc(RequireOwnership = false)]
@@ -898,7 +979,6 @@ namespace MysteryDice
             [ServerRpc(RequireOwnership = false)]
                 public void MovingTrapsInitServerRPC()
                 {
-                    // Assuming you have a similar method to spawn teleporter traps
                     TPTraps.SpawnTeleporterTraps(5);
                     AddMovingTrapsClientRPC();
                 }
@@ -1148,15 +1228,15 @@ namespace MysteryDice
         #region Item Duplicator
 
         [ServerRpc(RequireOwnership = false)]
-        public void ItemDuplicatorServerRPC()
+        public void ItemDuplicatorServerRPC(ulong playerID)
         {
-            ItemDuplicatorClientRPC();
+            ItemDuplicatorClientRPC(playerID);
         }
 
         [ClientRpc]
-        public void ItemDuplicatorClientRPC()
+        public void ItemDuplicatorClientRPC(ulong playerID)
         {
-            ItemDuplicator.duplicateItems(Misc.GetRandomAlivePlayer().playerClientId);
+            ItemDuplicator.duplicateItems(playerID);
         }
         #endregion
 

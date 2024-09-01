@@ -31,7 +31,7 @@ namespace MysteryDice.Effects
             {
                 Vector3 position = RoundManager.Instance.outsideAINodes[UnityEngine.Random.Range(0, RoundManager.Instance.outsideAINodes.Length)].transform.position;
                 Networker.Instance.DetonateAtPosClientRPC(position);
-                TimeToBoom = UnityEngine.Random.Range(0.3f, 2f);
+                TimeToBoom = UnityEngine.Random.Range(0.3f, 5f);
             }
         }
     }

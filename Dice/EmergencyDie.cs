@@ -54,7 +54,7 @@ namespace MysteryDice.Dice
             Networker.Instance.LogEffectsToOwnerServerRPC(PlayerUser.playerUsername, randomEffect.Name);
 
             if (randomEffect.ShowDefaultTooltip)
-                ShowDefaultTooltip(randomEffect.Outcome, diceRoll);
+                ShowDefaultTooltip(randomEffect, diceRoll);
             else
                 Misc.SafeTipMessage($"Rolled {diceRoll}", randomEffect.Tooltip);
         }

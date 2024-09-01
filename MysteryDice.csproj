@@ -109,6 +109,13 @@
     <Compile Include="Dice\ChronosDie.cs" />
     <Compile Include="Dice\GamblerDie.cs" />
     <Compile Include="Effects\BatteryDrain.cs" />
+    <Compile Include="Effects\Friends.cs" />
+    <Compile Include="Effects\Lasso.cs" />
+    <Compile Include="Effects\InsideShrimps.cs" />
+    <Compile Include="Effects\Maneaters.cs" />
+    <Compile Include="Effects\Delay.cs" />
+    <Compile Include="Effects\OutsideBugs.cs" />
+    <Compile Include="Effects\InsideGiant.cs" />
     <Compile Include="Effects\Drunk.cs" />
     <Compile Include="Effects\EveryoneToSomeone.cs" />
     <Compile Include="Effects\GoldenTouch.cs" />
@@ -140,9 +147,14 @@
     <Compile Include="Effects\IncreasedRate.cs" />
     <Compile Include="Effects\BrightFlashlight.cs" />
     <Compile Include="Effects\Arachnophobia.cs" />
+    <Compile Include="Effects\LegendaryCatch.cs" />
+    <Compile Include="Effects\CatchEmAll.cs" />
     <Compile Include="Effects\Shotgun.cs" />
     <Compile Include="Effects\ShipTurret.cs" />
     <Compile Include="Effects\DoorMalfunction.cs" />
+    <Compile Include="Effects\SilentTP.cs" />
+    <Compile Include="Effects\SpikeOverflowOutside.cs" />
+    <Compile Include="Effects\TpOverflowOutside.cs" />
     <Compile Include="Effects\TPTraps.cs" />
     <Compile Include="Effects\TurretHell.cs" />
     <Compile Include="Effects\SilentMine.cs" />
@@ -202,10 +214,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="CHANGELOG.md" />
+    <None Include="manifest.json" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
@@ -213,7 +228,17 @@
 
 NetcodePatcher.dll $(TargetDir) deps
 
-copy  "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll" "C:\Users\andre\Desktop\MysteryDice\Regular"</PostBuildEvent>
+copy  "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll" "C:\Users\andre\Desktop\MysteryDice\Regular"
+
+copy "C:\Users\andre\source\repos\Emergency-Dice-main\CHANGELOG.md" "C:\Users\andre\Desktop\MysteryDice\Regular"
+
+copy "C:\Users\andre\source\repos\Emergency-Dice-main\README.md" "C:\Users\andre\Desktop\MysteryDice\Regular"
+
+copy "C:\Users\andre\source\repos\Emergency-Dice-main\manifest.json" "C:\Users\andre\Desktop\MysteryDice\Regular"
+
+cd "C:\Users\andre\Desktop\MysteryDice\"
+
+call "C:\Users\andre\Desktop\MysteryDice\Make Zip.bat"</PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <!-- will be automatically skipped for Visual Studio -->

@@ -15,6 +15,7 @@ using HarmonyLib.Tools;
 using LethalLib.Extras;
 using static LethalLib.Modules.ContentLoader;
 using System.Collections;
+using static UnityEngine.EventSystems.EventTrigger;
 
 namespace MysteryDice.Patches
 {
@@ -22,8 +23,8 @@ namespace MysteryDice.Patches
     internal class GetEnemies
     {
 
-        public static SpawnableEnemyWithRarity Masked, HoardingBug, Centipede, Jester, Bracken, Stomper, Coilhead, Beehive, Sandworm, Spider;
-        public static SpawnableMapObject SpawnableLandmine, SpawnableTurret, SpawnableTP; 
+        public static SpawnableEnemyWithRarity Masked, HoardingBug, Centipede, Dog, Jester, Bracken, Stomper, Coilhead, Beehive, Sandworm, Spider, Giant, Maneater, Shrimp, CrystalRay, Lasso;
+        public static SpawnableMapObject SpawnableLandmine, SpawnableTurret, SpawnableTP, SpawnableSpikeTrap; 
         private static readonly string teleporterTrapId = "TeleporterTrap"; 
 
         [HarmonyPatch("Start")]
@@ -34,6 +35,7 @@ namespace MysteryDice.Patches
             {
                 foreach (SpawnableEnemyWithRarity enemy in level.Enemies)
                 {
+                    //MysteryDice.CustomLogger.LogInfo("Enemy Found: " + enemy.enemyType.enemyName);
                     if (enemy.enemyType.enemyName == "Masked")
                         Masked = enemy;
                     if (enemy.enemyType.enemyName == "Hoarding bug")
@@ -50,107 +52,53 @@ namespace MysteryDice.Patches
                         Coilhead = enemy;
                     if (enemy.enemyType.enemyName == "Bunker Spider")
                         Spider = enemy;
+                    if (enemy.enemyType.enemyName == "Maneater")
+                        Maneater = enemy;
+                    if (enemy.enemyType.enemyName == "Shrimp")
+                        Shrimp = enemy;
+                    if (enemy.enemyType.enemyName == "Crystal Ray")
+                        CrystalRay = enemy;
+                    if (enemy.enemyType.enemyName == "Lasso")
+                        Lasso = enemy;
                 }
 
                 foreach (SpawnableEnemyWithRarity enemy in level.DaytimeEnemies)
                 {
+                    //MysteryDice.CustomLogger.LogInfo("Enemy Found: " + enemy.enemyType.enemyName);
                     if (enemy.enemyType.enemyName == "Red Locust Bees")
                         Beehive = enemy;
                 }
 
                 foreach (SpawnableEnemyWithRarity enemy in level.OutsideEnemies)
                 {
-                    if (enemy.enemyType.enemyName == "Earth Leviathan")
-                    {
+                    //MysteryDice.CustomLogger.LogInfo("Enemy Found: " + enemy.enemyType.enemyName);
+                    if (enemy.enemyType.enemyName == "Earth Leviathan") 
                         Sandworm = enemy;
-                    }
+                    if (enemy.enemyType.enemyName == "ForestGiant")
+                        Giant = enemy;
+                    if (enemy.enemyType.enemyName == "MouthDog")
+                        Dog = enemy;
                 }
 
                 foreach (var item in level.spawnableMapObjects)
                 {
+                    //MysteryDice.CustomLogger.LogInfo("Spawnable Map Object Found: " + item.prefabToSpawn.name);
                     if (item.prefabToSpawn.name == "Landmine" && SpawnableLandmine == null)
                         SpawnableLandmine = item;
 
                     if (item.prefabToSpawn.name == "TurretContainer" && SpawnableTurret == null)
                         SpawnableTurret = item;
 
-                }
-                if (MysteryDice.lethalThingsPresent)
-                {
-                    var lethalThingsAssembly = MysteryDice.lethalThingsAssembly;
-                    if (lethalThingsAssembly != null)
-                    {
-                        MysteryDice.CustomLogger.LogWarning("Checking.");
-                        CheckForTeleporterTrap();
+                    if (item.prefabToSpawn.name == "SpikeRoofTrapHazard" && SpawnableSpikeTrap == null)
+                        SpawnableSpikeTrap = item;
 
-                    }
+                    if (item.prefabToSpawn.name == "TeleporterTrap" && SpawnableTP == null)
+                        SpawnableTP = item;
+
                 }
+                
             }
         }
-        private static void CheckForTeleporterTrap()
-        {
-            MysteryDice.CustomLogger.LogWarning("Checking for TeleporterTrap...");
-
-            var lethalThingsAssembly = MysteryDice.lethalThingsAssembly;
-            if (lethalThingsAssembly != null)
-            {
-                Type contentType = lethalThingsAssembly.GetType("LethalThings.Content");
-                if (contentType != null)
-                {
-                    FieldInfo contentLoaderField = contentType.GetField("ContentLoader", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-                    if (contentLoaderField != null)
-                    {
-                        var contentLoaderInstance = contentLoaderField.GetValue(null);
-                        if (contentLoaderInstance != null)
-                        {
-                            PropertyInfo loadedContentProperty = contentLoaderInstance.GetType().GetProperty("LoadedContent", BindingFlags.Instance | BindingFlags.Public);
-                            if (loadedContentProperty != null)
-                            {
-                                var loadedContent = loadedContentProperty.GetValue(contentLoaderInstance) as IDictionary;
-                                if (loadedContent != null && loadedContent.Contains(teleporterTrapId))
-                                {
-                                    var teleporterTrap = loadedContent[teleporterTrapId] as MapHazard;
-                                    if (teleporterTrap != null)
-                                    {
-                                        FieldInfo hazardField = typeof(MapHazard).GetField("hazard", BindingFlags.Instance | BindingFlags.NonPublic);
-                                        if (hazardField != null)
-                                        {
-                                            var spawnableMapObjectDef = hazardField.GetValue(teleporterTrap) as SpawnableMapObjectDef;
-                                            if (spawnableMapObjectDef != null)
-                                            {
-                                                SpawnableTP = spawnableMapObjectDef.spawnableMapObject;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-
-
-        private static void ListAllTypesInAssembly(string AssemblyName)
-        {
-            MysteryDice.CustomLogger.LogWarning($"Starting to list all types in {AssemblyName} assembly...");
-
-            var theAssembly = MysteryDice.GetAssembly(AssemblyName);
-            if (theAssembly != null)
-            {
-                MysteryDice.CustomLogger.LogWarning($"{AssemblyName} assembly found.");
-
-                foreach (Type type in theAssembly.GetTypes())
-                {
-                    MysteryDice.CustomLogger.LogWarning($"Type found: {type.FullName}");
-                }
-            }
-            else
-            {
-                MysteryDice.CustomLogger.LogWarning($"{AssemblyName} assembly not found.");
-            }
-        }
-        
+       
     }
 }

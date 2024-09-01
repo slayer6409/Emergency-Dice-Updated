@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using LethalLib;
 using LethalLib.Modules;
+using MysteryDice.Dice;
 using MysteryDice.Effects;
 using MysteryDice.Visual;
 using System;
@@ -68,6 +69,7 @@ namespace MysteryDice.Patches
         {
             ResetSettingsShared();
         }
+
 
         public static void ResetSettingsShared()
         {

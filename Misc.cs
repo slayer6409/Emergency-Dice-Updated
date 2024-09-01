@@ -30,6 +30,13 @@ namespace MysteryDice
                     RM.SpawnEnemyOnServer(randomVent.floorNode.position, randomVent.floorNode.eulerAngles.y, RM.currentLevel.Enemies.IndexOf(enemy));
                 }
             }
+            else
+            {
+                for(int i = 0; i < amount; i++)
+                {
+                    SpawnOutsideEnemy(enemy);
+                }
+            }
         }
 
         public static void SpawnOutsideEnemy(SpawnableEnemyWithRarity enemy)

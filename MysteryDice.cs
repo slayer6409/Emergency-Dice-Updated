@@ -23,7 +23,7 @@ namespace MysteryDice
     {
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.2.11";
+        private const string modVersion = "1.3.1";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -38,14 +38,24 @@ namespace MysteryDice
 
         public static string debugKey = "<Keyboard>/numpadMinus";
         public static Item DieEmergency, DieGambler, DieChronos, DieSacrificer, DieSaint, DieRusty, PathfinderSpawner;
-        public static bool lethalThingsPresent = false;
         public static ConfigFile BepInExConfig = null;
+        public static bool lethalThingsPresent = false;
         public static Assembly lethalThingsAssembly;
+        public static bool LethalMonPresent = false;
+        public static Assembly LethalMonAssembly;
+        public static bool LCOfficePresent = false;
+        public static Assembly LCOfficeAssembly;
+
         void Awake()
         {
             CustomLogger = BepInEx.Logging.Logger.CreateLogSource(modGUID);
             lethalThingsAssembly = GetAssembly("evaisa.lethalthings");
-            lethalThingsPresent = IsModPresent("evaisa.lethalthings", "Teleporter Traps rolls enabled.");
+            lethalThingsPresent = IsModPresent("evaisa.lethalthings", "LethalThings compatablilty enabled!");
+            //db(); //Enable this to get all assembly names
+            LethalMonAssembly = GetAssembly("LethalMon");
+            LethalMonPresent = IsModPresent("LethalMon", "LethalMon compatablilty enabled!");
+            LCOfficeAssembly = GetAssembly("Piggy.LCOffice");
+            LCOfficePresent = IsModPresent("Piggy.LCOffice", "LCOffice compatablilty enabled!");
             BepInExConfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "Emergency Dice.cfg"), true);
             ModConfig();
             DieBehaviour.Config();
@@ -102,6 +112,14 @@ namespace MysteryDice
             CustomLogger.LogInfo("The Emergency Dice mod was initialized!");
         }
 
+        private void db()
+        {
+            foreach (var e in Chainloader.PluginInfos)
+            {
+                CustomLogger.LogInfo($"{e}");
+            }
+        }
+
         private void DebugMenu()
         {
             CustomLogger.LogInfo((object)"Button Hit");
@@ -122,7 +140,7 @@ namespace MysteryDice
         private static bool IsModPresent(string name, string logMessage)
         {
             bool isPresent = Chainloader.PluginInfos.ContainsKey(name);
-            MysteryDice.CustomLogger.LogMessage(logMessage);
+            if(isPresent)MysteryDice.CustomLogger.LogMessage(logMessage);
             return isPresent;
         }
         private static void NetcodeWeaver()
@@ -212,20 +230,51 @@ namespace MysteryDice
 
             ConfigEntry<float> minNeckSpin = BepInExConfig.Bind<float>(
                 "NeckSpin",
-                "Neck Spin Min Speed",
-                0.01f,
+                "NeckSpin Min Speed",
+                0.1f,
                 "Changes the minimum speed that your neck can spin.");
 
             NeckSpin.minSpin = minNeckSpin.Value;
 
             ConfigEntry<float> maxNeckSpin = BepInExConfig.Bind<float>(
                 "NeckSpin",
-                "Neck Spin Max Speed",
-                0.3f,
+                "NeckSpin Max Speed",
+                0.8f,
                 "Changes the maximum speed that your neck can spin.");
 
             NeckSpin.maxSpin = maxNeckSpin.Value;
+            ConfigEntry<string> adminKeybind = BepInExConfig.Bind<string>(
+               "Admin",
+               "Admin Keybind",
+               "<Keyboard>/numpadMinus",
+               "Button which opens the admin menu"); ;
+
+            debugKey = adminKeybind.Value;
+
+            ConfigEntry<string> DisplayResults = BepInExConfig.Bind<string>(
+                "Misc",
+                "Display Results",
+                "Default",
+                "Display the dice results or not \nAll - Shows all, None - shows none,\n Default, Shows the default ones, Random - Randomly shows them"); ;
+
+            string DispRes = DisplayResults.Value;
+            switch (DispRes.ToUpper())
+            {
+                case "ALL":
+                    DieBehaviour.showE = DieBehaviour.ShowEffect.ALL;
+                    break;
+                case "NONE":
+                    DieBehaviour.showE = DieBehaviour.ShowEffect.NONE;
+                    break;
+                case "RANDOM":
+                    DieBehaviour.showE = DieBehaviour.ShowEffect.RANDOM;
+                    break;
+                default:
+                    DieBehaviour.showE = DieBehaviour.ShowEffect.DEFAULT;
+                    break;
+            }
         }
+    
 
         public static Dictionary<string, Levels.LevelTypes> RegLevels = new Dictionary<string, Levels.LevelTypes>
         {
