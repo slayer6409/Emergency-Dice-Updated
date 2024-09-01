@@ -215,6 +215,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="CHANGELOG.md" />
+    <None Include="Emergency Dice.cfg" />
     <None Include="manifest.json" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
