@@ -240,9 +240,48 @@ namespace MysteryDice
                 "NeckSpin",
                 "NeckSpin Max Speed",
                 0.8f,
-                "Changes the maximum speed that your neck can spin.");
+                "Changes the maximum speed that your neck can spin. ");
 
-            NeckSpin.maxSpin = maxNeckSpin.Value;
+            NeckSpin.maxSpin = maxNeckSpin.Value; 
+            
+            ConfigEntry<int> neckRotations = BepInExConfig.Bind<int>(
+                "NeckSpin",
+                "NeckSpin Number of Rotations",
+                -1,
+                "Changes how many times your neck can rotate before it stops, -1 for infinite");
+            
+            ConfigEntry<float> rotationSpeedModifier = BepInExConfig.Bind<float>(
+                "NeckSpin",
+                "NeckSpin SpeedModifier",
+                3f,
+                "Changes the min and max speed if the Number of rotations isn't infinite");
+
+            NeckSpin.numberOfRotations = neckRotations.Value;
+            
+            ConfigEntry<bool> useNeckBreakTimer = BepInExConfig.Bind<bool>(
+                "NeckBreak",
+                "Use Timer",
+                true,
+                "Use a timer for neck break instead of until the end of the round");
+
+            NeckBreak.useTimer = useNeckBreakTimer.Value;
+
+            ConfigEntry<int> minNeckBreakTimer = BepInExConfig.Bind<int>(
+                "NeckBreak",
+                "Min Break Time",
+                30,
+                "Sets the broken Neck Minimum Time");
+
+            NeckBreak.setTimeMin = minNeckBreakTimer.Value;
+
+            ConfigEntry<int> maxNeckBreakTimer = BepInExConfig.Bind<int>(
+                "NeckBreak",
+                "Max Break Time",
+                60,
+                "Sets the broken Neck Maximum Time");
+
+            NeckBreak.setTimeMax = maxNeckBreakTimer.Value;
+
             ConfigEntry<string> adminKeybind = BepInExConfig.Bind<string>(
                "Admin",
                "Admin Keybind",

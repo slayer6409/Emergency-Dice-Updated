@@ -17,6 +17,13 @@ namespace MysteryDice.Effects
         public static float maxSpin = 0.3f;
         public static float neckChoiceSpeed = 0;
 
+        public static int numberOfRotations = -1;
+        public static int rotationNumber = 0;
+        public static float rotationSpeedModifier = 3;
+        public static bool wasClimbing = false;
+        public static float savedValue = 0f;
+        public static int counter = 0;
+
         public void Use()
         {
             Networker.Instance.NeckSpinRandomPlayerServerRpc(GameNetworkManager.Instance.localPlayerController.playerClientId);
@@ -24,7 +31,10 @@ namespace MysteryDice.Effects
 
         public static void SpinNeck()
         {
-            neckChoiceSpeed = Random.Range(minSpin, maxSpin);
+            rotationNumber = 0;
+            counter = 0;
+            if(numberOfRotations==-1)rotationSpeedModifier = 0;
+            neckChoiceSpeed = Random.Range(minSpin+rotationSpeedModifier, maxSpin+rotationSpeedModifier);
             IsNeckSpinning = 1;
         }
         public static void FixNeck()

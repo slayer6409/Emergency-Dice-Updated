@@ -3,6 +3,7 @@ using MysteryDice.Effects;
 using GameNetcodeStuff;
 using UnityEngine;
 using UnityEngine.Windows;
+using System.Collections;
 
 namespace MysteryDice.Patches
 {
@@ -51,8 +52,10 @@ namespace MysteryDice.Patches
         public static void BreakNeckUpdate(PlayerControllerB __instance)
         {
             if (NeckBreak.IsNeckBroken == 0) return;
-
+            
             Transform cam = GameNetworkManager.Instance.localPlayerController.gameplayCamera.transform;
+
+
             switch (NeckBreak.IsNeckBroken) 
             {
                 case 0: return;
@@ -63,18 +66,47 @@ namespace MysteryDice.Patches
                 default: NeckBreak.IsNeckBroken = 0; break;
 
             }
+            if (NeckBreak.useTimer && !NeckBreak.isTimerRunning) Networker.Instance.StartCoroutine(NeckBreak.WaitTime());
         }
-        
         [HarmonyPostfix]
         [HarmonyPatch("Update")]
         public static void NeckSpinUpdate(PlayerControllerB __instance)
         {
             if (NeckSpin.IsNeckSpinning == 0) return;
-
             Transform cam = GameNetworkManager.Instance.localPlayerController.gameplayCamera.transform;
-            cam.eulerAngles += new Vector3(0,0,NeckSpin.neckChoiceSpeed*Time.deltaTime);
+            if (__instance.isClimbingLadder)
+            {
+                NeckSpin.counter = 0;
+                NeckSpin.savedValue = cam.eulerAngles.z;
+                NeckSpin.wasClimbing = true;
+                return;
+            }
+            else if (NeckSpin.wasClimbing)
+            {
+                if (NeckSpin.counter >= 50)
+                {
+                    NeckSpin.wasClimbing = false;
+                }
+                NeckSpin.counter++;
+                cam.eulerAngles = new Vector3(cam.eulerAngles.x, cam.eulerAngles.y, NeckSpin.savedValue);
+                return;
+            }
+            cam.eulerAngles += new Vector3(0, 0, NeckSpin.neckChoiceSpeed * Time.deltaTime);
+
+
+            if (NeckSpin.numberOfRotations != -1)
+            {
+                if (NeckSpin.numberOfRotations == NeckSpin.rotationNumber) 
+                {
+                    NeckSpin.FixNeck();
+                    NeckSpin.IsNeckSpinning = 0;
+                }
+                if (cam.eulerAngles.z >= 359)
+                {
+                    NeckSpin.rotationNumber++;
+                    cam.eulerAngles = new Vector3(cam.eulerAngles.x,cam.eulerAngles.y,0);
+                }
+            }
         }
-
-
     }
 }

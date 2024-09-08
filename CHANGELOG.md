@@ -1,4 +1,8 @@
 
+-   **1.3.2**
+	- Fixed Heavy and Light burden to not bug your weight/movement
+	- Added config options to make NeckSpin and NeckBreak less Awful
+
 -   **1.3.1**
 	- Fixed NeckSpin to actually work not based on framerate (I forgot to multiply by Time.DeltaTime xD)
 
