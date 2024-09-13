@@ -269,8 +269,6 @@ namespace MysteryDice.Dice
 
         public static void Config()
         {
-            ConfigFile configFile = new ConfigFile(Path.Combine(Paths.ConfigPath, "Emergency Dice.cfg"), true);
-
             AllEffects.Add(new NeckBreak());
             AllEffects.Add(new SelectEffect());
             AllEffects.Add(new Fly());

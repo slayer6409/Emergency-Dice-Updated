@@ -189,7 +189,7 @@ Has negative outcomes.
 
 ### Config
 Be sure to check out the plugin's config file.
-It is called Emergency Dice.cfg and it should
+It is called EmergencyDice.cfg and it should
 be generated when you run the game with the mod for the first time.
 
 You can modify which effects you want or not, or change some other settings.

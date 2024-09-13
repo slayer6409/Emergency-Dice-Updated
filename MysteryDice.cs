@@ -23,7 +23,7 @@ namespace MysteryDice
     {
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.3.1";
+        private const string modVersion = "1.3.3";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -56,10 +56,10 @@ namespace MysteryDice
             LethalMonPresent = IsModPresent("LethalMon", "LethalMon compatablilty enabled!");
             LCOfficeAssembly = GetAssembly("Piggy.LCOffice");
             LCOfficePresent = IsModPresent("Piggy.LCOffice", "LCOffice compatablilty enabled!");
-            BepInExConfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "Emergency Dice.cfg"), true);
+            BepInExConfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "EmergencyDice.cfg"),true);
             ModConfig();
-            DieBehaviour.Config();
-
+            DieBehaviour.Config(); 
+            BepInExConfig.Save();
             NetcodeWeaver();
             
             LoadedAssets = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "mysterydice"));
@@ -108,7 +108,7 @@ namespace MysteryDice
                 DebugMenu();
             };
             debugMenuAction.Enable();
-            harmony.PatchAll();
+
             CustomLogger.LogInfo("The Emergency Dice mod was initialized!");
         }
 
