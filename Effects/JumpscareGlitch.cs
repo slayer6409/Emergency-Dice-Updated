@@ -15,8 +15,8 @@ namespace MysteryDice.Effects
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "Prepare for a jumpscare";
 
+        //public static bool PussyMode = true;
 
-        public static bool PussyMode = true;
         public void Use()
         {
             Networker.Instance.StartCoroutine(Networker.Instance.DelayJumpscare());

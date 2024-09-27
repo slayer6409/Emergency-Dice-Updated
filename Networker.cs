@@ -1,9 +1,11 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using GameNetcodeStuff;
 using LethalLib.Modules;
 using MysteryDice.Dice;
 using MysteryDice.Effects;
 using MysteryDice.Patches;
+using MysteryDice.Visual;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -47,6 +49,7 @@ namespace MysteryDice
                 yield return new WaitForSeconds(0.5f);
             }
             RequestEffectConfigServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            RequestConfigSyncServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId);
         }
 
         public override void OnNetworkDespawn()
@@ -74,17 +77,17 @@ namespace MysteryDice
         [ServerRpc(RequireOwnership = false)]
         public void LogEffectsToOwnerServerRPC(string playerName, string effectName)
         {
-            if (DieBehaviour.LogEffectsToConsole)
+            if (MysteryDice.debugDice.Value)
                 MysteryDice.CustomLogger.LogInfo($"[Debug] Player: {playerName} rolled {effectName}");
         }
 
+        #region Config stuff
         [ServerRpc(RequireOwnership = false)]
         public void RequestEffectConfigServerRPC(ulong playerID)
         {
             foreach (var effect in DieBehaviour.AllowedEffects)
                 SendConfigClientRPC(playerID, effect.Name);
         }
-
         [ClientRpc]
         public void SendConfigClientRPC(ulong playerID, string effectName)
         {
@@ -96,8 +99,69 @@ namespace MysteryDice
                 );
             }
         }
+        [ServerRpc(RequireOwnership = false)]
+        public void RequestConfigSyncServerRPC(ulong playerID)
+        {
+            List<ConfigEntryBase> configEntries = MysteryDice.GetListConfigs();
+            foreach (var configEntry in configEntries)
+            {
+                // Convert the config entry to basic types that can be sent over the network
+                string key = configEntry.Definition.Key;
+                string section = configEntry.Definition.Section;
+                int type = (int)Type.GetTypeCode(configEntry.SettingType);
 
+                // Handle different types of config values (int, bool, string, etc.)
+                if (configEntry.BoxedValue is int intValue)
+                {
+                    SendConfigsClientRPC(playerID, key, section, type, intValue);
+                }
+                else if (configEntry.BoxedValue is bool boolValue)
+                {
+                    SendConfigsClientRPC(playerID, key, section, type, bval: boolValue);
+                }
+                else if (configEntry.BoxedValue is string stringValue)
+                {
+                    SendConfigsClientRPC(playerID, key, section, type, sval: stringValue);
+                }
+                else if (configEntry.BoxedValue is Enum enumValue)
+                {
+                    SendConfigsClientRPC(playerID, key, section, type, enumVal: enumValue.ToString());
+                }
+            }
+        }
+        [ClientRpc]
+        public void SendConfigsClientRPC(ulong playerID, string key, string section, int type, int ival = 0, bool bval = false, string sval = "", string enumVal = "")
+        {
+            if (IsServer || GameNetworkManager.Instance.localPlayerController.playerClientId != playerID) return;
 
+            List<ConfigEntryBase> configEntries = MysteryDice.GetListConfigs();
+            foreach (var configEntry in configEntries)
+            {
+                if (configEntry.Definition.Key == key && configEntry.Definition.Section == section)
+                {
+                    switch ((TypeCode)type)
+                    {
+                        case TypeCode.Int32:
+                            configEntry.BoxedValue = ival;
+                            break;
+                        case TypeCode.Boolean:
+                            configEntry.BoxedValue = bval;
+                            break;
+                        case TypeCode.String:
+                            configEntry.BoxedValue = sval;
+                            break;
+                        case TypeCode.Object:
+                            if (configEntry.SettingType.IsEnum)
+                            {
+                                configEntry.BoxedValue = Enum.Parse(configEntry.SettingType, enumVal);
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+        #endregion
+        
         #region Delay
         [ServerRpc]
         public void DelayedReactionServerRPC(ulong userID)
@@ -282,6 +346,42 @@ namespace MysteryDice
         {
             EveryoneToSomeone.TeleportPlayerToPlayer(clientID, to);
         }
+        #endregion 
+
+        #region EmergencyMeeting
+
+        [ServerRpc(RequireOwnership = false)]
+        public void EmergencyMeetingServerRPC()
+        {
+            EmergencyMeetingClientRPC();
+            InteractTrigger doorButton = GameObject.Find(StartOfRound.Instance.hangarDoorsClosed ? "StartButton" : "StopButton").GetComponentInChildren<InteractTrigger>();
+            doorButton.onInteract.Invoke(GameNetworkManager.Instance.localPlayerController);
+            EmergencyMeeting.allEnemiesToShip();
+            EmergencyAllClientRPC();
+        }
+
+        [ClientRpc]
+        public void EmergencyMeetingClientRPC()
+        {
+            EmergencyMeeting.TeleportEveryoneToShip();
+            
+        }
+        [ServerRpc(RequireOwnership = false)]
+        public void TeleportPlayerToShipServerRPC(ulong plyr)
+        {
+            TeleportPlayerToShipClientRPC(plyr);
+        }
+
+        [ClientRpc]
+        public void TeleportPlayerToShipClientRPC(ulong plyr)
+        {
+            EmergencyMeeting.TeleportPlayerToShip(plyr);
+        }
+        [ClientRpc]
+        public void EmergencyAllClientRPC()
+        {
+            MysteryDice.JumpscareScript.EmergencyMeeting();
+        }
         #endregion
 
         #region FireExitBlock
@@ -296,6 +396,21 @@ namespace MysteryDice
         public void BlockFireExitsClientRPC()
         {
             FireExitPatch.AreFireExitsBlocked = true;
+        }
+        #endregion 
+
+        #region TerminalLockout
+
+        [ServerRpc(RequireOwnership = false)]
+        public void TerminalLockoutServerRPC()
+        {
+            TerminalLockoutClientRPC();
+        }
+
+        [ClientRpc]
+        public void TerminalLockoutClientRPC()
+        {
+            TerminalPatch.hideShowTerminal(true, GameNetworkManager.Instance.localPlayerController.playerClientId);
         }
         #endregion
 
@@ -858,6 +973,23 @@ namespace MysteryDice
 
         #endregion
 
+        #region Meteors
+
+        [ServerRpc(RequireOwnership = false)]
+        public void SpawnMeteorsServerRPC()
+        {
+            if (Meteors.isRunning) return;
+            TimeOfDay.Instance.MeteorWeather.SetStartMeteorShower();
+            SpawnMeteorsClientRPC();
+        }
+        [ClientRpc()]
+        public void SpawnMeteorsClientRPC()
+        {
+           Meteors.isRunning = true;
+        }
+
+        #endregion
+
         #region Bright Flashlight
 
         [ServerRpc(RequireOwnership = false)]
@@ -1270,6 +1402,21 @@ namespace MysteryDice
         }
         #endregion
 
+        #region Become Small
+
+        [ServerRpc(RequireOwnership = false)]
+        public void BecomeSmallServerRPC(ulong userID)
+        {
+            BecomeSmallClientRPC(userID);
+        }
+
+        [ClientRpc]
+        public void BecomeSmallClientRPC(ulong userID)
+        {
+            SizeDifference.BecomeSmall(userID);
+        }
+        #endregion
+
         #region Drunk
 
         [ServerRpc(RequireOwnership = false)]
@@ -1292,7 +1439,9 @@ namespace MysteryDice
             Reroll.DiceScrap(userID);
         }
 
+
         #endregion
+
 
         #region GiveAllDice
         [ServerRpc(RequireOwnership = false)]

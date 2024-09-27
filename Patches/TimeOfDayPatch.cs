@@ -37,5 +37,7 @@ namespace MysteryDice.Patches
             AdditionalBuyingRate = 0f;       
         }
 
+
+
     }
 }

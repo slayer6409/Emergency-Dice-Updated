@@ -10,16 +10,23 @@ namespace MysteryDice.Patches
     [HarmonyPatch(typeof(HUDManager))]
     internal class ChatPatch
     {
-        public static bool AllowChatDebug = false;
         const string BaseCommand = "~edice ";
         [HarmonyPatch("SubmitChat_performed")]
         [HarmonyPrefix]
         private static void ChatTesting(HUDManager __instance)
         {
-
-            if (!AllowChatDebug) return;
-
             string txt = __instance.chatTextField.text.ToLower();
+
+            if(txt == "/visor"||txt == "\\visor")
+            {
+                SizeDifference.ToggleVisor();
+                Misc.SafeTipMessage("Visor Toggled", "Run the command again to toggle it back");
+            }
+
+
+            if (!MysteryDice.allowChatCommands.Value) return;
+
+            
 
             if (txt == BaseCommand + "enemies")
             {

@@ -1,3 +1,36 @@
+-	**1.4.4**
+	- Possible Fix for Shotgun not spawning (in a kind of weird way)
+
+-	**1.4.3**
+	- Made the SFX of Emergency Meeting not so loud
+	- Fixed the sprite for Emergency Meeting
+
+-	**1.4.2**
+	- Added Emergency Meeting SFX and Sprite
+	
+-	**1.4.1**
+	- Changed how the visor is toggled to account for other mods
+	
+-	**1.4.0**
+	- Changed how the config variables were handled
+	- Added a compatability for LethalConfig
+	- Possible Fix for shotgun not appearing for everyone
+	- Possible better config syncing (It worked fine in lan mode on 2 pcs, so hopefully there isn't any trouble)
+
+-	**1.3.7**
+	- Added new events: Invisible Enemies, Emergency Meeting, Terminal Lockout
+	- Possible fix for purge not killing enemies
+	- Added a config option for Become Small that allows different ways to revert 
+	 
+-	**1.3.6**
+	- Fixed size not reverting on leave
+	 
+-	**1.3.5**
+	- Added new events: Meteors and Become Small
+	
+-	**1.3.4**
+	- Added a new event Barbers
+	- Fixed an line of code that accidentally got deleted (woops)
 
 -   **1.3.3**
 	- Fixed a blank config issue with lethal performance 

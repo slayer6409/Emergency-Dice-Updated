@@ -18,6 +18,8 @@ namespace MysteryDice.Patches
     [HarmonyPatch(typeof(StartOfRound))]
     internal class StartOfRoundPatch
     {
+        
+
         [HarmonyPostfix]
         [HarmonyPatch("Start")]
         public static void InstantiateNetworker(StartOfRound __instance)
@@ -76,6 +78,7 @@ namespace MysteryDice.Patches
             FireExitPatch.AreFireExitsBlocked = false;
             Networker.CoilheadIgnoreStares = false;
             RebeliousCoilHeads.IsEnabled = false;
+            TerminalPatch.hideShowTerminal(false,01);
             Arachnophobia.IsEnabled = false;
             ModifyPitch.ResetPitch();
             Armageddon.IsEnabled = false;
@@ -101,7 +104,9 @@ namespace MysteryDice.Patches
             NeckBreak.FixNeck();
 
             NeckSpin.FixNeck();
-
+            TimeOfDay.Instance.overrideMeteorChance = -1;
+            TimeOfDay.Instance.meteorShowerAtTime = -1;
+            if(SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.after || SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.bothAgainAfter) SizeDifference.fixSize();
             Networker.Instance.StopAllCoroutines();
 
             if (Networker.Instance.IsServer)

@@ -35,12 +35,20 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\v55\BepInEx\core\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx, Version=5.4.22.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\v55\BepInEx\core\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="LCTarrotCard">
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\Asonyx-LCTarotCard\LCTarrotCard.dll</HintPath>
+    </Reference>
+    <Reference Include="LethalConfig, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\AinaVT-LethalConfig\LethalConfig\LethalConfig.dll</HintPath>
     </Reference>
     <Reference Include="LethalLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -100,6 +108,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfigManager.cs" />
     <Compile Include="Consts.cs" />
     <Compile Include="Dice\RustyDie.cs" />
     <Compile Include="Dice\SaintDie.cs" />
@@ -108,8 +117,14 @@
     <Compile Include="Dice\EmergencyDie.cs" />
     <Compile Include="Dice\ChronosDie.cs" />
     <Compile Include="Dice\GamblerDie.cs" />
+    <Compile Include="Effects\TerminalLockout.cs" />
+    <Compile Include="Effects\EmergencyMeeting.cs" />
+    <Compile Include="Effects\InvisibleEnemy.cs" />
     <Compile Include="Effects\BatteryDrain.cs" />
+    <Compile Include="Effects\SizeDifference.cs" />
     <Compile Include="Effects\Friends.cs" />
+    <Compile Include="Effects\Barbers.cs" />
+    <Compile Include="Effects\Meteors.cs" />
     <Compile Include="Effects\Lasso.cs" />
     <Compile Include="Effects\InsideShrimps.cs" />
     <Compile Include="Effects\Maneaters.cs" />

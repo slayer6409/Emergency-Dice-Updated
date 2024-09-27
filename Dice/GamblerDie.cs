@@ -10,7 +10,6 @@ namespace MysteryDice.Dice
 {
     public class GamblerDie : DieBehaviour
     {
-        public static bool useOutside = false;
         public override void Start()
         {
             base.Start();
@@ -43,7 +42,7 @@ namespace MysteryDice.Dice
 
             int diceRoll = UnityEngine.Random.Range(1, 7);
 
-            if (isOutside && !useOutside) diceRoll = 1;
+            if (isOutside && !MysteryDice.useDiceOutside.Value) diceRoll = 1;
 
             IEffect randomEffect = GetRandomEffect(diceRoll, Effects);
 
@@ -53,7 +52,7 @@ namespace MysteryDice.Dice
             randomEffect.Use();
             Networker.Instance.LogEffectsToOwnerServerRPC(PlayerUser.playerUsername, randomEffect.Name);
 
-            if (isOutside && !useOutside)
+            if (isOutside && !MysteryDice.useDiceOutside.Value)
             {
                 Misc.SafeTipMessage($"Penalty", "Next time roll it inside :)");
                 return;

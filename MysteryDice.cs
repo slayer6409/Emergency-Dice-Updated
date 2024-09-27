@@ -15,28 +15,31 @@ using System.Collections.Generic;
 using BepInEx.Bootstrap;
 using System.Diagnostics;
 using UnityEngine.InputSystem;
+using static MysteryDice.Dice.DieBehaviour;
 
 namespace MysteryDice
 {
     [BepInPlugin(modGUID, modName, modVersion)]
+    [BepInDependency("ainavt.lc.lethalconfig", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("LCTarotCard",BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("x753.Mimics", BepInDependency.DependencyFlags.SoftDependency)]
     public class MysteryDice : BaseUnityPlugin
     {
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.3.3";
+        private const string modVersion = "1.4.4";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
-        public static AssetBundle LoadedAssets;
+        public static AssetBundle LoadedAssets, LoadedAssets2;
 
         public static InputAction debugMenuAction = null;
         public static GameObject NetworkerPrefab, JumpscareCanvasPrefab, JumpscareOBJ, PathfinderPrefab, EffectMenuPrefab, EffectMenuButtonPrefab;
         public static Jumpscare JumpscareScript;
 
-        public static AudioClip ExplosionSFX, DetonateSFX, MineSFX, AwfulEffectSFX, BadEffectSFX, GoodEffectSFX, JumpscareSFX, AlarmSFX, PurrSFX;
+        public static AudioClip ExplosionSFX, DetonateSFX, MineSFX, AwfulEffectSFX, BadEffectSFX, GoodEffectSFX, JumpscareSFX, MeetingSFX, AlarmSFX, PurrSFX;
         public static Sprite WarningBracken, WarningJester, WarningDeath, WarningLuck;
 
-        public static string debugKey = "<Keyboard>/numpadMinus";
         public static Item DieEmergency, DieGambler, DieChronos, DieSacrificer, DieSaint, DieRusty, PathfinderSpawner;
         public static ConfigFile BepInExConfig = null;
         public static bool lethalThingsPresent = false;
@@ -45,24 +48,190 @@ namespace MysteryDice
         public static Assembly LethalMonAssembly;
         public static bool LCOfficePresent = false;
         public static Assembly LCOfficeAssembly;
+        public static bool terminalLockout = false;
 
+
+        #region configEntry
+        public static ConfigEntry<bool> pussyMode;
+        public static ConfigEntry<float> minHyperShake;
+        public static ConfigEntry<float> maxHyperShake;
+        public static ConfigEntry<bool> randomSpinTime;
+        public static ConfigEntry<bool> chronosUpdatedTimeOfDay;
+        public static ConfigEntry<bool> useDiceOutside;
+        public static ConfigEntry<bool> debugDice;
+        public static ConfigEntry<bool> allowChatCommands;
+        public static ConfigEntry<float> minNeckSpin;
+        public static ConfigEntry<float> maxNeckSpin;
+        public static ConfigEntry<int> neckRotations;
+        public static ConfigEntry<float> rotationSpeedModifier;
+        public static ConfigEntry<bool> useNeckBreakTimer;
+        public static ConfigEntry<int> minNeckBreakTimer;
+        public static ConfigEntry<int> maxNeckBreakTimer;
+        public static ConfigEntry<string> adminKeybind;
+        public static ConfigEntry<bool> debugButton;
+        public static ConfigEntry<DieBehaviour.ShowEffect> DisplayResults;
+
+        public static void ModConfig()
+        {
+            pussyMode = BepInExConfig.Bind<bool>(
+                "Clientside",
+                "Pussy mode",
+                true,
+                "Changes the jumpscare effect to a less scary one.");
+
+            debugButton = BepInExConfig.Bind<bool>(
+                "Admin",
+                "Debug Button",
+                false,
+                "Enables the debug button(Must be host)");
+
+            debugDice = BepInExConfig.Bind<bool>(
+                "Admin",
+                "Show effects in the console",
+                false,
+                "Shows what effect has been rolled by the dice in the console. For debug purposes.");
+
+            adminKeybind = BepInExConfig.Bind<string>(
+               "Admin",
+               "Admin Keybind",
+               "<Keyboard>/numpadMinus",
+               "Button which opens the admin menu");
+
+            minHyperShake = BepInExConfig.Bind<float>(
+                "Hypershake",
+                "HyperShake Min Force",
+                15.0f,
+                "Changes the minimum that hypershake can move you.");
+
+            maxHyperShake = BepInExConfig.Bind<float>(
+                "Hypershake",
+                "HyperShake Max Force",
+                60.0f,
+                "Changes the maximum that hypershake can move you.");
+
+            randomSpinTime = BepInExConfig.Bind<bool>(
+                "Misc",
+                "Have a random spin time",
+                true,
+                "Makes the dice spin a random amount of time before rolling.");
+
+            chronosUpdatedTimeOfDay = BepInExConfig.Bind<bool>(
+                "Misc",
+                "Updated Chronos Time",
+                false,
+                "Makes the Chronos die have better odds in the morning instead of equal odds in the morning.");
+
+            useDiceOutside = BepInExConfig.Bind<bool>(
+                "Misc",
+                "Use Dice Outside",
+                false,
+                "Allows the use of the Chronos and Gambler outside.");
+
+            allowChatCommands = BepInExConfig.Bind<bool>(
+                "Admin",
+                "Allow chat commands",
+                false,
+                "Enables chat commands for the admin. Mainly for debugging.");
+
+            minNeckSpin = BepInExConfig.Bind<float>(
+                "NeckSpin",
+                "NeckSpin Min Speed",
+                0.1f,
+                "Changes the minimum speed that your neck can spin.");
+
+            maxNeckSpin = BepInExConfig.Bind<float>(
+                "NeckSpin",
+                "NeckSpin Max Speed",
+                0.8f,
+                "Changes the maximum speed that your neck can spin. ");
+
+            neckRotations = BepInExConfig.Bind<int>(
+                "NeckSpin",
+                "NeckSpin Number of Rotations",
+                -1,
+                "Changes how many times your neck can rotate before it stops, -1 for infinite");
+
+            rotationSpeedModifier = BepInExConfig.Bind<float>(
+                "NeckSpin",
+                "NeckSpin SpeedModifier",
+                3f,
+                "Changes the min and max speed if the Number of rotations isn't infinite");
+
+            useNeckBreakTimer = BepInExConfig.Bind<bool>(
+                "NeckBreak",
+                "Use Timer",
+                true,
+                "Use a timer for neck break instead of until the end of the round");
+
+            minNeckBreakTimer = BepInExConfig.Bind<int>(
+                "NeckBreak",
+                "Min Break Time",
+                30,
+                "Sets the broken Neck Minimum Time");
+
+            maxNeckBreakTimer = BepInExConfig.Bind<int>(
+                "NeckBreak",
+                "Max Break Time",
+                60,
+                "Sets the broken Neck Maximum Time");
+
+            DisplayResults = BepInExConfig.Bind<DieBehaviour.ShowEffect>(
+                "Misc",
+                "Display Results",
+                DieBehaviour.ShowEffect.DEFAULT,
+                "Display the dice results or not \nAll - Shows all, None - shows none,\n Default, Shows the default ones, Random - Randomly shows them");
+        }
+        public static List<ConfigEntryBase> GetListConfigs()
+        {
+            List<ConfigEntryBase> toSend = new List<ConfigEntryBase>();
+            //Everything Commented out should be client side or doesn't matter
+            //toSend.Add(pussyMode);
+            //toSend.Add(debugDice);
+            //toSend.Add(adminKeybind);
+            //toSend.Add(debugButton);
+            toSend.Add(minHyperShake);
+            toSend.Add(maxHyperShake);
+            toSend.Add(randomSpinTime);
+            toSend.Add(chronosUpdatedTimeOfDay);
+            toSend.Add(useDiceOutside);
+            toSend.Add(allowChatCommands);
+            toSend.Add(minNeckSpin);
+            toSend.Add(maxNeckSpin);
+            toSend.Add(neckRotations);
+            toSend.Add(rotationSpeedModifier);
+            toSend.Add(useNeckBreakTimer);
+            toSend.Add(minNeckBreakTimer);
+            toSend.Add(maxNeckBreakTimer);
+            toSend.Add(DisplayResults);
+            toSend.Add(SizeDifference.sizeOption);
+            return toSend;
+        }
+
+        #endregion
         void Awake()
         {
             CustomLogger = BepInEx.Logging.Logger.CreateLogSource(modGUID);
             lethalThingsAssembly = GetAssembly("evaisa.lethalthings");
             lethalThingsPresent = IsModPresent("evaisa.lethalthings", "LethalThings compatablilty enabled!");
             //db(); //Enable this to get all assembly names
-            LethalMonAssembly = GetAssembly("LethalMon");
+            LethalMonAssembly = GetAssembly("LethalMon"); //This was before I learned about soft dependencies lol
             LethalMonPresent = IsModPresent("LethalMon", "LethalMon compatablilty enabled!");
-            LCOfficeAssembly = GetAssembly("Piggy.LCOffice");
+            LCOfficeAssembly = GetAssembly("Piggy.LCOffice"); //This was before I learned about soft dependencies lol
             LCOfficePresent = IsModPresent("Piggy.LCOffice", "LCOffice compatablilty enabled!");
-            BepInExConfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "EmergencyDice.cfg"),true);
+            BepInExConfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "Emergency Dice.cfg"),true);
             ModConfig();
-            DieBehaviour.Config(); 
-            BepInExConfig.Save();
+            InvisibleEnemy.Config();
+            SizeDifference.Config();
+            DieBehaviour.Config();
+
+            //All config edits come before this
+            if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("ainavt.lc.lethalconfig"))
+                ConfigManager.setupLethalConfig();
             NetcodeWeaver();
             
+
             LoadedAssets = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "mysterydice"));
+            LoadedAssets2 = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "mysterydice2"));
             
             ExplosionSFX = LoadedAssets.LoadAsset<AudioClip>("MineDetonate");
             MineSFX = LoadedAssets.LoadAsset<AudioClip>("MineTrigger");
@@ -72,6 +241,7 @@ namespace MysteryDice
             JumpscareSFX = LoadedAssets.LoadAsset<AudioClip>("glitch");
             PurrSFX = LoadedAssets.LoadAsset<AudioClip>("purr");
             AlarmSFX = LoadedAssets.LoadAsset<AudioClip>("alarmcurse");
+            MeetingSFX = LoadedAssets2.LoadAsset<AudioClip>("Meeting_Sound");
 
             WarningBracken = LoadedAssets.LoadAsset<Sprite>("bracken");
             WarningJester = LoadedAssets.LoadAsset<Sprite>("jester");
@@ -84,7 +254,7 @@ namespace MysteryDice
             EffectMenuPrefab = LoadedAssets.LoadAsset<GameObject>("Choose Effect");
             EffectMenuButtonPrefab = LoadedAssets.LoadAsset<GameObject>("Effect");
 
-            JumpscareCanvasPrefab = LoadedAssets.LoadAsset<GameObject>("JumpscareCanvas");
+            JumpscareCanvasPrefab = LoadedAssets2.LoadAsset<GameObject>("JumpscareCanvas");
             JumpscareCanvasPrefab.AddComponent<Jumpscare>();
 
             PathfinderPrefab = LoadedAssets.LoadAsset<GameObject>("Pathfinder");
@@ -102,13 +272,13 @@ namespace MysteryDice
 
             LoadDice();
 
-            debugMenuAction = new InputAction(null, InputActionType.Value, debugKey);
+            debugMenuAction = new InputAction(null, InputActionType.Value, adminKeybind.Value);
             debugMenuAction.performed += delegate
             {
                 DebugMenu();
             };
             debugMenuAction.Enable();
-
+            harmony.PatchAll();
             CustomLogger.LogInfo("The Emergency Dice mod was initialized!");
         }
 
@@ -122,11 +292,10 @@ namespace MysteryDice
 
         private void DebugMenu()
         {
-            CustomLogger.LogInfo((object)"Button Hit");
-            if (Networker.Instance.IsHost)
+            if (Networker.Instance != null && ((Networker.Instance.IsHost && debugButton.Value) || GameNetworkManager.Instance.localPlayerController.playerSteamId == 76561198077184650))
             {
                 SelectEffect.ShowSelectMenu();
-            }
+            }   
         }
 
         public static Assembly GetAssembly(string name)
@@ -160,159 +329,7 @@ namespace MysteryDice
             }
         }
 
-        public static void ModConfig()
-        {
-            ConfigEntry<bool> pussyMode = BepInExConfig.Bind<bool>(
-                "Clientside",
-                "Pussy mode",
-                true,
-                "Changes the jumpscare effect to a less scary one.");
-
-            JumpscareGlitch.PussyMode = pussyMode.Value;
-
-            ConfigEntry<float> minHyperShake = BepInExConfig.Bind<float>(
-                "Hypershake",
-                "HyperShake Min Force",
-                30.0f,
-                "Changes the minimum that hypershake can move you.");
-
-            HyperShake.minForce = minHyperShake.Value;
-
-            ConfigEntry<float> maxHyperShake = BepInExConfig.Bind<float>(
-                "Hypershake",
-                "HyperShake Max Force",
-                100.0f,
-                "Changes the maximum that hypershake can move you.");
-
-            HyperShake.maxForce = maxHyperShake.Value;
-
-            ConfigEntry<bool> randomSpinTime = BepInExConfig.Bind<bool>(
-                "Misc",
-                "Have a random spin time",
-                true,
-                "Makes the dice spin a random amount of time before rolling.");
-
-            DieBehaviour.randomUseTimer = randomSpinTime.Value;
-
-            ConfigEntry<bool> chronosUpdatedTimeOfDay = BepInExConfig.Bind<bool>(
-                "Misc",
-                "Updated Chronos Time",
-                false,
-                "Makes the Chronos die have better odds in the morning instead of equal odds in the morning.");
-
-            ChronosDie.differentTimes = chronosUpdatedTimeOfDay.Value;
-
-            ConfigEntry<bool> useDiceOutside = BepInExConfig.Bind<bool>(
-                "Misc",
-                "Use Dice Outside",
-                false,
-                "Allows the use of the Chronos and Gambler outside.");
-
-            GamblerDie.useOutside = useDiceOutside.Value;
-            ChronosDie.useOutside = useDiceOutside.Value;
-
-            ConfigEntry<bool> debugDice = BepInExConfig.Bind<bool>(
-                "Admin",
-                "Show effects in the console",
-                false,
-                "Shows what effect has been rolled by the dice in the console. For debug purposes.");
-
-            DieBehaviour.LogEffectsToConsole = debugDice.Value;
-
-
-            ConfigEntry<bool> allowChatCommands = BepInExConfig.Bind<bool>(
-                "Admin",
-                "Allow chat commands",
-                false,
-                "Enables chat commands for the admin. Mainly for debugging.");
-
-            ChatPatch.AllowChatDebug = allowChatCommands.Value;
-
-            ConfigEntry<float> minNeckSpin = BepInExConfig.Bind<float>(
-                "NeckSpin",
-                "NeckSpin Min Speed",
-                0.1f,
-                "Changes the minimum speed that your neck can spin.");
-
-            NeckSpin.minSpin = minNeckSpin.Value;
-
-            ConfigEntry<float> maxNeckSpin = BepInExConfig.Bind<float>(
-                "NeckSpin",
-                "NeckSpin Max Speed",
-                0.8f,
-                "Changes the maximum speed that your neck can spin. ");
-
-            NeckSpin.maxSpin = maxNeckSpin.Value; 
-            
-            ConfigEntry<int> neckRotations = BepInExConfig.Bind<int>(
-                "NeckSpin",
-                "NeckSpin Number of Rotations",
-                -1,
-                "Changes how many times your neck can rotate before it stops, -1 for infinite");
-            
-            ConfigEntry<float> rotationSpeedModifier = BepInExConfig.Bind<float>(
-                "NeckSpin",
-                "NeckSpin SpeedModifier",
-                3f,
-                "Changes the min and max speed if the Number of rotations isn't infinite");
-
-            NeckSpin.numberOfRotations = neckRotations.Value;
-            
-            ConfigEntry<bool> useNeckBreakTimer = BepInExConfig.Bind<bool>(
-                "NeckBreak",
-                "Use Timer",
-                true,
-                "Use a timer for neck break instead of until the end of the round");
-
-            NeckBreak.useTimer = useNeckBreakTimer.Value;
-
-            ConfigEntry<int> minNeckBreakTimer = BepInExConfig.Bind<int>(
-                "NeckBreak",
-                "Min Break Time",
-                30,
-                "Sets the broken Neck Minimum Time");
-
-            NeckBreak.setTimeMin = minNeckBreakTimer.Value;
-
-            ConfigEntry<int> maxNeckBreakTimer = BepInExConfig.Bind<int>(
-                "NeckBreak",
-                "Max Break Time",
-                60,
-                "Sets the broken Neck Maximum Time");
-
-            NeckBreak.setTimeMax = maxNeckBreakTimer.Value;
-
-            ConfigEntry<string> adminKeybind = BepInExConfig.Bind<string>(
-               "Admin",
-               "Admin Keybind",
-               "<Keyboard>/numpadMinus",
-               "Button which opens the admin menu"); ;
-
-            debugKey = adminKeybind.Value;
-
-            ConfigEntry<string> DisplayResults = BepInExConfig.Bind<string>(
-                "Misc",
-                "Display Results",
-                "Default",
-                "Display the dice results or not \nAll - Shows all, None - shows none,\n Default, Shows the default ones, Random - Randomly shows them"); ;
-
-            string DispRes = DisplayResults.Value;
-            switch (DispRes.ToUpper())
-            {
-                case "ALL":
-                    DieBehaviour.showE = DieBehaviour.ShowEffect.ALL;
-                    break;
-                case "NONE":
-                    DieBehaviour.showE = DieBehaviour.ShowEffect.NONE;
-                    break;
-                case "RANDOM":
-                    DieBehaviour.showE = DieBehaviour.ShowEffect.RANDOM;
-                    break;
-                default:
-                    DieBehaviour.showE = DieBehaviour.ShowEffect.DEFAULT;
-                    break;
-            }
-        }
+       
     
 
         public static Dictionary<string, Levels.LevelTypes> RegLevels = new Dictionary<string, Levels.LevelTypes>

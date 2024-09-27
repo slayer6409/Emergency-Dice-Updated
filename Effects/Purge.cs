@@ -21,6 +21,15 @@ namespace MysteryDice.Effects
             {
                 Landmine.SpawnExplosion(enemy.transform.position, true, 2, 5, 50, 0,null,false);
                 enemy.KillEnemy(true);
+                try
+                {
+                    //if it doesn't kill the enemy effectively
+                    enemy.enabled = false;
+                }
+                catch (Exception ex) 
+                {
+                    //error
+                }
             }
         }
     }

@@ -15,9 +15,6 @@ namespace MysteryDice.Effects
         
         public static int IsNeckBroken = 0;
 
-        public static bool useTimer = true;
-        public static int setTimeMin = 30;
-        public static int setTimeMax = 60;
         public static float breakTime = 30f;
         public static bool isTimerRunning = false;
         
@@ -28,7 +25,7 @@ namespace MysteryDice.Effects
 
         public static void BreakNeck()
         {
-            breakTime = UnityEngine.Random.Range(setTimeMin, setTimeMax);
+            breakTime = UnityEngine.Random.Range(MysteryDice.minNeckBreakTimer.Value, MysteryDice.maxNeckBreakTimer.Value);
             IsNeckBroken += 1;
         }
         public static void FixNeck()

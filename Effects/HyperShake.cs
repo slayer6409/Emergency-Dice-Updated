@@ -11,10 +11,6 @@ namespace MysteryDice.Effects
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "Makes you shake a lot!";
 
-        public static float minForce = 30f;
-
-        public static float maxForce = 100f;
-
         public class ShakeData
         {
             public PlayerControllerB Player;
@@ -40,7 +36,10 @@ namespace MysteryDice.Effects
             {
                 ShakingData.ShakingTimer = Random.Range(2f, 4f);
                 ShakingData.NextShakeTimer = Random.Range(5f, 40f);
-                ShakingData.Force = Random.Range(minForce, maxForce);
+                var min = MysteryDice.minHyperShake.Value;
+                var max = MysteryDice.maxHyperShake.Value;
+                if(max<min)max = min;
+                ShakingData.Force = Random.Range(min, max);
             }
             if(ShakingData.ShakingTimer > 0f)
             {

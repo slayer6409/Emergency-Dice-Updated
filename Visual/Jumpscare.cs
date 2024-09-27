@@ -11,22 +11,29 @@ namespace MysteryDice.Visual
         bool IsScaring = false;
         GameObject ScaryFace = null;
         GameObject NotScaryFace = null;
+        GameObject Emergency = null;
 
         Vector2 BaseSize = new Vector2(4f, 4f);
         void Start()
         {
-            if (JumpscareGlitch.PussyMode)
+            if (MysteryDice.pussyMode.Value)
                 BaseSize = new Vector2(1f, 1f);
 
             NotScaryFace = transform.GetChild(0).gameObject;
             ScaryFace = transform.GetChild(1).gameObject;
+            Emergency = transform.GetChild(2).gameObject;
             ScaryFace.SetActive(false);
             NotScaryFace.SetActive(false);
+            Emergency.SetActive(false);
         }
 
         public void Scare()
         {
             StartCoroutine(ScareTime());
+        }
+        public void EmergencyMeeting()
+        {
+            StartCoroutine(ScareTime(true));
         }
         void Update()
         {
@@ -35,17 +42,17 @@ namespace MysteryDice.Visual
             ScaryFace.transform.localScale = new Vector3(BaseSize.x + UnityEngine.Random.Range(0f, 0.2f), BaseSize.y + UnityEngine.Random.Range(0f, 0.2f),1f);
         }
 
-        IEnumerator ScareTime()
+        IEnumerator ScareTime(bool meeting = false)
         {
-            AudioClip sfx = JumpscareGlitch.PussyMode ? MysteryDice.PurrSFX : MysteryDice.JumpscareSFX;
-
+            AudioClip sfx = MysteryDice.pussyMode.Value ? MysteryDice.PurrSFX : MysteryDice.JumpscareSFX;
+            if(meeting) sfx = MysteryDice.MeetingSFX;
             AudioSource.PlayClipAtPoint(sfx, GameNetworkManager.Instance.localPlayerController.transform.position, 10f);
             AudioSource.PlayClipAtPoint(sfx, GameNetworkManager.Instance.localPlayerController.transform.position, 10f);
             AudioSource.PlayClipAtPoint(sfx, GameNetworkManager.Instance.localPlayerController.transform.position, 10f);
             AudioSource.PlayClipAtPoint(sfx, GameNetworkManager.Instance.localPlayerController.transform.position, 10f);
 
-            GameObject faceToShow = JumpscareGlitch.PussyMode ? NotScaryFace : ScaryFace;
-
+            GameObject faceToShow = MysteryDice.pussyMode.Value ? NotScaryFace : ScaryFace;
+            if (meeting) faceToShow = Emergency;
             IsScaring = true;
             faceToShow.SetActive(true);
             yield return new WaitForSeconds(1.3f);

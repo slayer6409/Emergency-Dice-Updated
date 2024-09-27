@@ -66,7 +66,7 @@ namespace MysteryDice.Patches
                 default: NeckBreak.IsNeckBroken = 0; break;
 
             }
-            if (NeckBreak.useTimer && !NeckBreak.isTimerRunning) Networker.Instance.StartCoroutine(NeckBreak.WaitTime());
+            if (MysteryDice.useNeckBreakTimer.Value && !NeckBreak.isTimerRunning) Networker.Instance.StartCoroutine(NeckBreak.WaitTime());
         }
         [HarmonyPostfix]
         [HarmonyPatch("Update")]
@@ -94,9 +94,9 @@ namespace MysteryDice.Patches
             cam.eulerAngles += new Vector3(0, 0, NeckSpin.neckChoiceSpeed * Time.deltaTime);
 
 
-            if (NeckSpin.numberOfRotations != -1)
+            if (MysteryDice.neckRotations.Value != -1)
             {
-                if (NeckSpin.numberOfRotations == NeckSpin.rotationNumber) 
+                if (MysteryDice.neckRotations.Value == NeckSpin.rotationNumber) 
                 {
                     NeckSpin.FixNeck();
                     NeckSpin.IsNeckSpinning = 0;

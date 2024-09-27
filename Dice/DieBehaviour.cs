@@ -24,14 +24,10 @@ namespace MysteryDice.Dice
             GreatEffects = new List<IEffect>(), 
             MixedEffects = new List<IEffect>(), 
             BadEffects = new List<IEffect>();
-
-        public static bool LogEffectsToConsole = false;
-        public static ShowEffect showE = ShowEffect.DEFAULT;
+        public static List<ConfigEntry<bool>> effectConfigs = new List<ConfigEntry<bool>>();
         protected GameObject DiceModel;
         public List<IEffect> Effects = new List<IEffect>();
         public Dictionary<int, EffectType[]> RollToEffect = new Dictionary<int, EffectType[]>();
-
-        public static bool randomUseTimer = false;
 
         public PlayerControllerB PlayerUser = null;
         public enum ShowEffect
@@ -103,7 +99,7 @@ namespace MysteryDice.Dice
 
         public virtual IEnumerator UseTimer(ulong userID, int spinTime)
         {
-            if (!randomUseTimer) spinTime = 3;
+            if (!MysteryDice.randomSpinTime.Value) spinTime = 3;
             DiceModel.GetComponent<Spinner>().StartHyperSpinning(spinTime);
 
             yield return new WaitForSeconds(spinTime);
@@ -236,18 +232,18 @@ namespace MysteryDice.Dice
                     break;
             }
 
-            if (showE == ShowEffect.ALL)
+            if (MysteryDice.DisplayResults.Value == ShowEffect.ALL)
             {
                 normalMessage = true;
                 message = effect.Tooltip;
                 return;
             }
-            else if (showE == ShowEffect.NONE)
+            else if (MysteryDice.DisplayResults.Value == ShowEffect.NONE)
             {
                 message = effectTypeMessage;
 
             }
-            else if (showE == ShowEffect.RANDOM)
+            else if (MysteryDice.DisplayResults.Value == ShowEffect.RANDOM)
             {
                 int randint = UnityEngine.Random.Range(0, 101);
                 if (randint <= 45)
@@ -255,7 +251,7 @@ namespace MysteryDice.Dice
                 else
                     message = effectTypeMessage;
             }
-            else if (showE == ShowEffect.DEFAULT)
+            else if (MysteryDice.DisplayResults.Value == ShowEffect.DEFAULT)
             {
                 if (effect.ShowDefaultTooltip)
                     message = effectTypeMessage;
@@ -330,6 +326,12 @@ namespace MysteryDice.Dice
             AllEffects.Add(new Delay());
             AllEffects.Add(new SpikeOverflowOutside());
             AllEffects.Add(new Lasso());
+            AllEffects.Add(new Meteors());
+            AllEffects.Add(new Barbers());
+            AllEffects.Add(new SizeDifference());
+            AllEffects.Add(new InvisibleEnemy());
+            AllEffects.Add(new EmergencyMeeting());
+            AllEffects.Add(new TerminalLockout());
             if (MysteryDice.lethalThingsPresent)
             {
                 AllEffects.Add(new TPTraps());
@@ -368,7 +370,7 @@ namespace MysteryDice.Dice
                     effect.Tooltip);
                 }
                
-
+                effectConfigs.Add(cfg);
                 if (cfg.Value)
                     AllowedEffects.Add(effect);
             }

@@ -13,13 +13,9 @@ namespace MysteryDice.Effects
         
         public static int IsNeckSpinning = 0;
 
-        public static float minSpin = 0.01f;
-        public static float maxSpin = 0.3f;
         public static float neckChoiceSpeed = 0;
 
-        public static int numberOfRotations = -1;
         public static int rotationNumber = 0;
-        public static float rotationSpeedModifier = 3;
         public static bool wasClimbing = false;
         public static float savedValue = 0f;
         public static int counter = 0;
@@ -33,8 +29,13 @@ namespace MysteryDice.Effects
         {
             rotationNumber = 0;
             counter = 0;
-            if(numberOfRotations==-1)rotationSpeedModifier = 0;
-            neckChoiceSpeed = Random.Range(minSpin+rotationSpeedModifier, maxSpin+rotationSpeedModifier);
+            var rotSpeed = MysteryDice.rotationSpeedModifier.Value;
+            if (MysteryDice.neckRotations.Value == -1) rotSpeed = 0;
+
+            var min = MysteryDice.minNeckSpin.Value;
+            var max = MysteryDice.maxNeckSpin.Value;
+            if (max < min) max = min;
+            neckChoiceSpeed = Random.Range(min + rotSpeed, max + rotSpeed);
             IsNeckSpinning = 1;
         }
         public static void FixNeck()

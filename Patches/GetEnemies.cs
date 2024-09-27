@@ -23,7 +23,7 @@ namespace MysteryDice.Patches
     internal class GetEnemies
     {
 
-        public static SpawnableEnemyWithRarity Masked, HoardingBug, Centipede, Dog, Jester, Bracken, Stomper, Coilhead, Beehive, Sandworm, Spider, Giant, Maneater, Shrimp, CrystalRay, Lasso;
+        public static SpawnableEnemyWithRarity Masked, HoardingBug, Centipede, Dog, Jester, Bracken, Stomper, Coilhead, Beehive, Sandworm, Spider, Giant, Maneater, Shrimp, CrystalRay, Lasso, Barber;
         public static SpawnableMapObject SpawnableLandmine, SpawnableTurret, SpawnableTP, SpawnableSpikeTrap; 
         private static readonly string teleporterTrapId = "TeleporterTrap"; 
 
@@ -60,6 +60,8 @@ namespace MysteryDice.Patches
                         CrystalRay = enemy;
                     if (enemy.enemyType.enemyName == "Lasso")
                         Lasso = enemy;
+                    if (enemy.enemyType.enemyName == "Clay Surgeon")
+                        Barber = enemy;
                 }
 
                 foreach (SpawnableEnemyWithRarity enemy in level.DaytimeEnemies)

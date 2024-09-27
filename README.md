@@ -162,6 +162,8 @@ Has negative outcomes.
 * Spawns Teleporter traps and makes all Teleporter traps move around (Needs LethalThings)
 * Makes your head spin 
 * Spawns a bunch of hoarding bugs outside
+* Teleports everyone and every enemy back to the ship
+* Removes the Terminal
 
 ### Awful
 
@@ -184,6 +186,8 @@ Has negative outcomes.
 * Spawns a giant Inside
 * Spawns a bunch of Shrimp Inside (Needs LCOffice)
 * Spawns a few Spike traps outside
+* Spawns a few Barbers
+* Spawns an invisible random enemy
 
 ## More to come!
 

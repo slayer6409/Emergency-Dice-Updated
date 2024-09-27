@@ -1,6 +1,9 @@
-﻿using HarmonyLib;
+﻿using BepInEx.Logging;
+using GameNetcodeStuff;
+using HarmonyLib;
 using LethalLib.Modules;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -19,6 +22,20 @@ namespace MysteryDice.Patches
             AddDiceSynonym("edie");
         }
 
+        public static void hideShowTerminal(bool hide, ulong player)
+        {
+            GameObject terminalObject = GameObject.Find("Environment/HangarShip/Terminal");
+            Terminal terminal = GameObject.Find("Environment/HangarShip/Terminal/TerminalTrigger/TerminalScript").GetComponent<Terminal>();
+            if (terminal.terminalInUse)
+            {
+                if (terminal.OwnerClientId == player)
+                {
+                    terminal.BeginUsingTerminal();
+                }
+            }
+            if (terminalObject != null) terminalObject.SetActive(!hide);
+
+        }
         public static void AddDiceSynonym(string synonym)
         {
             TerminalKeyword diceWord = GetKeyword("emergency-die");
@@ -52,17 +69,16 @@ namespace MysteryDice.Patches
         }
         public static TerminalKeyword GetKeyword(string keyword)
         {
-            foreach(var item in Items.terminal.terminalNodes.allKeywords)
+            foreach (var item in Items.terminal.terminalNodes.allKeywords)
             {
                 if (item.word == keyword)
                     return item;
             }
             return null;
         }
-
         public static CompatibleNoun GetDiceCompatibleNoun()
         {
-            foreach(var tKey in Items.terminal.terminalNodes.allKeywords)
+            foreach (var tKey in Items.terminal.terminalNodes.allKeywords)
             {
                 if (tKey.word == "buy")
                 {
@@ -75,5 +91,6 @@ namespace MysteryDice.Patches
             }
             return null;
         }
+
     }
 }

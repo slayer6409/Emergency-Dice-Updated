@@ -6,8 +6,6 @@ namespace MysteryDice.Dice
 {
     public class ChronosDie : DieBehaviour
     {
-        public static bool useOutside = false;
-        public static bool differentTimes = false;
         public override void Start()
         {
             base.Start();
@@ -34,7 +32,7 @@ namespace MysteryDice.Dice
             
             float offset = TimeOfDay.Instance.normalizedTimeOfDay;
             WeightedList<int> weightedRolls = new WeightedList<int>();
-            if (!differentTimes) 
+            if (!MysteryDice.chronosUpdatedTimeOfDay.Value) 
             {
                 weightedRolls.Add(1, 1 + (int)(offset * 10f));
                 weightedRolls.Add(2, 1 + (int)(offset * 8f));
@@ -43,7 +41,7 @@ namespace MysteryDice.Dice
                 weightedRolls.Add(5, 1 + (int)(offset * 1f));
                 weightedRolls.Add(6, 1);
             }
-            else if (differentTimes)
+            else if (MysteryDice.chronosUpdatedTimeOfDay.Value)
             {
                 if(offset < .5f)
                 {
@@ -70,7 +68,7 @@ namespace MysteryDice.Dice
 
             int diceRoll = weightedRolls.Next();
 
-            if (isOutside && !useOutside) diceRoll = 1;
+            if (isOutside && !MysteryDice.useDiceOutside.Value) diceRoll = 1;
 
             IEffect randomEffect = GetRandomEffect(diceRoll, Effects);
 
@@ -81,7 +79,7 @@ namespace MysteryDice.Dice
 
             Networker.Instance.LogEffectsToOwnerServerRPC(PlayerUser.playerUsername, randomEffect.Name);
 
-            if (isOutside && !useOutside)
+            if (isOutside && !MysteryDice.useDiceOutside.Value)
             {
                 Misc.SafeTipMessage($"Penalty", "Next time roll it inside :)");
                 return;

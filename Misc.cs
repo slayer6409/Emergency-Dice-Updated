@@ -17,17 +17,34 @@ namespace MysteryDice
 {
     internal class Misc
     {
-        public static void SpawnEnemy(SpawnableEnemyWithRarity enemy, int amount, bool isInside)
+        public static void SpawnEnemy(SpawnableEnemyWithRarity enemy, int amount, bool isInside, bool isInvisible = false)
         {
             if (!Networker.Instance.IsHost) return;
             RoundManager RM = RoundManager.Instance;
-
+            
             if (isInside)
             {
-                for (int i = 0; i < amount; i++)
+                if (isInvisible)
                 {
-                    EnemyVent randomVent = RM.allEnemyVents[UnityEngine.Random.Range(0, RM.allEnemyVents.Length)];
-                    RM.SpawnEnemyOnServer(randomVent.floorNode.position, randomVent.floorNode.eulerAngles.y, RM.currentLevel.Enemies.IndexOf(enemy));
+                    for (int i = 0; i < amount; i++)
+                    {
+                        EnemyVent randomVent = RM.allEnemyVents[UnityEngine.Random.Range(0, RM.allEnemyVents.Length)];
+                        GameObject enemyObject = UnityEngine.Object.Instantiate(
+                            enemy.enemyType.enemyPrefab,
+                            randomVent.floorNode.position,
+                            Quaternion.Euler(new Vector3(0f, 0f, 0f)));
+                        SetObjectInvisible(enemyObject);
+                        enemyObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
+                        RM.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < amount; i++)
+                    {
+                        EnemyVent randomVent = RM.allEnemyVents[UnityEngine.Random.Range(0, RM.allEnemyVents.Length)];
+                        RM.SpawnEnemyOnServer(randomVent.floorNode.position, randomVent.floorNode.eulerAngles.y, RM.currentLevel.Enemies.IndexOf(enemy));
+                    }
                 }
             }
             else
@@ -38,7 +55,33 @@ namespace MysteryDice
                 }
             }
         }
+        public static void SetObjectInvisible(GameObject obj)
+        {
+            var renderers = obj.GetComponentsInChildren<Renderer>();
+            foreach (var renderer in renderers)
+            {
+                foreach (var material in renderer.materials)
+                {
+                    // Ensure the material is using the Standard Shader
+                    material.shader = Shader.Find("Standard");
 
+                    // Set the rendering mode to Transparent
+                    material.SetFloat("_Mode", 3);  // 3 corresponds to Transparent mode in Unity's Standard Shader
+                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                    material.SetInt("_ZWrite", 0);
+                    material.DisableKeyword("_ALPHATEST_ON");
+                    material.EnableKeyword("_ALPHABLEND_ON");
+                    material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                    material.renderQueue = 3000;
+
+                    // Set the alpha to 0 to make it invisible
+                    Color color = material.color;
+                    color.a = 0.1f;
+                    material.color = color;
+                }
+            }
+        }
         public static void SpawnOutsideEnemy(SpawnableEnemyWithRarity enemy)
         {
             RoundManager RM = RoundManager.Instance;
@@ -65,17 +108,17 @@ namespace MysteryDice
         /// <param name="enemy"></param>
         /// <param name="amount"></param>
         /// <param name="isInside"></param>
-        public static void SpawnEnemyForced(SpawnableEnemyWithRarity enemy, int amount, bool isInside)
+        public static void SpawnEnemyForced(SpawnableEnemyWithRarity enemy, int amount, bool isInside, bool isInvisible=false)
         {
             if (!RoundManager.Instance.currentLevel.Enemies.Contains(enemy))
             {
                 RoundManager.Instance.currentLevel.Enemies.Add(enemy);
-                SpawnEnemy(enemy, amount, isInside);
+                SpawnEnemy(enemy, amount, isInside, isInvisible);
                 RoundManager.Instance.currentLevel.Enemies.Remove(enemy);
             }
             else
             {
-                SpawnEnemy(enemy, amount, isInside);
+                SpawnEnemy(enemy, amount, isInside, isInvisible);
             }
         }
 
@@ -94,6 +137,7 @@ namespace MysteryDice
             }
             return null;
         }
+
 
         public static NetworkObjectReference SpawnEnemyOnServer(Vector3 spawnPosition, float yRot, SpawnableEnemyWithRarity enemy)
         {
