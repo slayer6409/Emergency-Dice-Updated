@@ -54,6 +54,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\v55\BepInEx\plugins\Evaisa-LethalLib\LethalLib\LethalLib.dll</HintPath>
     </Reference>
+    <Reference Include="Surfaced">
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\SurfacedTeam-Surfaced\Surfaced.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -117,6 +120,14 @@
     <Compile Include="Dice\EmergencyDie.cs" />
     <Compile Include="Dice\ChronosDie.cs" />
     <Compile Include="Dice\GamblerDie.cs" />
+    <Compile Include="Effects\BellCrabs.cs" />
+    <Compile Include="Effects\TarotCards.cs" />
+    <Compile Include="Effects\SeaminesOutside.cs" />
+    <Compile Include="Effects\BerthaOutside.cs" />
+    <Compile Include="Effects\UrchinIndoors.cs" />
+    <Compile Include="Effects\Bruce.cs" />
+    <Compile Include="Effects\Nemo.cs" />
+    <Compile Include="Effects\MantisShrimps.cs" />
     <Compile Include="Effects\TerminalLockout.cs" />
     <Compile Include="Effects\EmergencyMeeting.cs" />
     <Compile Include="Effects\InvisibleEnemy.cs" />
@@ -200,8 +211,10 @@
     <Compile Include="MysteryDice.cs" />
     <Compile Include="Networker.cs" />
     <Compile Include="Patches\ChatPatch.cs" />
+    <Compile Include="Patches\EntranceTeleportPatch.cs" />
     <Compile Include="Patches\FlashlightPatch.cs" />
     <Compile Include="Patches\SpiderPatch.cs" />
+    <Compile Include="Patches\GrabbableObjectPatch.cs" />
     <Compile Include="Patches\TimeOfDayPatch.cs" />
     <Compile Include="Patches\TerminalPatch.cs" />
     <Compile Include="Patches\TurretPatch.cs" />

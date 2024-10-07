@@ -63,7 +63,11 @@ namespace MysteryDice.Dice
 
         public override void PocketItem()
         {
-           
+
+            if (DiceModel.GetComponent<Renderer>() != null)
+            {
+                DiceModel.GetComponent<Renderer>().enabled = true;
+            }
             DiceModel.SetActive(false);
             base.PocketItem();
 
@@ -71,6 +75,10 @@ namespace MysteryDice.Dice
         public override void EquipItem()
         {
             DiceModel.SetActive(true);
+            if (DiceModel.GetComponent<Renderer>() != null)
+            {
+                DiceModel.GetComponent<Renderer>().enabled = true;
+            }
             base.EquipItem();
             PlayerUser = this.playerHeldBy;
         }
@@ -209,26 +217,32 @@ namespace MysteryDice.Dice
         }
         public static void ShowDefaultTooltip(IEffect effect, int diceRoll)
         {
-            string effectTypeMessage = string.Empty;
+            string effectTypeMessage = "wat?";
             EffectType effectType = effect.Outcome;
             bool normalMessage = false;
-            string message = string.Empty;
+            string message = "wat?";
+            string[] awfulMessages = { ":)", ">:)", "Have fun!"};
+            string[] badMessages = { "Welp", "This will be fun...", "Uh oh"};
+            string[] mixedMessages = { "Debatable", "I honestly don't know if this is good or bad", "ehhh", "at least it's not bad"};
+            string[] goodMessages = { "Enjoy.", "I like it", "Pretty good", "Yay!", "Woo!"};
+            string[] greatMessages = { ";)", "I love it!", "Lucky!", "YAY!!!", "Only the best!", "♥♥♥" };
+
             switch (effectType)
             {
                 case EffectType.Awful:
-                    effectTypeMessage = ":)";
+                    effectTypeMessage = awfulMessages[UnityEngine.Random.Range(0,awfulMessages.Length)];
                     break;
                 case EffectType.Bad:
-                    effectTypeMessage = "Uh oh";
+                    effectTypeMessage = badMessages[UnityEngine.Random.Range(0, badMessages.Length)]; ;
                     break;
                 case EffectType.Good:
-                    effectTypeMessage = "Enjoy.";
+                    effectTypeMessage = goodMessages[UnityEngine.Random.Range(0, goodMessages.Length)]; ;
                     break;
                 case EffectType.Great:
-                    effectTypeMessage = "Lucky.";
+                    effectTypeMessage = greatMessages[UnityEngine.Random.Range(0, greatMessages.Length)]; ;
                     break;
                 case EffectType.Mixed:
-                    effectTypeMessage = "Debatable";
+                    effectTypeMessage = mixedMessages[UnityEngine.Random.Range(0, mixedMessages.Length)]; ;
                     break;
             }
 
@@ -236,7 +250,6 @@ namespace MysteryDice.Dice
             {
                 normalMessage = true;
                 message = effect.Tooltip;
-                return;
             }
             else if (MysteryDice.DisplayResults.Value == ShowEffect.NONE)
             {
@@ -253,6 +266,14 @@ namespace MysteryDice.Dice
             }
             else if (MysteryDice.DisplayResults.Value == ShowEffect.DEFAULT)
             {
+                if (effect.ShowDefaultTooltip)
+                    message = effectTypeMessage;
+                else
+                    message = effect.Tooltip;
+            }
+            else
+            {
+                MysteryDice.CustomLogger.LogWarning("An error occured with DisplayResults The value is: " + MysteryDice.DisplayResults.Value);
                 if (effect.ShowDefaultTooltip)
                     message = effectTypeMessage;
                 else
@@ -331,7 +352,7 @@ namespace MysteryDice.Dice
             AllEffects.Add(new SizeDifference());
             AllEffects.Add(new InvisibleEnemy());
             AllEffects.Add(new EmergencyMeeting());
-            AllEffects.Add(new TerminalLockout());
+            //AllEffects.Add(new TerminalLockout());
             if (MysteryDice.lethalThingsPresent)
             {
                 AllEffects.Add(new TPTraps());
@@ -348,6 +369,20 @@ namespace MysteryDice.Dice
             if (MysteryDice.LCOfficePresent)
             {
                 AllEffects.Add(new InsideShrimps());
+            }
+            if (MysteryDice.SurfacedPresent)
+            {
+                AllEffects.Add(new MantisShrimps());
+                AllEffects.Add(new SeaminesOutside());
+                AllEffects.Add(new BerthaOutside());
+                AllEffects.Add(new Bruce());
+                AllEffects.Add(new Nemo());
+                AllEffects.Add(new BellCrabs());
+                AllEffects.Add(new UrchinIndoors());
+            }
+            if (MysteryDice.LCTarotCardPresent)
+            {
+                AllEffects.Add(new TarotCards());
             }
 
             List<IEffect> sortedList = AllEffects.OrderBy(o=>o.Name).ToList();

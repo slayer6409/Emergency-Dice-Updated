@@ -52,11 +52,8 @@ namespace MysteryDice.Dice
 
             randomEffect.Use();
             Networker.Instance.LogEffectsToOwnerServerRPC(PlayerUser.playerUsername, randomEffect.Name);
-
-            if (randomEffect.ShowDefaultTooltip)
-                ShowDefaultTooltip(randomEffect, diceRoll);
-            else
-                Misc.SafeTipMessage($"Rolled {diceRoll}", randomEffect.Tooltip);
+            
+            ShowDefaultTooltip(randomEffect, diceRoll);
         }
     }
 }

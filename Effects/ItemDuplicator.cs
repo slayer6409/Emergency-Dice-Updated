@@ -2,6 +2,7 @@
 using LethalLib.Modules;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,11 @@ namespace MysteryDice.Effects
 
         public static void duplicateItems(ulong userID)
         {
+            List<Item> scrapToSpawn = new List<Item>();
+            RoundManager RM = RoundManager.Instance;
+            List<NetworkObjectReference> netObjs = new List<NetworkObjectReference>();
+            List<int> scrapValues = new List<int>();
+            List<float> scrapWeights = new List<float>();
             PlayerControllerB player = null;
 
             foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
@@ -39,12 +45,22 @@ namespace MysteryDice.Effects
             foreach (var i in player.ItemSlots)
             {
                 if (i == null) continue;
-                GameObject obj = UnityEngine.Object.Instantiate(i.itemProperties.spawnPrefab, player.transform.position, Quaternion.identity,RoundManager.Instance.playersManager.propsContainer);
-                obj.GetComponent<GrabbableObject>().fallTime = 0f;
-                obj.GetComponent<GrabbableObject>().scrapValue = i.scrapValue;
-                obj.GetComponent<GrabbableObject>().itemProperties.weight  = i.itemProperties.weight;
-                obj.GetComponent<NetworkObject>().Spawn();
+
+                GameObject obj = UnityEngine.Object.Instantiate(i.itemProperties.spawnPrefab, player.transform.position, Quaternion.identity, RM.spawnedScrapContainer);
+                GrabbableObject component = obj.GetComponent<GrabbableObject>();
+                component.transform.rotation = Quaternion.Euler(component.itemProperties.restingRotation);
+                component.fallTime = 0f;
+                component.scrapValue = i.scrapValue;
+                component.itemProperties.weight = i.itemProperties.weight;
+                scrapValues.Add(component.scrapValue);
+                scrapWeights.Add(component.itemProperties.weight);
+
+                NetworkObject netObj = obj.GetComponent<NetworkObject>();
+                netObj.Spawn();
+                component.FallToGround(true);
+                netObjs.Add(netObj);
             }
+            RM.StartCoroutine(ScrapJackpot.DelayedSync(RM, netObjs.ToArray(), scrapValues.ToArray(), scrapWeights.ToArray()));
         }
     }
 }

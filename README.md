@@ -117,6 +117,8 @@ Has negative outcomes.
 * Gives you a random dice as a "Reroll"
 * Gives you a masterball (Needs LethalMon)
 * Gives you one of every dice
+* Gives you a set of Tarot Cards (LCTarot)
+* Spawns some Nemo (Surfaced)
 
 ### Good
 
@@ -164,6 +166,10 @@ Has negative outcomes.
 * Spawns a bunch of hoarding bugs outside
 * Teleports everyone and every enemy back to the ship
 * Removes the Terminal
+* Spawns a few Bruce (Surfaced)
+* Spawns some Indoor Urchins (Surfaced)
+* Spawns some BellCrabs (Surfaced)
+* Spawns some Seamines Outside (Surfaced)
 
 ### Awful
 
@@ -188,6 +194,8 @@ Has negative outcomes.
 * Spawns a few Spike traps outside
 * Spawns a few Barbers
 * Spawns an invisible random enemy
+* Spawns some Mantis Shrimps (Surfaced)
+* Spawns Big Bertha Outside (Surfaced)
 
 ## More to come!
 

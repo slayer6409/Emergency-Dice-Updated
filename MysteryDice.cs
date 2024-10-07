@@ -21,13 +21,15 @@ namespace MysteryDice
 {
     [BepInPlugin(modGUID, modName, modVersion)]
     [BepInDependency("ainavt.lc.lethalconfig", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency("LCTarotCard",BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency("x753.Mimics", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("Surfaced", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("LCTarotCard", BepInDependency.DependencyFlags.SoftDependency)]
     public class MysteryDice : BaseUnityPlugin
     {
+        public enum chatDebug { HostOnly, Everyone, None};
+
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.4.4";
+        private const string modVersion = "1.5.2";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -47,6 +49,8 @@ namespace MysteryDice
         public static bool LethalMonPresent = false;
         public static Assembly LethalMonAssembly;
         public static bool LCOfficePresent = false;
+        public static bool SurfacedPresent = false;
+        public static bool LCTarotCardPresent = false;
         public static Assembly LCOfficeAssembly;
         public static bool terminalLockout = false;
 
@@ -59,6 +63,7 @@ namespace MysteryDice
         public static ConfigEntry<bool> chronosUpdatedTimeOfDay;
         public static ConfigEntry<bool> useDiceOutside;
         public static ConfigEntry<bool> debugDice;
+        public static ConfigEntry<chatDebug> debugChat;
         public static ConfigEntry<bool> allowChatCommands;
         public static ConfigEntry<float> minNeckSpin;
         public static ConfigEntry<float> maxNeckSpin;
@@ -69,6 +74,7 @@ namespace MysteryDice
         public static ConfigEntry<int> maxNeckBreakTimer;
         public static ConfigEntry<string> adminKeybind;
         public static ConfigEntry<bool> debugButton;
+        public static ConfigEntry<bool> GrabDebug;
         public static ConfigEntry<DieBehaviour.ShowEffect> DisplayResults;
 
         public static void ModConfig()
@@ -85,11 +91,24 @@ namespace MysteryDice
                 false,
                 "Enables the debug button(Must be host)");
 
+            GrabDebug = BepInExConfig.Bind<bool>(
+                "Admin",
+                "Grab Debug",
+                false,
+                "This is so I can see what the name of prefabs are, probably not useful for most people");
+
+          
             debugDice = BepInExConfig.Bind<bool>(
                 "Admin",
                 "Show effects in the console",
                 false,
                 "Shows what effect has been rolled by the dice in the console. For debug purposes.");
+
+            debugChat = BepInExConfig.Bind<chatDebug>(
+                "Admin",
+                "Show effects in the chat",
+                chatDebug.None,
+                "Shows what effect has been rolled by the dice in the chat. For debug purposes.");
 
             adminKeybind = BepInExConfig.Bind<string>(
                "Admin",
@@ -189,6 +208,7 @@ namespace MysteryDice
             //toSend.Add(debugDice);
             //toSend.Add(adminKeybind);
             //toSend.Add(debugButton);
+            toSend.Add(debugChat);
             toSend.Add(minHyperShake);
             toSend.Add(maxHyperShake);
             toSend.Add(randomSpinTime);
@@ -218,6 +238,8 @@ namespace MysteryDice
             LethalMonPresent = IsModPresent("LethalMon", "LethalMon compatablilty enabled!");
             LCOfficeAssembly = GetAssembly("Piggy.LCOffice"); //This was before I learned about soft dependencies lol
             LCOfficePresent = IsModPresent("Piggy.LCOffice", "LCOffice compatablilty enabled!");
+            SurfacedPresent = IsModPresent("Surfaced", "Surfaced compatablilty enabled!");
+            LCTarotCardPresent = IsModPresent("LCTarotCard", "LCTarotCard compatablilty enabled!");
             BepInExConfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "Emergency Dice.cfg"),true);
             ModConfig();
             InvisibleEnemy.Config();

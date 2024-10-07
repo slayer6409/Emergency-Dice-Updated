@@ -231,23 +231,38 @@ namespace MysteryDice
                 return;
             }
 
-            
-            float actualWeight = 0;
+
             float totalWeight = 0;
+            float totalWeight2 = 0;
 
             foreach (var item in player.ItemSlots)
             {
                 if (item == null || item.itemProperties.weight == 0) continue;
-                actualWeight += item.itemProperties.weight;
-                float displayedWeight = Mathf.RoundToInt(Mathf.Clamp(item.itemProperties.weight - 1f, 0.0f, 100f) * 105f);
-                displayedWeight *= factor;
-                float carryWeight = (displayedWeight / 105f) + 1f;
-                carryWeight = Mathf.Clamp(carryWeight, 1f, 10f);
+
+                float clampedWeight = Mathf.Clamp(item.itemProperties.weight - 1f, 0.0f, 100f);
+                float scaledWeight = Mathf.RoundToInt(clampedWeight * 105f);
+
+                scaledWeight *= factor;
+
+                totalWeight2 += scaledWeight;
+
+                float carryWeight = Mathf.Clamp((scaledWeight / 105f) + 1f, 1f, 10f);
+
                 item.itemProperties.weight = carryWeight;
-                totalWeight += item.itemProperties.weight;
+
+                //MysteryDice.CustomLogger.LogWarning($"Item weight: {item.itemProperties.weight}, Scaled weight: {scaledWeight}, Carry weight: {carryWeight}");
+                
+                totalWeight += carryWeight;
             }
-            //there might be a better way but I am tired, it is late, and it works so...
-            if (actualWeight != 0) player.carryWeight = totalWeight;
+            //MysteryDice.CustomLogger.LogWarning($"Total Weight before setting: {totalWeight}");
+            //MysteryDice.CustomLogger.LogWarning($"Total Weight2 before setting: {totalWeight2}");
+            float e = Mathf.Clamp((totalWeight2 / 105f) + 1f, 1f, 10f);
+            if (e != 0)
+            {
+                player.carryWeight = e;
+                //MysteryDice.CustomLogger.LogWarning($"Player carry weight updated to: {player.carryWeight}");
+
+            }
         }
     }
 }

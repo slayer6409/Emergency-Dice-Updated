@@ -51,10 +51,12 @@ namespace MysteryDice
             var rotationSpeedModifierFloatField = new FloatInputFieldConfigItem(MysteryDice.rotationSpeedModifier, false);
             
             var DisplayResultsEnumField = new EnumDropDownConfigItem<DieBehaviour.ShowEffect>(MysteryDice.DisplayResults);
+            var DebugChatEnumField = new EnumDropDownConfigItem<MysteryDice.chatDebug>(MysteryDice.debugChat);
             var SizeDifferenceEnumField = new EnumDropDownConfigItem<SizeDifference.sizeRevert>(SizeDifference.sizeOption);
             
             var pussyModeBoolField = new BoolCheckBoxConfigItem(MysteryDice.pussyMode, false);
-            var randomSpinTimeBoolField = new BoolCheckBoxConfigItem(MysteryDice.randomSpinTime, true);
+            var GrabDebugBoolField = new BoolCheckBoxConfigItem(MysteryDice.GrabDebug, false);
+           var randomSpinTimeBoolField = new BoolCheckBoxConfigItem(MysteryDice.randomSpinTime, true);
             var chronosUpdatedTimeOfDayBoolField = new BoolCheckBoxConfigItem(MysteryDice.chronosUpdatedTimeOfDay, false);
             var useDiceOutsideBoolField = new BoolCheckBoxConfigItem(MysteryDice.useDiceOutside, false);
             var debugDiceBoolField = new BoolCheckBoxConfigItem(MysteryDice.debugDice, false);
@@ -84,6 +86,8 @@ namespace MysteryDice
             LethalConfigManager.AddConfigItem(neckRotationsIntField);
             LethalConfigManager.AddConfigItem(rotationSpeedModifierFloatField);
             LethalConfigManager.AddConfigItem(DebugButtonBoolField);
+            LethalConfigManager.AddConfigItem(DebugChatEnumField);
+            LethalConfigManager.AddConfigItem(GrabDebugBoolField);
 
             foreach(ConfigEntry<bool> config in DieBehaviour.effectConfigs)
             {

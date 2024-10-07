@@ -77,10 +77,15 @@ namespace MysteryDice
         [ServerRpc(RequireOwnership = false)]
         public void LogEffectsToOwnerServerRPC(string playerName, string effectName)
         {
-            if (MysteryDice.debugDice.Value)
-                MysteryDice.CustomLogger.LogInfo($"[Debug] Player: {playerName} rolled {effectName}");
+            if (MysteryDice.debugDice.Value) MysteryDice.CustomLogger.LogInfo($"[Debug] Player: {playerName} rolled {effectName}");
+            if (MysteryDice.debugChat.Value == MysteryDice.chatDebug.HostOnly) Misc.ChatWrite($"Player: {playerName} rolled {effectName}");
+            if (MysteryDice.debugChat.Value == MysteryDice.chatDebug.Everyone) LogEffectsToEveryoneClientRPC(playerName, effectName);
         }
-
+        [ClientRpc]
+        public void LogEffectsToEveryoneClientRPC(string playerName, string effectName)
+        {
+            Misc.ChatWrite($"Player: {playerName} rolled {effectName}");
+        }
         #region Config stuff
         [ServerRpc(RequireOwnership = false)]
         public void RequestEffectConfigServerRPC(ulong playerID)
@@ -490,6 +495,23 @@ namespace MysteryDice
             SpikeOverflowOutside.SpawnSpikeOutside(MinesToSpawn);
         }
         #endregion
+
+        #region SeaminesOutside
+        [ServerRpc(RequireOwnership = false)]
+        public void SeaminesOutsideServerRPC()
+        {
+            int MinesToSpawn = UnityEngine.Random.Range(SeaminesOutside.MinMinesToSpawn, SeaminesOutside.MaxMinesToSpawn + 1);
+            SeaminesOutside.SpawnSeaminesOutside(MinesToSpawn);
+        }
+        #endregion
+        
+        #region BerthaOutside
+        [ServerRpc(RequireOwnership = false)]
+        public void BerthaOutsideServerRPC()
+        {
+            BerthaOutside.SpawnBerthaOutside(1);
+        }
+        #endregion
         
         #region SilentTP
 
@@ -580,7 +602,7 @@ namespace MysteryDice
                 {
                     GrabbableObject component = networkObject.GetComponent<GrabbableObject>();
                     if (component == null) return;
-                    component.itemProperties.weight = scrapWeights[i];
+                    component.itemProperties.weight = scrapWeights[i]; 
                 }
             }
         }
@@ -621,7 +643,7 @@ namespace MysteryDice
         {
             player.bleedingHeavily = false;
             player.criticallyInjured = false;
-            player.health = 100;
+            if(player.health<100) player.health = 100;
         }
         #endregion
 
@@ -923,7 +945,7 @@ namespace MysteryDice
         {
             Purge.PurgeAllEnemies();
         }
-        #endregion
+        #endregion 
 
         #region Door Malfunction
         Coroutine DoorMalfunctioning = null;
@@ -1362,14 +1384,9 @@ namespace MysteryDice
         [ServerRpc(RequireOwnership = false)]
         public void ItemDuplicatorServerRPC(ulong playerID)
         {
-            ItemDuplicatorClientRPC(playerID);
-        }
-
-        [ClientRpc]
-        public void ItemDuplicatorClientRPC(ulong playerID)
-        {
             ItemDuplicator.duplicateItems(playerID);
         }
+
         #endregion
 
         #region Battery Drain
@@ -1440,6 +1457,14 @@ namespace MysteryDice
         }
 
 
+        #endregion
+        
+        #region Tarot
+        [ServerRpc(RequireOwnership = false)]
+        public void TarotServerRPC(ulong userID)
+        {
+            TarotCards.TarotScrap(userID);
+        }
         #endregion
 
 

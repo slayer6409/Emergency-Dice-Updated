@@ -1,3 +1,39 @@
+-	**1.5.2**
+	- Removed the FixRenderer since it ***shouldn't*** be needed anymore
+	- Disabled Terminal Lockout until I can fix it
+	
+-	**1.5.1**
+	- Fixed the Changelog and Readme
+	- Fixed item weight not being updated properly with Heavy and Light Burden
+
+-	**1.5.0**
+	- Added 6 New Dice Rolls with Surfaced (Woops name error)
+	- Added a New Dice Rolls with LCTarotCards
+	- Fixed some other bugs (probably)
+	
+-	**1.4.10**
+	- I hope pt 3
+	
+-	**1.4.9**
+	- I hope pt 2
+	- Fixed healing removing health if you were over 100
+
+-	**1.4.8**
+	- Fixed Null Reference error with EntranceTeleportPatch (I hope)
+	 
+-	**1.4.7**
+	- Possible fix for dice not rendering when going through the facility doors
+	- Added a new config option for displaying the results of dice rolls in chat
+	- Possible fix for Item Duplicator errors
+	
+-	**1.4.6**
+	- Possible Fix for not spawning scrap from rusty again (hopefully it works this time lol)
+
+-	**1.4.5**
+	- Possible Fix for not spawning scrap
+	- Fixed Display Results not showing up if ALL was selected
+	- Added new random tooltips for dice effects
+	
 -	**1.4.4**
 	- Possible Fix for Shotgun not spawning (in a kind of weird way)
 
