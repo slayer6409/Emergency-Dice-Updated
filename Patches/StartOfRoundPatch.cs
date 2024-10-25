@@ -87,6 +87,7 @@ namespace MysteryDice.Patches
             BrightFlashlight.IsEnabled = false;
             PlayerControllerBPatch.HasInfiniteStamina = false;
             HyperShake.ShakingData = null;
+            EggBoots.eggBootsEnabled = false;
 
             if (LeverShake.IsShaking)
             {
@@ -102,11 +103,15 @@ namespace MysteryDice.Patches
             SelectEffect.CloseSelectMenu();
 
             NeckBreak.FixNeck();
-
+            if (SizeDifferenceSwitcher.canSwitch)
+            {
+                SizeDifference.fixSize(StartOfRound.Instance.localPlayerController.playerClientId);
+            }
+            SizeDifferenceSwitcher.canSwitch = false;
             NeckSpin.FixNeck();
             TimeOfDay.Instance.overrideMeteorChance = -1;
             TimeOfDay.Instance.meteorShowerAtTime = -1;
-            if(SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.after || SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.bothAgainAfter) SizeDifference.fixSize();
+            if(SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.after || SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.bothAgainAfter) Networker.Instance.fixSizeServerRPC(StartOfRound.Instance.localPlayerController.playerClientId);
             Networker.Instance.StopAllCoroutines();
 
             if (Networker.Instance.IsServer)

@@ -39,9 +39,16 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
     <Reference Include="BepInEx, Version=5.4.22.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\v55\BepInEx\core\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="CodeRebirth">
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\XuXiaolan-CodeRebirth\CodeRebirth\CodeRebirth.dll</HintPath>
     </Reference>
     <Reference Include="LCTarrotCard">
       <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\Asonyx-LCTarotCard\LCTarrotCard.dll</HintPath>
@@ -53,6 +60,9 @@
     <Reference Include="LethalLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\v55\BepInEx\plugins\Evaisa-LethalLib\LethalLib\LethalLib.dll</HintPath>
+    </Reference>
+    <Reference Include="LethalThings">
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\Evaisa-LethalThings\LethalThings\LethalThings.dll</HintPath>
     </Reference>
     <Reference Include="Surfaced">
       <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\SurfacedTeam-Surfaced\Surfaced.dll</HintPath>
@@ -113,6 +123,7 @@
   <ItemGroup>
     <Compile Include="ConfigManager.cs" />
     <Compile Include="Consts.cs" />
+    <Compile Include="CustomEvents.cs" />
     <Compile Include="Dice\RustyDie.cs" />
     <Compile Include="Dice\SaintDie.cs" />
     <Compile Include="Dice\SacrificerDie.cs" />
@@ -120,7 +131,30 @@
     <Compile Include="Dice\EmergencyDie.cs" />
     <Compile Include="Dice\ChronosDie.cs" />
     <Compile Include="Dice\GamblerDie.cs" />
+    <Compile Include="Effects\AnythingGrenade.cs" />
+    <Compile Include="Effects\Flinger.cs" />
+    <Compile Include="Effects\BlameGlitch.cs" />
+    <Compile Include="Effects\DrunkForAll.cs" />
+    <Compile Include="Effects\EggBootsForAll.cs" />
+    <Compile Include="Effects\HappyDay.cs" />
+    <Compile Include="Effects\MineHardPlace.cs" />
+    <Compile Include="Effects\SizeDifferenceSwitcher.cs" />
+    <Compile Include="Effects\SizeDifferenceForAll.cs" />
+    <Compile Include="Effects\BurgerFlippers.cs" />
+    <Compile Include="Effects\TulipTrapeze.cs" />
+    <Compile Include="Effects\EggFountain.cs" />
+    <Compile Include="Effects\Crates.cs" />
+    <Compile Include="Effects\InsideDog.cs" />
+    <Compile Include="Effects\EggBoots.cs" />
+    <Compile Include="Effects\Tornado.cs" />
+    <Compile Include="Effects\SpeedyBoomba.cs" />
     <Compile Include="Effects\BellCrabs.cs" />
+    <Compile Include="Effects\AllSameScrap.cs" />
+    <Compile Include="Effects\TakeySmol.cs" />
+    <Compile Include="Effects\Eggs.cs" />
+    <Compile Include="Effects\MerryChristmas.cs" />
+    <Compile Include="Effects\Ghosts.cs" />
+    <Compile Include="Effects\NutcrackerOutside.cs" />
     <Compile Include="Effects\TarotCards.cs" />
     <Compile Include="Effects\SeaminesOutside.cs" />
     <Compile Include="Effects\BerthaOutside.cs" />
@@ -233,6 +267,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Misc.cs" />
+    <Compile Include="SoundClipManager.cs" />
     <Compile Include="Visual\ColorGradient.cs" />
     <Compile Include="Visual\CycleSigns.cs" />
     <Compile Include="Visual\Blinking.cs" />

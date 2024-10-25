@@ -33,9 +33,9 @@ namespace MysteryDice.Effects
             Networker.Instance.BecomeSmallServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId);
         }
 
-        public static void fixSize() 
+        public static void fixSize(ulong userID) 
         {
-            PlayerControllerB player = GameNetworkManager.Instance.localPlayerController;
+            PlayerControllerB player = Misc.GetPlayerByUserID(userID);
             player.transform.localScale = Vector3.one; 
         }
         public static void BecomeSmall(ulong userID)
@@ -44,7 +44,7 @@ namespace MysteryDice.Effects
             if (player == null) return;
             if(player.transform.localScale != Vector3.one)
             {
-                if(sizeOption.Value == sizeRevert.again|| sizeOption.Value == sizeRevert.bothAgainAfter) fixSize();
+                if(sizeOption.Value == sizeRevert.again|| sizeOption.Value == sizeRevert.bothAgainAfter) Networker.Instance.fixSizeServerRPC(userID);
                 return;
             }
             player.transform.localScale = new Vector3(0.3333f, 0.33333f, 0.333333f);

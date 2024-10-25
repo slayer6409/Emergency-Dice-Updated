@@ -8,9 +8,9 @@ using UnityEngine;
 
 namespace MysteryDice.Effects
 {
-    internal class Drunk : IEffect
+    internal class DrunkForAll : IEffect
     {
-        public string Name => "Drunk";
+        public string Name => "$Drunk All";
         public EffectType Outcome => EffectType.Mixed;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "Makes you a bit drunk";
@@ -19,7 +19,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.DrunkServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            Networker.Instance.DrunkServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId,true);
         }
 
         public static void FixedUpdate()
@@ -33,7 +33,6 @@ namespace MysteryDice.Effects
         }
         public static void startDrinking(ulong userID)
         {
-            if (StartOfRound.Instance.localPlayerController.playerClientId != userID) return;
             DrunkTimer = UnityEngine.Random.Range(10,30);
         }
         public static void BecomeDrunk(ulong userID)

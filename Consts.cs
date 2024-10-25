@@ -17,5 +17,9 @@ namespace MysteryDice
         public const string Rend = "Rend";
         public const string Dine = "Dine";
         public const string Titan = "Titan";
+        public const string Adamance = "Adamance";
+        public const string Artifice = "Artifice";
+        public const string Embrion = "Embrion";
+
     }
 }

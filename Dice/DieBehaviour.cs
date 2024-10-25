@@ -17,6 +17,7 @@ namespace MysteryDice.Dice
     public abstract class DieBehaviour : PhysicsProp
     {
         public static List<IEffect> AllEffects = new List<IEffect>();
+        public static List<IEffect> CompleteEffects = new List<IEffect>();
         public static List<IEffect> AllowedEffects = new List<IEffect>();
         public static List<IEffect> 
             AwfulEffects = new List<IEffect>(), 
@@ -335,6 +336,7 @@ namespace MysteryDice.Dice
             AllEffects.Add(new LightBurden());
             AllEffects.Add(new ItemDuplicator());
             AllEffects.Add(new HeavyBurden());
+            CompleteEffects.Add(new DrunkForAll());
             AllEffects.Add(new Drunk());
             //AllEffects.Add(new ItemSwap()); //Need to be fixed
             AllEffects.Add(new GoldenTouch());
@@ -350,8 +352,24 @@ namespace MysteryDice.Dice
             AllEffects.Add(new Meteors());
             AllEffects.Add(new Barbers());
             AllEffects.Add(new SizeDifference());
+            CompleteEffects.Add(new SizeDifferenceForAll());
+            AllEffects.Add(new SizeDifferenceSwitcher());
             AllEffects.Add(new InvisibleEnemy());
             AllEffects.Add(new EmergencyMeeting());
+            AllEffects.Add(new Ghosts());
+            AllEffects.Add(new MerryChristmas());
+            AllEffects.Add(new NutcrackerOutside());
+            AllEffects.Add(new AllSameScrap());
+            AllEffects.Add(new Eggs());
+            AllEffects.Add(new EggFountain());
+            AllEffects.Add(new FlashFountain());
+            AllEffects.Add(new InsideDog());
+            AllEffects.Add(new EggBoots());
+            CompleteEffects.Add(new EggBootsForAll());
+            AllEffects.Add(new TulipTrapeze());
+            AllEffects.Add(new BlameGlitch());
+            AllEffects.Add(new HappyDay());
+            //AllEffects.Add(new AnythingGrenade());
             //AllEffects.Add(new TerminalLockout());
             if (MysteryDice.lethalThingsPresent)
             {
@@ -360,6 +378,7 @@ namespace MysteryDice.Dice
                 AllEffects.Add(new TpOverflowOutside());
                 AllEffects.Add(new SilentTP());
                 AllEffects.Add(new Friends());
+                //AllEffects.Add(new SpeedyBoomba());
             }
             if (MysteryDice.LethalMonPresent) 
             {
@@ -379,18 +398,34 @@ namespace MysteryDice.Dice
                 AllEffects.Add(new Nemo());
                 AllEffects.Add(new BellCrabs());
                 AllEffects.Add(new UrchinIndoors());
+                AllEffects.Add(new MineHardPlace());
+                AllEffects.Add(new Flinger());
+                AllEffects.Add(new BurgerFlippers());
             }
             if (MysteryDice.LCTarotCardPresent)
             {
                 AllEffects.Add(new TarotCards());
             }
+            if (MysteryDice.TakeyPlushPresent)
+            {
+                AllEffects.Add(new TakeySmol());
+            }
+            if (MysteryDice.CodeRebirthPresent) 
+            {
+                AllEffects.Add(new Tornado());
+                AllEffects.Add(new CratesOutside());
+                AllEffects.Add(new CratesInside());
+            }
 
             List<IEffect> sortedList = AllEffects.OrderBy(o=>o.Name).ToList();
+            CompleteEffects.AddRange(AllEffects);
+            CompleteEffects = CompleteEffects.OrderBy(o => o.Name).ToList();
             AllEffects = sortedList;
+
             foreach (var effect in AllEffects)
             {
                 ConfigEntry<bool> cfg;
-                if (effect.Name == new SpikeOverflowOutside().Name) //Default off 
+                if (effect.Name == new SpikeOverflowOutside().Name || effect.Name == new BlameGlitch().Name) //Default off 
                 {
                     cfg = MysteryDice.BepInExConfig.Bind<bool>("Allowed Effects",
                     effect.Name,
@@ -433,6 +468,6 @@ namespace MysteryDice.Dice
             }
         }
     }
-
+   
 
 }

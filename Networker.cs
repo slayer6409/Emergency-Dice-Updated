@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using GameNetcodeStuff;
+using LCTarrotCard;
 using LethalLib.Modules;
 using MysteryDice.Dice;
 using MysteryDice.Effects;
@@ -65,6 +66,7 @@ namespace MysteryDice
             HyperShake.FixedUpdate();
             LeverShake.FixedUpdate();
             Drunk.FixedUpdate();
+            DrunkForAll.FixedUpdate();
         }
         void Update()
         {
@@ -296,7 +298,7 @@ namespace MysteryDice
             {
                 HUDManager.Instance.gasHelmetAnimator.SetBool("gasEmitting", false);
                 player.hasBegunSpectating = false;
-                HUDManager.Instance.RemoveSpectateUI();
+                //HUDManager.Instance.RemoveSpectateUI();
                 HUDManager.Instance.gameOverAnimator.SetTrigger("revive");
                 player.hinderedMultiplier = 1f;
                 player.isMovementHindered = 0;
@@ -304,6 +306,18 @@ namespace MysteryDice
                 HUDManager.Instance.HideHUD(false);
             }
 
+        }
+        [ServerRpc(RequireOwnership = false)]
+        public void GiveLifeServerRpc(int num)
+        {
+            GiveLifeClientRpc(num);
+        }
+
+        [ClientRpc]
+        public void GiveLifeClientRpc(int num)
+        {
+            Revive.lives += num;
+            HUDManager.Instance.DisplayTip("Extra life", "You just got an extra life!");
         }
 
         #endregion
@@ -386,6 +400,19 @@ namespace MysteryDice
         public void EmergencyAllClientRPC()
         {
             MysteryDice.JumpscareScript.EmergencyMeeting();
+        }
+        #endregion
+
+        #region playSound
+        [ServerRpc(RequireOwnership =false)]
+        public void PlaySoundServerRPC(string sound)
+        {
+            PlaySoundClientRPC(sound);
+        }
+        [ClientRpc]
+        public void PlaySoundClientRPC(string sound)
+        {
+            SoundClipManager.playSound(sound);
         }
         #endregion
 
@@ -493,6 +520,32 @@ namespace MysteryDice
         {
             int MinesToSpawn = UnityEngine.Random.Range(SpikeOverflowOutside.MinMinesToSpawn, SpikeOverflowOutside.MaxMinesToSpawn + 1);
             SpikeOverflowOutside.SpawnSpikeOutside(MinesToSpawn);
+        }
+        #endregion
+
+        #region CustomTrap
+        [ServerRpc(RequireOwnership = false)]
+        public void CustomTrapServerRPC(int max, string trap, bool inside)
+        {
+            DynamicTrapEffect.spawnTrap(max, trap, inside);
+        }
+        #endregion
+
+        #region CratesOutside
+        [ServerRpc(RequireOwnership = false)]
+        public void CratesOutsideServerRPC()
+        {
+            int MinesToSpawn = UnityEngine.Random.Range(CratesOutside.MinMinesToSpawn, CratesOutside.MaxMinesToSpawn + 1);
+            CratesOutside.SpawnCratesOutside(MinesToSpawn);
+        }
+        #endregion
+
+        #region CratesInside
+        [ServerRpc(RequireOwnership = false)]
+        public void CratesInsideServerRPC()
+        {
+            int MinesToSpawn = UnityEngine.Random.Range(CratesInside.MinMinesToSpawn, CratesInside.MaxMinesToSpawn + 1);
+            CratesOutside.SpawnCratesInside(MinesToSpawn);
         }
         #endregion
 
@@ -606,6 +659,57 @@ namespace MysteryDice
                 }
             }
         }
+        #endregion
+
+        #region SameScrap
+        [ServerRpc(RequireOwnership = false)]
+        public void SameScrapServerRPC(ulong userID, int amount, string scrap, bool sneaky = false)
+        {
+            AllSameScrap.SameScrap(userID, amount, scrap, sneaky);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void AllOfOneTPServerRPC(NetworkObjectReference[] netObjs, ulong playerID)
+        {
+            AllOfOneTPClientRPC(netObjs, playerID);
+        }
+        [ClientRpc]
+        public void AllOfOneTPClientRPC(NetworkObjectReference[] netObjs, ulong playerID)
+        {
+            AllSameScrap.teleport(netObjs, playerID);
+        }
+        #endregion
+
+        #region EggFountain
+        [ServerRpc(RequireOwnership = false)]
+        public void EggFountainServerRPC(ulong userID, int use)
+        {
+            EggFountain.spawnEggs(userID, use);
+        }
+        [ServerRpc(RequireOwnership = false)]
+        public void explodeItemServerRPC(ulong objectId, bool egg, int count)
+        {
+            explodeItemClientRPC(objectId, egg, count);
+        }
+
+        [ClientRpc]
+        public void explodeItemClientRPC(ulong objectId, bool egg, int count)
+        {
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(objectId, out var networkObj))
+            {
+                GameObject obj = networkObj.gameObject;
+
+                if (egg)
+                {
+                    RoundManager.Instance.StartCoroutine(EggFountain.explodeEgg(obj, count));
+                }
+                else
+                {
+                    RoundManager.Instance.StartCoroutine(EggFountain.explodeStun(obj));
+                }
+            }
+        }
+
         #endregion
 
         #region HealAndRestore
@@ -1302,6 +1406,61 @@ namespace MysteryDice
         }
         #endregion
 
+        #region Egg Boots
+        [ServerRpc(RequireOwnership = false)]
+        public void EggBootsServerRpc(ulong player)
+        {
+            EggBootsClientRpc(player);
+        }
+
+        [ClientRpc]
+        public void EggBootsClientRpc(ulong playerId)
+        {
+            if (playerId == GameNetworkManager.Instance.localPlayerController.playerClientId)
+            {
+                EggBoots.eggBootsEnabled = true;
+            }
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void EggBootsAllServerRpc()
+        {
+            EggBootsAllClientRpc();
+        }
+
+        [ClientRpc]
+        public void EggBootsAllClientRpc()
+        {
+              EggBoots.eggBootsEnabled = true;
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void spawnExplodeEggServerRpc(ulong player)
+        {
+            EggBoots.SpawnAndExplodeEgg(player);
+        }
+        #endregion
+
+        #region Egg Boots Two
+        [ServerRpc(RequireOwnership = false)]
+        public void EggBootsTwoServerRpc(ulong player)
+        {
+            EggBootsTwoClientRpc(player);
+        }
+
+        [ClientRpc]
+        public void EggBootsTwoClientRpc(ulong playerId)
+        {
+            EggBoots.eggBootsEnabled = true;
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void spawnExplodeEggTwoServerRpc(ulong player)
+        {
+            EggBoots.SpawnAndExplodeEgg(player);
+        }
+        #endregion
+
         #region Random Store Item
 
         [ServerRpc(RequireOwnership = false)]
@@ -1386,7 +1545,6 @@ namespace MysteryDice
         {
             ItemDuplicator.duplicateItems(playerID);
         }
-
         #endregion
 
         #region Battery Drain
@@ -1426,26 +1584,72 @@ namespace MysteryDice
         {
             BecomeSmallClientRPC(userID);
         }
-
         [ClientRpc]
         public void BecomeSmallClientRPC(ulong userID)
         {
             SizeDifference.BecomeSmall(userID);
         }
+        //DEAR LORD WHAT HAVE I DONE
+        [ServerRpc(RequireOwnership = false)]
+        public void AllPlayerUseServerRPC()
+        {
+            AllPlayerUseClientRPC();
+        }
+        [ClientRpc]
+        public void AllPlayerUseClientRPC()
+        {
+            BecomeSmallAllServerRPC(StartOfRound.Instance.localPlayerController.playerClientId);
+        }
+        [ServerRpc(RequireOwnership = false)]
+        public void BecomeSmallAllServerRPC(ulong userID)
+        {
+            BecomeSmallAllClientRPC(userID);
+        }
+        [ClientRpc]
+        public void BecomeSmallAllClientRPC(ulong userID)
+        {
+            SizeDifferenceForAll.BecomeSmall(userID);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void fixSizeServerRPC(ulong userID)
+        {
+            fixSizeClientRPC(userID);
+        }
+        [ClientRpc]
+        public void fixSizeClientRPC(ulong userID)
+        {
+            SizeDifference.fixSize(userID);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void SizeSwitcherServerRPC()
+        {
+            SizeSwitcherClientRPC();
+        }
+
+        [ClientRpc]
+        public void SizeSwitcherClientRPC()
+        {
+            SizeDifferenceSwitcher.StartSwitcher();
+        }
+
         #endregion
 
         #region Drunk
 
         [ServerRpc(RequireOwnership = false)]
-        public void DrunkServerRPC(ulong userID)
+        public void DrunkServerRPC(ulong userID,bool All = false)
         {
-            DrunkClientRPC(userID);
+            
+            DrunkClientRPC(userID, All);
         }
 
         [ClientRpc]
-        public void DrunkClientRPC(ulong userID)
+        public void DrunkClientRPC(ulong userID, bool All)
         {
-            Drunk.startDrinking(userID);
+            if(All)DrunkForAll.startDrinking(userID);
+            else Drunk.startDrinking(userID);
         }
         #endregion
 
@@ -1456,6 +1660,15 @@ namespace MysteryDice
             Reroll.DiceScrap(userID);
         }
 
+        #endregion
+
+        #region AnythingGrenade
+        [ServerRpc(RequireOwnership = false)]
+        public void AnythingGrenadeServerRPC(ulong userID)
+        {
+            AnythingGrenade.Grenade(userID);
+        }
+        
 
         #endregion
         
@@ -1467,6 +1680,21 @@ namespace MysteryDice
         }
         #endregion
 
+        #region Ghosts
+        [ServerRpc(RequireOwnership = false)]
+        public void SpawnGhostsServerRPC()
+        {
+            Ghosts.SpawnGhosts();
+        }
+        #endregion
+
+        #region NutcrackerOutside
+        [ServerRpc(RequireOwnership = false)]
+        public void SpawnNutcrackerOutsideServerRPC()
+        {
+            NutcrackerOutside.SpawnOutsideNutcracker();
+        }
+        #endregion
 
         #region GiveAllDice
         [ServerRpc(RequireOwnership = false)]

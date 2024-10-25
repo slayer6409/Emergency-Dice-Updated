@@ -17,6 +17,18 @@ namespace MysteryDice
 {
     internal class Misc
     {
+        public static Item GetItemByName(string itemName, bool matchCase = true)
+        {
+            StringComparison comparisonType = ((!matchCase) ? StringComparison.OrdinalIgnoreCase : StringComparison.CurrentCulture);
+            foreach (Item items in StartOfRound.Instance.allItemsList.itemsList)
+            {
+                if (items.itemName.Equals(itemName, comparisonType))
+                {
+                    return items;
+                }
+            }
+            return null;
+        }
         public static void SpawnEnemy(SpawnableEnemyWithRarity enemy, int amount, bool isInside, bool isInvisible = false)
         {
             if (!Networker.Instance.IsHost) return;
@@ -54,7 +66,7 @@ namespace MysteryDice
                     SpawnOutsideEnemy(enemy);
                 }
             }
-        }
+        } 
         public static void SetObjectInvisible(GameObject obj)
         {
             var renderers = obj.GetComponentsInChildren<Renderer>();
@@ -101,6 +113,57 @@ namespace MysteryDice
             enemyObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
             RM.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
         }
+        public static List<GameObject> SpawnEnemy(SpawnableEnemyWithRarity enemy, int amount, bool isInside, bool isInvisible = false, bool returnObject = false)
+        {
+            List<GameObject> list = new List<GameObject>();
+            if (!Networker.Instance.IsHost) return list;
+            RoundManager RM = RoundManager.Instance;
+
+            if (isInside)
+            {
+                for (int i = 0; i < amount; i++)
+                {
+                    EnemyVent randomVent = RM.allEnemyVents[UnityEngine.Random.Range(0, RM.allEnemyVents.Length)];
+                    GameObject enemyObject = UnityEngine.Object.Instantiate(
+                        enemy.enemyType.enemyPrefab,
+                        randomVent.floorNode.position,
+                        Quaternion.Euler(new Vector3(0f, 0f, 0f)));
+                    if (isInvisible) SetObjectInvisible(enemyObject);
+                    enemyObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
+                    RM.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
+                    list.Add(enemyObject);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < amount; i++)
+                {
+                    list.Add(SpawnOutsideEnemy(enemy, true));
+                }
+            }
+            return list;
+        }
+        public static GameObject SpawnOutsideEnemy(SpawnableEnemyWithRarity enemy, bool returnObject)
+        {
+            List<GameObject> result = new List<GameObject>();
+            RoundManager RM = RoundManager.Instance;
+
+            System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed);
+            GameObject[] aiNodes = GameObject.FindGameObjectsWithTag("OutsideAINode");
+            aiNodes = aiNodes.OrderBy(x => Vector3.Distance(x.transform.position, Vector3.zero)).ToArray();
+
+            Vector3 position = RM.outsideAINodes[UnityEngine.Random.Range(0, RM.outsideAINodes.Length)].transform.position;
+            position = RM.GetRandomNavMeshPositionInBoxPredictable(position, 30f, default(NavMeshHit), random) + Vector3.up;
+
+            GameObject enemyObject = UnityEngine.Object.Instantiate(
+                enemy.enemyType.enemyPrefab,
+                position,
+                Quaternion.Euler(new Vector3(0f, 0f, 0f)));
+
+            enemyObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
+            RM.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
+            return enemyObject;
+        }
 
         /// <summary>
         /// Allows an enemy to spawn on a moon which he isnt native to.
@@ -121,6 +184,21 @@ namespace MysteryDice
                 SpawnEnemy(enemy, amount, isInside, isInvisible);
             }
         }
+        public static List<GameObject> SpawnEnemyForced2(SpawnableEnemyWithRarity enemy, int amount, bool isInside, bool isInvisible=false, bool returnObject = false)
+        {
+            List<GameObject> result = new List<GameObject>();
+            if (!RoundManager.Instance.currentLevel.Enemies.Contains(enemy))
+            {
+                RoundManager.Instance.currentLevel.Enemies.Add(enemy);
+                result = SpawnEnemy(enemy, amount, isInside, isInvisible,returnObject:true);
+                RoundManager.Instance.currentLevel.Enemies.Remove(enemy);
+            }
+            else
+            {
+                result = SpawnEnemy(enemy, amount, isInside, isInvisible, returnObject: true);
+            }
+            return result;
+        }
 
         public static float Map(float x, float inMin, float inMax, float outMin, float outMax)
         {
@@ -137,8 +215,6 @@ namespace MysteryDice
             }
             return null;
         }
-
-
         public static NetworkObjectReference SpawnEnemyOnServer(Vector3 spawnPosition, float yRot, SpawnableEnemyWithRarity enemy)
         {
             NetworkObjectReference emptyReference = new NetworkObjectReference();

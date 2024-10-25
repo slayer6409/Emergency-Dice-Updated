@@ -1,4 +1,5 @@
 ﻿using GameNetcodeStuff;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,7 +11,8 @@ namespace MysteryDice.Effects
         public EffectType Outcome => EffectType.Bad;
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "Makes you shake a lot!";
-
+        public static int timer = -1;
+        public static bool isTimerRunning = false;
         public class ShakeData
         {
             public PlayerControllerB Player;
@@ -23,6 +25,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
+            timer = MysteryDice.hyperShakeTimer.Value;
             Networker.Instance.HyperShakeServerRPC();
         }
 
@@ -52,6 +55,14 @@ namespace MysteryDice.Effects
         {
             Vector3 randDir = new Vector3(Random.Range(-5f, 5f)*Mathf.Sin(Time.time), Random.Range(-0.01f,1f), Random.Range(-5f, 5f) * Mathf.Sin(Time.time));
             data.Player.externalForces += randDir*data.Force;
+        }
+        public static IEnumerator WaitTime()
+        {
+            isTimerRunning = true;
+            MysteryDice.CustomLogger.LogInfo($"Shaking for {HyperShake.timer} seconds");
+            yield return new WaitForSeconds(timer);
+            ShakingData = null;
+            isTimerRunning = false;
         }
     }
 }

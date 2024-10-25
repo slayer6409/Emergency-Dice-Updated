@@ -9,7 +9,7 @@ namespace MysteryDice.Effects
     internal class ModifyPitch : IEffect
     {
         public string Name => "Speech jammer";
-        const float PitchSwitchTime = 0.05f;
+        const float PitchSwitchTime = 0.1f;
         private static float PitchSwitchTimer = 0f;
         public static bool FluctuatePitch = false;
         private static float CumulativeRandomFreq = 0f;
@@ -32,7 +32,7 @@ namespace MysteryDice.Effects
         {
             if (!FluctuatePitch) return;
 
-            CumulativeRandomFreq += UnityEngine.Random.Range(-0.5f, 0.5f) * Time.deltaTime;
+            CumulativeRandomFreq += UnityEngine.Random.Range(-0.8f, 0.8f) * Time.deltaTime;
             CumulativeRandomFreq = Mathf.Clamp(CumulativeRandomFreq, -1f, 1f);
             PitchSwitchTimer -= Time.deltaTime;
             if (PitchSwitchTimer <= 0f)

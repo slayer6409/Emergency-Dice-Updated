@@ -4,6 +4,16 @@ using GameNetcodeStuff;
 using UnityEngine;
 using UnityEngine.Windows;
 using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Linq;
+using UnityEngine.InputSystem;
+using LethalLib.Modules;
+using Unity.Netcode;
+using static LethalThings.DynamicBone.DynamicBoneColliderBase;
+using LCTarrotCard.Util;
+using LCTarrotCard;
 
 namespace MysteryDice.Patches
 {
@@ -70,6 +80,14 @@ namespace MysteryDice.Patches
         }
         [HarmonyPostfix]
         [HarmonyPatch("Update")]
+        public static void HyperShakeUpdate()
+        {
+            if(HyperShake.ShakingData == null) return;
+            if(MysteryDice.hyperShakeTimer.Value > 0 && !HyperShake.isTimerRunning) Networker.Instance.StartCoroutine(HyperShake.WaitTime());
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch("Update")]
         public static void NeckSpinUpdate(PlayerControllerB __instance)
         {
             if (NeckSpin.IsNeckSpinning == 0) return;
@@ -107,6 +125,18 @@ namespace MysteryDice.Patches
                     cam.eulerAngles = new Vector3(cam.eulerAngles.x,cam.eulerAngles.y,0);
                 }
             }
+        }
+    }
+    [HarmonyPatch(typeof(PlayerControllerB), "Jump_performed")]
+    public static class JumpPerformedPatch
+    {
+        [HarmonyPrefix]
+        public static void JumpPerformedPrefix(InputAction.CallbackContext context, PlayerControllerB __instance)
+        {
+            if(!EggBoots.eggBootsEnabled) return;
+            if(!EggBoots.canSpawnAnother) return;
+            EggBoots.canSpawnAnother = false;
+            Networker.Instance.spawnExplodeEggServerRpc(StartOfRound.Instance.localPlayerController.playerClientId);
         }
     }
 }

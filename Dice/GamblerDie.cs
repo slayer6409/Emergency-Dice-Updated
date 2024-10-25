@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace MysteryDice.Dice
 {
@@ -14,6 +15,14 @@ namespace MysteryDice.Dice
         {
             base.Start();
             DiceModel.AddComponent<CycleSigns>();
+            GetComponent<GrabbableObject>().fallTime = 1f;
+            GetComponent<GrabbableObject>().FallWithCurve();
+            FallToGround();
+        }
+        public override void LateUpdate()
+        {
+            base.LateUpdate();
+            transform.rotation = Quaternion.identity;
         }
         public override void SetupRollToEffectMapping()
         {

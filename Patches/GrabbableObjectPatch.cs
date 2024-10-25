@@ -23,7 +23,7 @@ namespace MysteryDice.Patches
         [HarmonyPatch("EquipItem")]
         public static void EquipItem()
         {
-            if(!MysteryDice.GrabDebug.Value) return;
+            if(!MysteryDice.DebugLogging.Value) return;
             var player = GameNetworkManager.Instance?.localPlayerController;
             if (player == null)
             {

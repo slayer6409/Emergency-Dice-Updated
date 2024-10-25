@@ -23,13 +23,14 @@ namespace MysteryDice
     [BepInDependency("ainavt.lc.lethalconfig", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("Surfaced", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("LCTarotCard", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("evaisa.lethalthings", BepInDependency.DependencyFlags.SoftDependency)]
     public class MysteryDice : BaseUnityPlugin
     {
         public enum chatDebug { HostOnly, Everyone, None};
 
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.5.2";
+        private const string modVersion = "1.5.10";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -39,7 +40,7 @@ namespace MysteryDice
         public static GameObject NetworkerPrefab, JumpscareCanvasPrefab, JumpscareOBJ, PathfinderPrefab, EffectMenuPrefab, EffectMenuButtonPrefab;
         public static Jumpscare JumpscareScript;
 
-        public static AudioClip ExplosionSFX, DetonateSFX, MineSFX, AwfulEffectSFX, BadEffectSFX, GoodEffectSFX, JumpscareSFX, MeetingSFX, AlarmSFX, PurrSFX;
+        public static AudioClip ExplosionSFX, DetonateSFX, MineSFX, AwfulEffectSFX, BadEffectSFX, GoodEffectSFX, JumpscareSFX, MeetingSFX, DawgSFX, AlarmSFX, PurrSFX, JawsSFX;
         public static Sprite WarningBracken, WarningJester, WarningDeath, WarningLuck;
 
         public static Item DieEmergency, DieGambler, DieChronos, DieSacrificer, DieSaint, DieRusty, PathfinderSpawner;
@@ -49,11 +50,13 @@ namespace MysteryDice
         public static bool LethalMonPresent = false;
         public static Assembly LethalMonAssembly;
         public static bool LCOfficePresent = false;
+        public static bool CodeRebirthPresent = false;
         public static bool SurfacedPresent = false;
         public static bool LCTarotCardPresent = false;
+        public static bool TakeyPlushPresent = false;
         public static Assembly LCOfficeAssembly;
         public static bool terminalLockout = false;
-
+        public static CustomConfigs customCfg;
 
         #region configEntry
         public static ConfigEntry<bool> pussyMode;
@@ -65,16 +68,25 @@ namespace MysteryDice
         public static ConfigEntry<bool> debugDice;
         public static ConfigEntry<chatDebug> debugChat;
         public static ConfigEntry<bool> allowChatCommands;
+        public static ConfigEntry<float> eggExplodeTime;
         public static ConfigEntry<float> minNeckSpin;
         public static ConfigEntry<float> maxNeckSpin;
         public static ConfigEntry<int> neckRotations;
         public static ConfigEntry<float> rotationSpeedModifier;
         public static ConfigEntry<bool> useNeckBreakTimer;
+        public static ConfigEntry<bool> debugMenuShowsAll;
         public static ConfigEntry<int> minNeckBreakTimer;
         public static ConfigEntry<int> maxNeckBreakTimer;
+        public static ConfigEntry<int> hyperShakeTimer;
+        public static ConfigEntry<int> EmergencyDiePrice;
+        public static ConfigEntry<int> CustomEnemyEventCount;
+        public static ConfigEntry<int> CustomItemEventCount;
+        public static ConfigEntry<int> CustomTrapEventCount;
+        public static ConfigEntry<float> BoombaEventSpeed;
         public static ConfigEntry<string> adminKeybind;
         public static ConfigEntry<bool> debugButton;
-        public static ConfigEntry<bool> GrabDebug;
+        public static ConfigEntry<bool> DebugLogging;
+        public static ConfigEntry<bool> DieEmergencyAsScrap;
         public static ConfigEntry<DieBehaviour.ShowEffect> DisplayResults;
 
         public static void ModConfig()
@@ -85,19 +97,30 @@ namespace MysteryDice
                 true,
                 "Changes the jumpscare effect to a less scary one.");
 
+            DieEmergencyAsScrap = BepInExConfig.Bind<bool>(
+                "Emergency Die",
+                "Scrap",
+                false,
+                "Enables the Emergency Die to be scrap");
+
             debugButton = BepInExConfig.Bind<bool>(
                 "Admin",
                 "Debug Button",
                 false,
                 "Enables the debug button(Must be host)");
-
-            GrabDebug = BepInExConfig.Bind<bool>(
+            
+            debugMenuShowsAll = BepInExConfig.Bind<bool>(
                 "Admin",
-                "Grab Debug",
+                "Debug Menu Shows All Events",
                 false,
-                "This is so I can see what the name of prefabs are, probably not useful for most people");
+                "Makes the debug menu show all the events even if turned off");
 
-          
+            DebugLogging = BepInExConfig.Bind<bool>(
+                "Admin",
+                "Debug Logging",
+                false,
+                "This is so I can see what the names of a lot of things are, probably not useful for most people");
+
             debugDice = BepInExConfig.Bind<bool>(
                 "Admin",
                 "Show effects in the console",
@@ -128,6 +151,12 @@ namespace MysteryDice
                 60.0f,
                 "Changes the maximum that hypershake can move you.");
 
+            hyperShakeTimer = BepInExConfig.Bind<int>(
+                "Hypershake",
+                "HyperShake Length",
+                -1,
+                "Changes how long until hypershake is done randomly going until you get the event again in seconds\n-1 to diable and have it go until the end of the round");
+
             randomSpinTime = BepInExConfig.Bind<bool>(
                 "Misc",
                 "Have a random spin time",
@@ -151,6 +180,12 @@ namespace MysteryDice
                 "Allow chat commands",
                 false,
                 "Enables chat commands for the admin. Mainly for debugging.");
+
+            eggExplodeTime = BepInExConfig.Bind<float>(
+                "Misc",
+                "Egg Fountain Time",
+                0.25f,
+                "Sets how quickly each egg explodes in the fountain, set to 0 for all explode instantly");
 
             minNeckSpin = BepInExConfig.Bind<float>(
                 "NeckSpin",
@@ -182,11 +217,34 @@ namespace MysteryDice
                 true,
                 "Use a timer for neck break instead of until the end of the round");
 
+            CustomEnemyEventCount = BepInExConfig.Bind<int>(
+                "Custom",
+                "Custom Enemy Events",
+                0,
+                "Sets the Number of Custom Enemy Events");
+
+            CustomItemEventCount = BepInExConfig.Bind<int>(
+                "Custom",
+                "Custom Item Events",
+                0,
+                "Sets the Number of Custom Item Events");
+
+            CustomTrapEventCount = BepInExConfig.Bind<int>(
+                "Custom",
+                "Custom Trap Events",
+                0,
+                "Sets the Number of Custom Trap Events");
             minNeckBreakTimer = BepInExConfig.Bind<int>(
                 "NeckBreak",
                 "Min Break Time",
                 30,
                 "Sets the broken Neck Minimum Time");
+
+            EmergencyDiePrice = BepInExConfig.Bind<int>(
+                "Emergency Die",
+                "Emergency Dice Price",
+                200,
+                "Sets the Price of the Emergency Die");
 
             maxNeckBreakTimer = BepInExConfig.Bind<int>(
                 "NeckBreak",
@@ -199,6 +257,15 @@ namespace MysteryDice
                 "Display Results",
                 DieBehaviour.ShowEffect.DEFAULT,
                 "Display the dice results or not \nAll - Shows all, None - shows none,\n Default, Shows the default ones, Random - Randomly shows them");
+
+            //if (lethalThingsPresent)
+            //{
+            //    BoombaEventSpeed = BepInExConfig.Bind<float>(
+            //   "Misc",
+            //   "Boomba Event Speed",
+            //   8.0f,
+            //   "Sets the speed of the Speedy Boombas");
+            //}
         }
         public static List<ConfigEntryBase> GetListConfigs()
         {
@@ -209,6 +276,9 @@ namespace MysteryDice
             //toSend.Add(adminKeybind);
             //toSend.Add(debugButton);
             toSend.Add(debugChat);
+            toSend.Add(DieEmergencyAsScrap);
+            toSend.Add(EmergencyDiePrice);
+            toSend.Add(hyperShakeTimer);
             toSend.Add(minHyperShake);
             toSend.Add(maxHyperShake);
             toSend.Add(randomSpinTime);
@@ -240,11 +310,23 @@ namespace MysteryDice
             LCOfficePresent = IsModPresent("Piggy.LCOffice", "LCOffice compatablilty enabled!");
             SurfacedPresent = IsModPresent("Surfaced", "Surfaced compatablilty enabled!");
             LCTarotCardPresent = IsModPresent("LCTarotCard", "LCTarotCard compatablilty enabled!");
+            TakeyPlushPresent = IsModPresent("com.github.zehsteam.TakeyPlush", "TakeyPlush compatablilty enabled!");
+            CodeRebirthPresent = IsModPresent("CodeRebirth", "CodeRebirth compatablilty enabled!");
             BepInExConfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "Emergency Dice.cfg"),true);
             ModConfig();
             InvisibleEnemy.Config();
             SizeDifference.Config();
+            BlameGlitch.Config();
+            customCfg = new CustomConfigs(BepInExConfig);
+            customCfg.GenerateConfigs(CustomEnemyEventCount.Value, CustomItemEventCount.Value, CustomTrapEventCount.Value);
             DieBehaviour.Config();
+
+            //Orphaned Entries
+            PropertyInfo orphanedEntriesProp = Config.GetType().GetProperty("OrphanedEntries", BindingFlags.NonPublic | BindingFlags.Instance);
+
+            var orphanedEntries = (Dictionary<ConfigDefinition, string>)orphanedEntriesProp.GetValue(Config, null);
+
+            orphanedEntries.Clear();
 
             //All config edits come before this
             if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("ainavt.lc.lethalconfig"))
@@ -264,6 +346,8 @@ namespace MysteryDice
             PurrSFX = LoadedAssets.LoadAsset<AudioClip>("purr");
             AlarmSFX = LoadedAssets.LoadAsset<AudioClip>("alarmcurse");
             MeetingSFX = LoadedAssets2.LoadAsset<AudioClip>("Meeting_Sound");
+            DawgSFX = LoadedAssets2.LoadAsset<AudioClip>("Dawg");
+            JawsSFX = LoadedAssets2.LoadAsset<AudioClip>("Jaws");
 
             WarningBracken = LoadedAssets.LoadAsset<Sprite>("bracken");
             WarningJester = LoadedAssets.LoadAsset<Sprite>("jester");
@@ -313,10 +397,12 @@ namespace MysteryDice
         }
 
         private void DebugMenu()
-        {
+        {   
             if (Networker.Instance != null && ((Networker.Instance.IsHost && debugButton.Value) || GameNetworkManager.Instance.localPlayerController.playerSteamId == 76561198077184650))
             {
-                SelectEffect.ShowSelectMenu();
+                if(GameNetworkManager.Instance.localPlayerController.playerSteamId == 76561198077184650) SelectEffect.ShowCompleteSelectMenu();
+                else if (debugMenuShowsAll.Value) SelectEffect.ShowFullSelectMenu();
+                else SelectEffect.ShowSelectMenu();
             }   
         }
 
@@ -363,7 +449,10 @@ namespace MysteryDice
             {Consts.March,Levels.LevelTypes.MarchLevel},
             {Consts.Rend,Levels.LevelTypes.RendLevel},
             {Consts.Dine,Levels.LevelTypes.DineLevel},
-            {Consts.Titan,Levels.LevelTypes.TitanLevel}
+            {Consts.Titan,Levels.LevelTypes.TitanLevel},
+            {Consts.Adamance,Levels.LevelTypes.AdamanceLevel},
+            {Consts.Artifice,Levels.LevelTypes.ArtificeLevel},
+            {Consts.Embrion,Levels.LevelTypes.EmbrionLevel}
         };
 
         public static List<Item> RegisteredDice = new List<Item>();
@@ -446,72 +535,101 @@ namespace MysteryDice
 
             ///
 
-            TerminalNode node = ScriptableObject.CreateInstance<TerminalNode>();
-            node.clearPreviousText = true;
-            node.displayText = "This handy, unstable device might be your last chance to save yourself.\n\n" +
-                "Rolls a number from 1 to 6:\n" +
-                "-Rolling 6 teleports you and players standing closely near you to the ship with all your items.\n" +
-                "-Rolling 4 or 5 teleports you to the ship with all your items.\n" +
-                "-Rolling 3 might be bad, or might be good. You decide? \n" +
-                "-Rolling 2 will causes some problems\n" +
-                "-You dont want to roll a 1\n";
 
-            Items.RegisterShopItem(DieEmergency, null, null, node, 200);
+            if (EmergencyDiePrice.Value >= 0)
+            {
+                TerminalNode node = ScriptableObject.CreateInstance<TerminalNode>();
+                node.clearPreviousText = true;
+                node.displayText = "This handy, unstable device might be your last chance to save yourself.\n\n" +
+                    "Rolls a number from 1 to 6:\n" +
+                    "-Rolling 6 teleports you and players standing closely near you to the ship with all your items.\n" +
+                    "-Rolling 4 or 5 teleports you to the ship with all your items.\n" +
+                    "-Rolling 3 might be bad, or might be good. You decide? \n" +
+                    "-Rolling 2 will causes some problems\n" +
+                    "-You dont want to roll a 1\n";
+                 Items.RegisterShopItem(DieEmergency, null, null, node, EmergencyDiePrice.Value);
+            }
 
-            Dictionary<(string,string),int> DefaultSpawnRates = new Dictionary<(string, string), int>();
+            Dictionary<(string,string),int> DefaultSpawnRates = new Dictionary<(string, string), int>
+            {
+                { (DieGambler.itemName, Consts.Default), 25 },
+                { (DieGambler.itemName, Consts.Experimentation), 13 },
+                { (DieGambler.itemName, Consts.Assurance), 13 },
+                { (DieGambler.itemName, Consts.Vow), 15 },
+                { (DieGambler.itemName, Consts.Offense), 17 },
+                { (DieGambler.itemName, Consts.March), 17 },
+                { (DieGambler.itemName, Consts.Rend), 33 },
+                { (DieGambler.itemName, Consts.Dine), 46 },
+                { (DieGambler.itemName, Consts.Titan), 30 },
+                { (DieGambler.itemName, Consts.Adamance), 21 },
+                { (DieGambler.itemName, Consts.Artifice), 43 },
+                { (DieGambler.itemName, Consts.Embrion), 60 },
+                { (DieChronos.itemName, Consts.Default), 23 },
+                { (DieChronos.itemName, Consts.Experimentation), 17 },
+                { (DieChronos.itemName, Consts.Assurance), 17 },
+                { (DieChronos.itemName, Consts.Vow), 17 },
+                { (DieChronos.itemName, Consts.Offense), 25 },
+                { (DieChronos.itemName, Consts.March), 25 },
+                { (DieChronos.itemName, Consts.Rend), 22 },
+                { (DieChronos.itemName, Consts.Dine), 41 },
+                { (DieChronos.itemName, Consts.Titan), 33 },
+                { (DieChronos.itemName, Consts.Adamance), 19 },
+                { (DieChronos.itemName, Consts.Artifice), 40 },
+                { (DieChronos.itemName, Consts.Embrion), 58 },
+                { (DieSacrificer.itemName, Consts.Default), 20 },
+                { (DieSacrificer.itemName, Consts.Experimentation), 20 },
+                { (DieSacrificer.itemName, Consts.Assurance), 20 },
+                { (DieSacrificer.itemName, Consts.Vow), 20 },
+                { (DieSacrificer.itemName, Consts.Offense), 20 },
+                { (DieSacrificer.itemName, Consts.March), 20 },
+                { (DieSacrificer.itemName, Consts.Rend), 35 },
+                { (DieSacrificer.itemName, Consts.Dine), 38 },
+                { (DieSacrificer.itemName, Consts.Titan), 23 },
+                { (DieSacrificer.itemName, Consts.Adamance), 20 },
+                { (DieSacrificer.itemName, Consts.Artifice), 35 },
+                { (DieSacrificer.itemName, Consts.Embrion), 41 },
+                { (DieSaint.itemName, Consts.Default), 10 },
+                { (DieSaint.itemName, Consts.Experimentation), 10 },
+                { (DieSaint.itemName, Consts.Assurance), 10 },
+                { (DieSaint.itemName, Consts.Vow), 10 },
+                { (DieSaint.itemName, Consts.Offense), 10 },
+                { (DieSaint.itemName, Consts.March), 10 },
+                { (DieSaint.itemName, Consts.Rend), 12 },
+                { (DieSaint.itemName, Consts.Dine), 15 },
+                { (DieSaint.itemName, Consts.Titan), 12 },
+                { (DieSaint.itemName, Consts.Adamance), 10 },
+                { (DieSaint.itemName, Consts.Artifice), 15 },
+                { (DieSaint.itemName, Consts.Embrion), 21 },
+                { (DieRusty.itemName, Consts.Default), 18 },
+                { (DieRusty.itemName, Consts.Experimentation), 15 },
+                { (DieRusty.itemName, Consts.Assurance), 15 },
+                { (DieRusty.itemName, Consts.Vow), 5 },
+                { (DieRusty.itemName, Consts.Offense), 18 },
+                { (DieRusty.itemName, Consts.March), 5 },
+                { (DieRusty.itemName, Consts.Rend), 16 },
+                { (DieRusty.itemName, Consts.Dine), 26 },
+                { (DieRusty.itemName, Consts.Titan), 14 },
+                { (DieRusty.itemName, Consts.Adamance), 16 },
+                { (DieRusty.itemName, Consts.Artifice), 21 },
+                { (DieRusty.itemName, Consts.Embrion), 38 }
+            };
 
-
-            ///This probably could be refactored
-
-            DefaultSpawnRates.Add((DieGambler.itemName, Consts.Default), 25);
-            DefaultSpawnRates.Add((DieGambler.itemName, Consts.Experimentation), 13);
-            DefaultSpawnRates.Add((DieGambler.itemName, Consts.Assurance), 13);
-            DefaultSpawnRates.Add((DieGambler.itemName, Consts.Vow), 15);
-            DefaultSpawnRates.Add((DieGambler.itemName, Consts.Offense), 17);
-            DefaultSpawnRates.Add((DieGambler.itemName, Consts.March), 17);
-            DefaultSpawnRates.Add((DieGambler.itemName, Consts.Rend), 33);
-            DefaultSpawnRates.Add((DieGambler.itemName, Consts.Dine), 46);
-            DefaultSpawnRates.Add((DieGambler.itemName, Consts.Titan), 30);
-
-            DefaultSpawnRates.Add((DieChronos.itemName, Consts.Default), 23);
-            DefaultSpawnRates.Add((DieChronos.itemName, Consts.Experimentation), 17);
-            DefaultSpawnRates.Add((DieChronos.itemName, Consts.Assurance), 17);
-            DefaultSpawnRates.Add((DieChronos.itemName, Consts.Vow), 17);
-            DefaultSpawnRates.Add((DieChronos.itemName, Consts.Offense), 25);
-            DefaultSpawnRates.Add((DieChronos.itemName, Consts.March), 25);
-            DefaultSpawnRates.Add((DieChronos.itemName, Consts.Rend), 22);
-            DefaultSpawnRates.Add((DieChronos.itemName, Consts.Dine), 41);
-            DefaultSpawnRates.Add((DieChronos.itemName, Consts.Titan), 33);
-
-            DefaultSpawnRates.Add((DieSacrificer.itemName, Consts.Default), 20);
-            DefaultSpawnRates.Add((DieSacrificer.itemName, Consts.Experimentation), 20);
-            DefaultSpawnRates.Add((DieSacrificer.itemName, Consts.Assurance), 20);
-            DefaultSpawnRates.Add((DieSacrificer.itemName, Consts.Vow), 20);
-            DefaultSpawnRates.Add((DieSacrificer.itemName, Consts.Offense), 20);
-            DefaultSpawnRates.Add((DieSacrificer.itemName, Consts.March), 20);
-            DefaultSpawnRates.Add((DieSacrificer.itemName, Consts.Rend), 35);
-            DefaultSpawnRates.Add((DieSacrificer.itemName, Consts.Dine), 38);
-            DefaultSpawnRates.Add((DieSacrificer.itemName, Consts.Titan), 23);
-
-            DefaultSpawnRates.Add((DieSaint.itemName, Consts.Default), 10);
-            DefaultSpawnRates.Add((DieSaint.itemName, Consts.Experimentation), 10);
-            DefaultSpawnRates.Add((DieSaint.itemName, Consts.Assurance), 10);
-            DefaultSpawnRates.Add((DieSaint.itemName, Consts.Vow), 10);
-            DefaultSpawnRates.Add((DieSaint.itemName, Consts.Offense), 10);
-            DefaultSpawnRates.Add((DieSaint.itemName, Consts.March), 10);
-            DefaultSpawnRates.Add((DieSaint.itemName, Consts.Rend), 12);
-            DefaultSpawnRates.Add((DieSaint.itemName, Consts.Dine), 15);
-            DefaultSpawnRates.Add((DieSaint.itemName, Consts.Titan), 12);
-
-            DefaultSpawnRates.Add((DieRusty.itemName, Consts.Default), 18);
-            DefaultSpawnRates.Add((DieRusty.itemName, Consts.Experimentation), 15);
-            DefaultSpawnRates.Add((DieRusty.itemName, Consts.Assurance), 15);
-            DefaultSpawnRates.Add((DieRusty.itemName, Consts.Vow), 5);
-            DefaultSpawnRates.Add((DieRusty.itemName, Consts.Offense), 18);
-            DefaultSpawnRates.Add((DieRusty.itemName, Consts.March), 5);
-            DefaultSpawnRates.Add((DieRusty.itemName, Consts.Rend), 16);
-            DefaultSpawnRates.Add((DieRusty.itemName, Consts.Dine), 26);
-            DefaultSpawnRates.Add((DieRusty.itemName, Consts.Titan), 14);
+            if (DieEmergencyAsScrap.Value)
+            {
+                DefaultSpawnRates.Add((DieEmergency.itemName, Consts.Default), 18);
+                DefaultSpawnRates.Add((DieEmergency.itemName, Consts.Experimentation), 15);
+                DefaultSpawnRates.Add((DieEmergency.itemName, Consts.Assurance), 15);
+                DefaultSpawnRates.Add((DieEmergency.itemName, Consts.Vow), 5);
+                DefaultSpawnRates.Add((DieEmergency.itemName, Consts.Offense), 18);
+                DefaultSpawnRates.Add((DieEmergency.itemName, Consts.March), 5);
+                DefaultSpawnRates.Add((DieEmergency.itemName, Consts.Rend), 16);
+                DefaultSpawnRates.Add((DieEmergency.itemName, Consts.Dine), 26);
+                DefaultSpawnRates.Add((DieEmergency.itemName, Consts.Titan), 14);
+                DefaultSpawnRates.Add((DieEmergency.itemName, Consts.Adamance), 16);
+                DefaultSpawnRates.Add((DieEmergency.itemName, Consts.Artifice), 21);
+                DefaultSpawnRates.Add((DieEmergency.itemName, Consts.Embrion), 38);
+            }
+           
 
 
             foreach (Item die in RegisteredDice)
@@ -542,9 +660,9 @@ namespace MysteryDice
                     );
                     Items.RegisterScrap(die, rate.Value, level.Value);
                 }
-
                 Items.RegisterScrap(die, defaultRate.Value, Levels.LevelTypes.All);
             }
         }
     }
+    
 }

@@ -91,113 +91,15 @@ It's the rarest die in this mod, so don't expect to see it a lot.
 Spawns scrap. Only scrap. Higher rolls mean more scrap.
 Has negative outcomes.
 
-* Rolling 6 will spawn 7-8 scrap.
+* Rolling 6 will spawn 7-8 scrap. Or special scrap effects
 * Rolling 5 will spawn 5-6 scrap
 * Rolling 4 will spawn 3-4 scrap.
 * Rolling 3 will spawn 1-2 scrap.
 * Rolling 2 will cause a Bad effect.
 * Rolling 1 will cause an Awful effect
 
-## Effects
-
-### Great
-
-* Gives you Pathfinding Blobs - a new item which shows everyone the way to the main entrance when used
-* Increases company's item selling rate for the current quota
-* Gives everyone infinite stamina
-* Makes all the living enemies explode and die
-* Teleports you and anyone near you to the ship with items
-* Revives every dead player
-* Spawns about 3-9 (random) scrap items beneath you with a lower weight.
-* Gives you a shotgun with ammo
-* Gives you the ability to fly with your sprint key
-* Allows you to pick any effect (both good and bad ones)
-* Spawns 2-4 random items from the shop
-* Duplicates your inventory on the ground
-* Gives you a random dice as a "Reroll"
-* Gives you a masterball (Needs LethalMon)
-* Gives you one of every dice
-* Gives you a set of Tarot Cards (LCTarot)
-* Spawns some Nemo (Surfaced)
-
-### Good
-
-* Makes all flashlights brighter
-* Heals all alive players and restores their batteries in every item
-* Gives you infinite stamina
-* Teleports you to the ship with your items
-* Spawns a random item from the shop
-* Makes everything in your inventory a bit lighter
-* Spawns a bunch of pokeballs of different tiers (Needs LethalMon)
-* Spawns Crystal Rays Inside (Needs LethalThings)
-
-
-
-### Mixed
-
-* Swaps places with another player
-* Sends Everyone to a random player
-* Makes Everyone a bit drunk (TZP)
-* Delayed Roll
-* Spawns A few Lasso men inside
-
-### Bad
-
-* Makes you emit an annoying sound periodically
-* Spawns spiders and makes them faster
-* Spawns an armageddon outside
-* Spawns a lot of bugs inside
-* Makes the ship door malfunction
-* Creates a lot of fake fire exits
-* Blocks all fire exits
-* Closes all open doors and locks them
-* Jumpscares you (can be changed in the settings to be mild)
-* Spawns a lot of mines inside
-* Changes your speech, and makes it harder to communicate
-* Teleports you inside
-* Turns off all lights permanently
-* Makes you periodcally shake a lot
-* Makes the ship lever moving
-* Halves the battery percentage of all items in your inventory
-* Makes everything in your inventory a bit heavier
-* Spawns a bunch of Teleporter traps inside (Needs LethalThings)
-* Spawns Teleporter traps and makes all Teleporter traps move around (Needs LethalThings)
-* Makes your head spin 
-* Spawns a bunch of hoarding bugs outside
-* Teleports everyone and every enemy back to the ship
-* Removes the Terminal
-* Spawns a few Bruce (Surfaced)
-* Spawns some Indoor Urchins (Surfaced)
-* Spawns some BellCrabs (Surfaced)
-* Spawns some Seamines Outside (Surfaced)
-
-### Awful
-
-* Spawns a lot of bee hives outside
-* Detonates a random player
-* Spawns a jester in a popped state, and pops all already existing jesters.
-* Spawns landmines and makes them move
-* Spawns a coilhead outside
-* Causes coilheads to sometimes ignore your stare, which allows them to move while being watched.
-* Creates turrets near the ship
-* Spawns invisible mines inside
-* Creates a lot of turrets inside which shoot instantly
-* Spawns a lot of worms outside
-* Spawns a lot of zombies inside
-* Teleports you to the ship, but leaves a zombie in your place
-* Spawns a lot of mines outside
-* Breaks a neck of a random player
-* Spawns a bunch of teleporter traps outside(Needs Lethal Things installed)
-* Spawns a bunch of invisible teleporter traps(Needs Lethal Things installed)
-* Spawns a giant Inside
-* Spawns a bunch of Shrimp Inside (Needs LCOffice)
-* Spawns a few Spike traps outside
-* Spawns a few Barbers
-* Spawns an invisible random enemy
-* Spawns some Mantis Shrimps (Surfaced)
-* Spawns Big Bertha Outside (Surfaced)
-
-## More to come!
+## Features a ton of Dice Roll Events
+Too Many to list out here, check the config to get a list of them!
 
 ### Config
 Be sure to check out the plugin's config file.
@@ -240,6 +142,16 @@ If you want to force an effect, use
 * ~edice effect effectName
 or
 * ~edice menu
+
+### Custom Events
+I have made Custom Events as a config option 
+so if you wanted enemies inside or outside to spawn 
+or if you want a bunch of a specific items to spawn you can now do that.
+
+Just set the amount of custom events in the config, launch the game and close it to generate the configs.
+Then just input the name of the enemy or item depending on what one you do. 
+
+To get the item name or enemy name, turn on DebugLogging and for items pick it up, and for enemies launch to a planet, and it will list out every enemy name. 
 
 
 ### Special thanks

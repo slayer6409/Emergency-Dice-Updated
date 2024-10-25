@@ -1,3 +1,49 @@
+-	**1.5.10**
+	- Possible fix for gambler again again again again
+	- Added Event Stuffing for Days
+	- Added Event Size Switcher
+	- Added Event Burger Flippers
+	- Added Event Flinger
+	- Added Event Between a Mine and a Hard Place
+	- Made Drunk only effect the roller like it was supposed to
+	- Fixed Sound effects
+	- Fixed Size Difference not fixing for other people
+	- Dev stuff
+	
+-	**1.5.9**
+	- Possible fix for egg boots not working on clients
+	- Possible fix for gambler again
+	- - Still no idea why this is happening
+
+-	**1.5.8**
+	- Possible Fix for Revive Removing UI and maybe a fix for flying dice
+	- Added Event Blame Glitch (Off by Default xD)
+	- Added a new Debug menu option in the config
+	- Added Experimental Custom Trap Event Support
+	- - It's Experimental since they sometimes spawn in weird places (Working on fixing it)
+ 
+-   **1.5.7**
+	- Tulip Trapeze (Thanks al3m33da for the Idea)
+	
+-   **1.5.6**
+	- Added Egg Boots Effect (Thanks to MelanieMelicious for the Idea)
+	- Added in Custom Items Events and Custom Enemies Events Support (View the Readme for how to do them)
+	
+-   **1.5.5**
+	- Removed Speedy Boomba since it was causing issues (It will be back later)
+	- Fixed Surprise Egg/Surprise Flash for Clients
+
+-	**1.5.4**
+	- New Events: Speedy Boomba(Lethal Things), Crates (CodeRebirth), Tornado (CodeRebirth), Egg Fountain, Flashbang Fountain, Can I pet that Dawg
+	
+-	**1.5.3**
+	- Possibly fixed floating dice
+	- New Events 21 Gun Salute, The Shining, Merry Christmas (Thanks A Glitched NPC for the Ideas)
+	- New Events Eggs, SmolTakey (Requires Takey Plush mod), and Same Scrap Different Dice
+	- Added a config option to change the Emergency Die Price
+	- Added a config option to add the Emergency Die as a scrap item
+	- Added a config option for hypershake to have a timer
+	
 -	**1.5.2**
 	- Removed the FixRenderer since it ***shouldn't*** be needed anymore
 	- Disabled Terminal Lockout until I can fix it
@@ -8,7 +54,7 @@
 
 -	**1.5.0**
 	- Added 6 New Dice Rolls with Surfaced (Woops name error)
-	- Added a New Dice Rolls with LCTarotCards
+	- Added a New Dice Roll with LCTarotCards
 	- Fixed some other bugs (probably)
 	
 -	**1.4.10**

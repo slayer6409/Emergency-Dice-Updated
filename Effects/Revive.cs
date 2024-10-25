@@ -10,6 +10,7 @@ namespace MysteryDice.Effects
         public EffectType Outcome => EffectType.Great;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "Reviving everyone";
+        public static int lives = 0;
         public void Use()
         {
             Networker.Instance.ReviveAllPlayersServerRpc();

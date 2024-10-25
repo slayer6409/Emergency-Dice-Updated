@@ -57,6 +57,76 @@ namespace MysteryDice.Effects
                 
             }
         }
+        public static void ShowFullSelectMenu()
+        {
+            if (EffectMenu != null)
+            {
+                GameObject.Destroy(EffectMenu);
+                EffectMenu = null;
+            }
+                
+            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+
+            Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
+            Button exitButton = EffectMenu.transform.Find("Panel/Exit").GetComponent<Button>();
+            exitButton.onClick.AddListener(() =>
+            {
+                CloseSelectMenu();
+            });
+
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+
+            foreach (IEffect effect in DieBehaviour.AllEffects)
+            {
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
+                buttonText.text = $"{effect.Name} [{effect.Outcome}]";
+
+                Button button = effectObj.GetComponent<Button>();
+                button.onClick.AddListener(() =>
+                {
+                    CloseSelectMenu();
+                    effect.Use();
+                });
+                
+            }
+        }
+        public static void ShowCompleteSelectMenu()
+        {
+            if (EffectMenu != null)
+            {
+                GameObject.Destroy(EffectMenu);
+                EffectMenu = null;
+            }
+                
+            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+
+            Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
+            Button exitButton = EffectMenu.transform.Find("Panel/Exit").GetComponent<Button>();
+            exitButton.onClick.AddListener(() =>
+            {
+                CloseSelectMenu();
+            });
+
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+
+            foreach (IEffect effect in DieBehaviour.CompleteEffects)
+            {
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
+                buttonText.text = $"{effect.Name} [{effect.Outcome}]";
+
+                Button button = effectObj.GetComponent<Button>();
+                button.onClick.AddListener(() =>
+                {
+                    CloseSelectMenu();
+                    effect.Use();
+                });
+                
+            }
+        }
         public static void CloseSelectMenu()
         {
             if (EffectMenu != null)

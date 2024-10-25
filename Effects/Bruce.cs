@@ -17,6 +17,7 @@ namespace MysteryDice.Effects
             int bruceSpawn = UnityEngine.Random.Range(1, 3);
             if (GetEnemies.Bruce == null)
                 return;
+            Networker.Instance.PlaySoundServerRPC("Jaws");
             Misc.SpawnEnemyForced(GetEnemies.Bruce, bruceSpawn, false);
         }
     }

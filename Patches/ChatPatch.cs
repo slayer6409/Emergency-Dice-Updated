@@ -22,7 +22,16 @@ namespace MysteryDice.Patches
                 SizeDifference.ToggleVisor();
                 Misc.SafeTipMessage("Visor Toggled", "Run the command again to toggle it back");
             }
-
+            if(txt == "/fixhud"||txt == "\\fixhud")
+            {
+                HUDManager.Instance.enabled=true;
+                HUDManager.Instance.ToggleHUD(true);
+            }
+            if((txt == "/size" || txt == "\\size") && SizeDifferenceSwitcher.canSwitch)
+            {
+                SizeDifferenceSwitcher.BecomeSmall(GameNetworkManager.Instance.localPlayerController.playerClientId);
+                Misc.SafeTipMessage("Size Switched", "Run the command again to toggle it back");
+            }
 
             if (!MysteryDice.allowChatCommands.Value) return;
 

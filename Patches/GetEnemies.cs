@@ -23,10 +23,9 @@ namespace MysteryDice.Patches
     internal class GetEnemies
     {
 
-        public static SpawnableEnemyWithRarity Masked, HoardingBug, Centipede, Dog, Jester, Bracken, Stomper, Coilhead, Beehive, Sandworm, Spider, Giant, Maneater, Shrimp, CrystalRay, Lasso, Barber, BellCrab, Urchin, Horse, Nemo, Bruce, MantisShrimp;
+        public static SpawnableEnemyWithRarity Masked, HoardingBug, Ghost, Boomba, Tulip, Centipede, Dog, Jester, Bracken, Stomper, Coilhead, Beehive, Sandworm, Spider, Giant, Maneater, Nutcracker, Shrimp, CrystalRay, Lasso, Barber, BellCrab, Urchin, Horse, Nemo, Bruce, MantisShrimp, Tornado;
         public static SpawnableMapObject SpawnableLandmine, SpawnableTurret, SpawnableTP, SpawnableSpikeTrap, Seamine, Bertha; 
         private static readonly string teleporterTrapId = "TeleporterTrap"; 
-
         [HarmonyPatch("Start")]
         [HarmonyPostfix]
         private static void GetEnemy(Terminal __instance)
@@ -35,7 +34,7 @@ namespace MysteryDice.Patches
             {
                 foreach (SpawnableEnemyWithRarity enemy in level.Enemies)
                 {
-                    //MysteryDice.CustomLogger.LogInfo("Enemy Found Inside: " + enemy.enemyType.enemyName);
+                    if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogInfo("Enemy Found Inside: " + enemy.enemyType.enemyName);
                     if (enemy.enemyType.enemyName == "Masked")
                         Masked = enemy;
                     if (enemy.enemyType.enemyName == "Hoarding bug")
@@ -66,11 +65,17 @@ namespace MysteryDice.Patches
                         MantisShrimp = enemy;
                     if (enemy.enemyType.enemyName == "BellCrab")
                         BellCrab = enemy;
+                    if (enemy.enemyType.enemyName == "Nutcracker")
+                        Nutcracker = enemy;
+                    if (enemy.enemyType.enemyName == "Girl")
+                        Ghost = enemy;
+                    if (enemy.enemyType.enemyName == "Boomba")
+                        Boomba = enemy;
                 }
 
                 foreach (SpawnableEnemyWithRarity enemy in level.DaytimeEnemies)
                 {
-                    //MysteryDice.CustomLogger.LogInfo("Enemy Found Daytime: " + enemy.enemyType.enemyName);
+                    if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogInfo("Enemy Found Daytime: " + enemy.enemyType.enemyName);
                     if (enemy.enemyType.enemyName == "Red Locust Bees")
                         Beehive = enemy;
                     if (enemy.enemyType.enemyName == "Urchin")
@@ -79,11 +84,13 @@ namespace MysteryDice.Patches
                         Horse = enemy;
                     if (enemy.enemyType.enemyName == "Nemo")
                         Nemo = enemy;
+                    if (enemy.enemyType.enemyName == "Tulip Snake")
+                        Tulip = enemy;
                 }
 
                 foreach (SpawnableEnemyWithRarity enemy in level.OutsideEnemies)
                 {
-                    //MysteryDice.CustomLogger.LogInfo("Enemy Found Outside: " + enemy.enemyType.enemyName);
+                    if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogInfo("Enemy Found Outside: " + enemy.enemyType.enemyName);
                     if (enemy.enemyType.enemyName == "Earth Leviathan") 
                         Sandworm = enemy;
                     if (enemy.enemyType.enemyName == "ForestGiant")
@@ -92,11 +99,13 @@ namespace MysteryDice.Patches
                         Dog = enemy;
                     if (enemy.enemyType.enemyName == "Bruce")
                         Bruce = enemy;
+                    if (enemy.enemyType.enemyName == "Tornado")
+                        Tornado = enemy;
                 }
 
                 foreach (var item in level.spawnableMapObjects)
                 {
-                    //MysteryDice.CustomLogger.LogInfo("Spawnable Map Object Found: " + item.prefabToSpawn.name);
+                    if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogInfo("Spawnable Map Object Found: " + item.prefabToSpawn.name);
                     if (item.prefabToSpawn.name == "Landmine" && SpawnableLandmine == null)
                         SpawnableLandmine = item;
 
