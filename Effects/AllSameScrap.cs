@@ -81,7 +81,7 @@ namespace MysteryDice.Effects
                     }
                 }
             }
-            if (plushies.Count == 0) 
+            if (plushies.Count == 0 && (scrapSpawn == "takey" || scrapSpawn == "plushies")) 
             {
                 MysteryDice.CustomLogger.LogError($"No Items in the list with {scrapSpawn} as the name");
                 return;
@@ -89,36 +89,45 @@ namespace MysteryDice.Effects
             plushies = plushies.OrderBy(x => UnityEngine.Random.value).ToList();
             for (int i = 0; i < amountOfScrap; i++)
             {
-                if (scrapSpawn == "plushies"||scrapSpawn=="takey")
+                try
                 {
-                    item = plushies[i];
+                    if (scrapSpawn == "plushies" || scrapSpawn == "takey")
+                    {
+                        item = plushies[i];
+                    }
+                    //EnemyVent randomVent = RM.allEnemyVents[UnityEngine.Random.Range(0, RM.allEnemyVents.Length)];
+
+                    Vector3 randomPosition = new Vector3(
+                        UnityEngine.Random.Range(-100, 100),
+                        UnityEngine.Random.Range(-100, 100),
+                        UnityEngine.Random.Range(-100, 100)
+                    );
+                    Ray ray = new Ray(randomPosition, Vector3.down);
+                    RaycastHit hit;
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        randomPosition = hit.point;
+                    }
+
+                    GameObject obj = UnityEngine.Object.Instantiate(item.spawnPrefab, randomPosition, Quaternion.identity, RM.spawnedScrapContainer);
+                    GrabbableObject component = obj.GetComponent<GrabbableObject>();
+                    component.transform.rotation = Quaternion.Euler(component.itemProperties.restingRotation);
+                    component.fallTime = 0f;
+                    component.scrapValue = (int)(UnityEngine.Random.Range(item.minValue, item.maxValue) * RM.scrapValueMultiplier);
+                    scrapValues.Add(component.scrapValue);
+                    scrapWeights.Add(component.itemProperties.weight);
+
+                    NetworkObject netObj = obj.GetComponent<NetworkObject>();
+                    netObj.Spawn();
+                    component.FallToGround(true);
+                    netObjs.Add(netObj);
+
                 }
-                //EnemyVent randomVent = RM.allEnemyVents[UnityEngine.Random.Range(0, RM.allEnemyVents.Length)];
-                
-                Vector3 randomPosition = new Vector3(
-                    UnityEngine.Random.Range(-100,100),
-                    UnityEngine.Random.Range(-100,100),
-                    UnityEngine.Random.Range(-100,100)
-                );
-                Ray ray = new Ray(randomPosition, Vector3.down);
-                RaycastHit hit;
-                if (Physics.Raycast(ray, out hit))
+                catch(Exception e)
                 {
-                    randomPosition = hit.point;
+
                 }
-
-                GameObject obj = UnityEngine.Object.Instantiate(item.spawnPrefab, randomPosition, Quaternion.identity, RM.spawnedScrapContainer);
-                GrabbableObject component = obj.GetComponent<GrabbableObject>();
-                component.transform.rotation = Quaternion.Euler(component.itemProperties.restingRotation);
-                component.fallTime = 0f;
-                component.scrapValue = (int)(UnityEngine.Random.Range(item.minValue, item.maxValue) * RM.scrapValueMultiplier);
-                scrapValues.Add(component.scrapValue);
-                scrapWeights.Add(component.itemProperties.weight);
-
-                NetworkObject netObj = obj.GetComponent<NetworkObject>();
-                netObj.Spawn();
-                component.FallToGround(true);
-                netObjs.Add(netObj);
+               
             }
 
             RM.StartCoroutine(DelayedSyncAndTeleport(RM, netObjs.ToArray(), scrapValues.ToArray(), scrapWeights.ToArray(), player));
@@ -144,7 +153,7 @@ namespace MysteryDice.Effects
                     {
                         continue;
                     }
-                    Vector3 targetPosition = player.transform.position + new Vector3(0, -.5f, 0);
+                    Vector3 targetPosition = player.transform.position + new Vector3(0, 0.1f, 0);
                     RaycastHit hit;
                     if (Physics.Raycast(targetPosition + Vector3.up, Vector3.down, out hit))
                     {
@@ -158,6 +167,43 @@ namespace MysteryDice.Effects
                     }
                 }
             }
+        }
+
+        public static void spawnObject(ulong userID, int amount, string name)
+        {
+            try
+            {
+                List<SpawnableOutsideObjectWithRarity> allObjects = new List<SpawnableOutsideObjectWithRarity>();
+
+                foreach (var level in StartOfRound.Instance.levels)
+                {
+                    allObjects = allObjects
+                        .Union(level.spawnableOutsideObjects)
+                        .ToList();
+                }
+                allObjects = allObjects
+                .GroupBy(x => x.spawnableObject.name)
+                .Select(g => g.First())
+                .OrderBy(x => x.spawnableObject.name)
+                .ToList();
+                PlayerControllerB player = Misc.GetPlayerByUserID(userID);
+                Vector3 pos = player.transform.position;
+                var ObjectToSpawn = allObjects.Where(x => x.spawnableObject.name == name).First();
+
+                GameObject gameObject = UnityEngine.Object.Instantiate(
+                    ObjectToSpawn.spawnableObject.prefabToSpawn,
+                    pos,
+                    Quaternion.identity,
+                    RoundManager.Instance.mapPropsContainer.transform);
+                gameObject.transform.eulerAngles = new Vector3(gameObject.transform.eulerAngles.x, UnityEngine.Random.Range(0, 360), gameObject.transform.eulerAngles.z);
+                if(gameObject.GetComponent<NetworkObject>() == null) gameObject.AddComponent<NetworkObject>();
+                gameObject.GetComponent<NetworkObject>().Spawn(destroyWithScene: true);
+            }
+            catch (Exception e) 
+            {
+                MysteryDice.CustomLogger.LogWarning(e);
+            }
+            
         }
     }
 }

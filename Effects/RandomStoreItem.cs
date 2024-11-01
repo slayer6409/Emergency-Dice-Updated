@@ -24,7 +24,22 @@ namespace MysteryDice.Effects
             Terminal terminal = GameObject.FindObjectOfType<Terminal>();
             int i = UnityEngine.Random.Range(0, terminal.buyableItemsList.Count());
             Item item = terminal.buyableItemsList[i];
+
+            GameObject obj = UnityEngine.Object.Instantiate(item.spawnPrefab,
+            Misc.GetPlayerByUserID(playerID).transform.position,
+            Quaternion.identity,
+            RoundManager.Instance.playersManager.propsContainer);
+
+            obj.GetComponent<GrabbableObject>().fallTime = 0f;
+            obj.GetComponent<NetworkObject>().Spawn();
+        }
+        public static void SpawnItemNamed(ulong playerID, string name)
+        {
+            Terminal terminal = GameObject.FindObjectOfType<Terminal>();
+            int i = UnityEngine.Random.Range(0, terminal.buyableItemsList.Count());
             
+            Item item = terminal.buyableItemsList.ToList().Where(x=>x.itemName==name).First();
+
             GameObject obj = UnityEngine.Object.Instantiate(item.spawnPrefab,
             Misc.GetPlayerByUserID(playerID).transform.position,
             Quaternion.identity,

@@ -46,6 +46,8 @@ namespace MysteryDice
                             randomVent.floorNode.position,
                             Quaternion.Euler(new Vector3(0f, 0f, 0f)));
                         SetObjectInvisible(enemyObject);
+                        EnemyAI enemyai = enemyObject.GetComponent<EnemyAI>();
+                        SetNavmesh(enemyai, false);
                         enemyObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
                         RM.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
                     }
@@ -109,9 +111,19 @@ namespace MysteryDice
                 enemy.enemyType.enemyPrefab,
                 position,
                 Quaternion.Euler(new Vector3(0f, 0f, 0f)));
-
+            EnemyAI enemyai = enemyObject.GetComponent<EnemyAI>();
+            SetNavmesh(enemyai,true);
             enemyObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
             RM.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
+        }
+        public static void SetNavmesh(EnemyAI enemy, bool outside)
+        {
+            if (outside)
+                enemy.allAINodes = GameObject.FindGameObjectsWithTag("OutsideAINode");
+            else
+                enemy.allAINodes = GameObject.FindGameObjectsWithTag("InsideAINode");
+
+            enemy.isOutside = outside;
         }
         public static List<GameObject> SpawnEnemy(SpawnableEnemyWithRarity enemy, int amount, bool isInside, bool isInvisible = false, bool returnObject = false)
         {
@@ -280,8 +292,28 @@ namespace MysteryDice
 
             return validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)];
         }
+        public static ulong GetRandomPlayerID()
+        {
+            List<PlayerControllerB> validPlayers = new List<PlayerControllerB>();
+
+            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
+            {
+                PlayerControllerB player = playerPrefab.GetComponent<PlayerControllerB>();
+                if (IsPlayerReal(player))
+                    validPlayers.Add(player);
+            }
+
+            return validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)].playerClientId;
+        }
 
         public static bool IsPlayerAliveAndControlled(PlayerControllerB player)
+        {
+            return !player.isPlayerDead &&
+                    player.isActiveAndEnabled &&
+                    player.IsSpawned &&
+                    player.isPlayerControlled;
+        }
+        public static bool IsPlayerReal(PlayerControllerB player)
         {
             return !player.isPlayerDead &&
                     player.isActiveAndEnabled &&

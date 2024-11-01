@@ -15,7 +15,7 @@ namespace MysteryDice.Dice
         {
             RollToEffect.Add(1, new EffectType[] { EffectType.Awful });
             RollToEffect.Add(2, new EffectType[] { EffectType.Awful, EffectType.Bad });
-            RollToEffect.Add(3, new EffectType[] { EffectType.Bad });
+            RollToEffect.Add(3, new EffectType[] { EffectType.Mixed, EffectType.Bad });
             RollToEffect.Add(4, new EffectType[] { EffectType.Bad, EffectType.Good, EffectType.Great });
             RollToEffect.Add(5, new EffectType[] { EffectType.Good, EffectType.Great });
             RollToEffect.Add(6, new EffectType[] { EffectType.Great });

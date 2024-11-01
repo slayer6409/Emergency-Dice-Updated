@@ -16,7 +16,6 @@ namespace MysteryDice.Patches
         private static void ChatTesting(HUDManager __instance)
         {
             string txt = __instance.chatTextField.text.ToLower();
-
             if(txt == "/visor"||txt == "\\visor")
             {
                 SizeDifference.ToggleVisor();
@@ -34,8 +33,6 @@ namespace MysteryDice.Patches
             }
 
             if (!MysteryDice.allowChatCommands.Value) return;
-
-            
 
             if (txt == BaseCommand + "enemies")
             {
@@ -88,8 +85,8 @@ namespace MysteryDice.Patches
                 }
             }
 
-            if(txt.Contains(BaseCommand + "menu"))
-                SelectEffect.ShowSelectMenu();
+            if (txt.Contains(BaseCommand + "menu"))
+                MysteryDice.DebugMenu(true);
 
             foreach (IEffect effect in DieBehaviour.AllEffects)
             {

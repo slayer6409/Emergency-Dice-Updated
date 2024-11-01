@@ -16,12 +16,17 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
+            Networker.Instance.TulipTrapeezeServerRPC();
+        }
+        public static void spawn()
+        {
             bool removeAfter = false;
             var RM = RoundManager.Instance;
             int TulipSpawn = UnityEngine.Random.Range(10, 16);
             if (GetEnemies.Tulip == null)
                 return;
-            var player = StartOfRound.Instance.localPlayerController;
+            var player = Misc.GetRandomAlivePlayer();
+            Networker.Instance.TulipTrapeezeMessageServerRPC(player.playerClientId);
             player.DropAllHeldItemsAndSync();
             float radius = 2;
             if (!RoundManager.Instance.currentLevel.Enemies.Contains(GetEnemies.Tulip))
@@ -29,7 +34,7 @@ namespace MysteryDice.Effects
                 RoundManager.Instance.currentLevel.Enemies.Add(GetEnemies.Tulip);
                 removeAfter = true;
             }
-            for (int i = 0; i < TulipSpawn; i++) 
+            for (int i = 0; i < TulipSpawn; i++)
             {
                 float angle = i * Mathf.PI * 2 / TulipSpawn;
                 Vector3 spawnPosition = new Vector3(
@@ -47,7 +52,7 @@ namespace MysteryDice.Effects
                 enemyObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
                 RM.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
             }
-            if(removeAfter)
+            if (removeAfter)
             {
                 RoundManager.Instance.currentLevel.Enemies.Remove(GetEnemies.Tulip);
                 removeAfter = false;

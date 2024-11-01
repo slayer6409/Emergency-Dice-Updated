@@ -230,25 +230,50 @@ namespace MysteryDice
         public EffectType Outcome => config.outcome; // Adjust as necessary
         public bool ShowDefaultTooltip => true;
         public string Tooltip => config.customTooltip;
-        public SpawnableEnemyWithRarity enemy=null;
+        public static SpawnableEnemyWithRarity enemy = null;
         public void Use()
         {
-            if (enemy == null) {
+            Networker.Instance.CustomMonsterServerRPC(config.monsterName, config.AmountMax, config.IsInside);
+        }
+        public static void spawnEnemy(string name, int max, bool inside)
+        {
+            int randomSpawn = 0; 
+            List<SpawnableEnemyWithRarity> allenemies = new List<SpawnableEnemyWithRarity>();
+
+            foreach (var level in StartOfRound.Instance.levels)
+            {
+                allenemies = allenemies
+                    .Union(level.Enemies)
+                    .Union(level.OutsideEnemies)
+                    .Union(level.DaytimeEnemies)
+                    .ToList();
+            }
+            allenemies = allenemies
+            .GroupBy(x => x.enemyType.enemyName)
+            .Select(g => g.First())
+            .OrderBy(x => x.enemyType.enemyName)
+            .ToList();
+            enemy = allenemies.FirstOrDefault(x => x.enemyType.enemyName == name);
+            if (enemy == null)
+            { //do original method as backup
                 foreach (SelectableLevel level in StartOfRound.Instance.levels)
                 {
-                    enemy = level.Enemies.FirstOrDefault(x=>x.enemyType.enemyName == config.monsterName);
-                    if (enemy == null) level.DaytimeEnemies.FirstOrDefault(x => x.enemyType.enemyName == config.monsterName);
-                    if (enemy == null) level.OutsideEnemies.FirstOrDefault(x => x.enemyType.enemyName == config.monsterName);
 
-                    int randomSpawn = UnityEngine.Random.Range(1, config.AmountMax+1);
+                    enemy = level.Enemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
                     if (enemy == null)
-                    {
-                        MysteryDice.CustomLogger.LogWarning($"The Enemy {config.monsterName} is null for some reason, did you capatalize it or spell it correctly?");
-                        return;
-                    }
-                    Misc.SpawnEnemyForced(enemy, randomSpawn, config.IsInside);
-                } 
+                        enemy = level.DaytimeEnemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
+                    if (enemy == null)
+                        enemy = level.OutsideEnemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
+
+
+                }
             }
+            if (enemy == null)
+            {
+                MysteryDice.CustomLogger.LogWarning($"Enemy '{name}' not found. Available enemies: {string.Join(", ", allenemies.Select(e => e.enemyType.enemyName))}"); return;
+            }
+            randomSpawn = UnityEngine.Random.Range(1, max + 1);
+            Misc.SpawnEnemyForced(enemy, randomSpawn, inside);
         }
     }
     internal class DynamicItemEffect : IEffect

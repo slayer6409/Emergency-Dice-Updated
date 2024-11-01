@@ -26,6 +26,7 @@ namespace MysteryDice.Dice
             MixedEffects = new List<IEffect>(), 
             BadEffects = new List<IEffect>();
         public static List<ConfigEntry<bool>> effectConfigs = new List<ConfigEntry<bool>>();
+        public static List<ConfigEntry<bool>> favConfigs = new List<ConfigEntry<bool>>();
         protected GameObject DiceModel;
         public List<IEffect> Effects = new List<IEffect>();
         public Dictionary<int, EffectType[]> RollToEffect = new Dictionary<int, EffectType[]>();
@@ -351,9 +352,6 @@ namespace MysteryDice.Dice
             AllEffects.Add(new Lasso());
             AllEffects.Add(new Meteors());
             AllEffects.Add(new Barbers());
-            AllEffects.Add(new SizeDifference());
-            CompleteEffects.Add(new SizeDifferenceForAll());
-            AllEffects.Add(new SizeDifferenceSwitcher());
             AllEffects.Add(new InvisibleEnemy());
             AllEffects.Add(new EmergencyMeeting());
             AllEffects.Add(new Ghosts());
@@ -366,9 +364,13 @@ namespace MysteryDice.Dice
             AllEffects.Add(new InsideDog());
             AllEffects.Add(new EggBoots());
             CompleteEffects.Add(new EggBootsForAll());
+            CompleteEffects.Add(new RerollALL());
             AllEffects.Add(new TulipTrapeze());
             AllEffects.Add(new BlameGlitch());
             AllEffects.Add(new HappyDay());
+            AllEffects.Add(new SpicyNuggies());
+            AllEffects.Add(new WhereDidMyFriendsGo());
+            //AllEffects.Add(new BigBees());
             //AllEffects.Add(new AnythingGrenade());
             //AllEffects.Add(new TerminalLockout());
             if (MysteryDice.lethalThingsPresent)
@@ -401,6 +403,7 @@ namespace MysteryDice.Dice
                 AllEffects.Add(new MineHardPlace());
                 AllEffects.Add(new Flinger());
                 AllEffects.Add(new BurgerFlippers());
+                AllEffects.Add(new ScaryMon());
             }
             if (MysteryDice.LCTarotCardPresent)
             {
@@ -416,6 +419,17 @@ namespace MysteryDice.Dice
                 AllEffects.Add(new CratesOutside());
                 AllEffects.Add(new CratesInside());
             }
+            if (!MysteryDice.DisableSizeBased.Value)
+            {
+                AllEffects.Add(new SizeDifference());
+                CompleteEffects.Add(new SizeDifferenceForAll());
+                AllEffects.Add(new SizeDifferenceSwitcher());
+            }
+            if (MysteryDice.DiversityPresent)
+            {
+                AllEffects.Add(new DiversityEffect1());
+                AllEffects.Add(new DiversityEffect2());
+            }
 
             List<IEffect> sortedList = AllEffects.OrderBy(o=>o.Name).ToList();
             CompleteEffects.AddRange(AllEffects);
@@ -425,6 +439,7 @@ namespace MysteryDice.Dice
             foreach (var effect in AllEffects)
             {
                 ConfigEntry<bool> cfg;
+                ConfigEntry<bool> fav;
                 if (effect.Name == new SpikeOverflowOutside().Name || effect.Name == new BlameGlitch().Name) //Default off 
                 {
                     cfg = MysteryDice.BepInExConfig.Bind<bool>("Allowed Effects",
@@ -439,8 +454,11 @@ namespace MysteryDice.Dice
                     true,
                     effect.Tooltip);
                 }
+                fav = MysteryDice.BepInExConfig.Bind<bool>("Favorites", effect.Name, false, effect.Tooltip);
+
                
                 effectConfigs.Add(cfg);
+                favConfigs.Add(fav);
                 if (cfg.Value)
                     AllowedEffects.Add(effect);
             }

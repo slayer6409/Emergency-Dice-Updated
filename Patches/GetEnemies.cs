@@ -23,7 +23,7 @@ namespace MysteryDice.Patches
     internal class GetEnemies
     {
 
-        public static SpawnableEnemyWithRarity Masked, HoardingBug, Ghost, Boomba, Tulip, Centipede, Dog, Jester, Bracken, Stomper, Coilhead, Beehive, Sandworm, Spider, Giant, Maneater, Nutcracker, Shrimp, CrystalRay, Lasso, Barber, BellCrab, Urchin, Horse, Nemo, Bruce, MantisShrimp, Tornado;
+        public static SpawnableEnemyWithRarity Masked, HoardingBug, Scary, Ghost, Boomba, Tulip, Centipede, Dog, Jester, Bracken, Stomper, Coilhead, Beehive, Sandworm, Spider, Giant, Maneater, Nutcracker, Shrimp, CrystalRay, Lasso, Barber, BellCrab, Urchin, Horse, Nemo, Bruce, MantisShrimp, Tornado;
         public static SpawnableMapObject SpawnableLandmine, SpawnableTurret, SpawnableTP, SpawnableSpikeTrap, Seamine, Bertha; 
         private static readonly string teleporterTrapId = "TeleporterTrap"; 
         [HarmonyPatch("Start")]
@@ -71,6 +71,8 @@ namespace MysteryDice.Patches
                         Ghost = enemy;
                     if (enemy.enemyType.enemyName == "Boomba")
                         Boomba = enemy;
+                    if (enemy.enemyType.enemyName == "Scary")
+                        Scary = enemy;
                 }
 
                 foreach (SpawnableEnemyWithRarity enemy in level.DaytimeEnemies)

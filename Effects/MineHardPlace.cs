@@ -16,12 +16,17 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
+            Networker.Instance.MineHardPlaceServerRPC(StartOfRound.Instance.localPlayerController.playerClientId);
+        }
+        public static void spawn(ulong playerID)
+        {
+            
             int BerthaSpawn = 8;
             if (GetEnemies.Bertha == null)
                 return;
-            var player = StartOfRound.Instance.localPlayerController;
+            var player = Misc.GetPlayerByUserID(playerID);
             float radius = 8;
-            for (int i = 0; i < BerthaSpawn; i++) 
+            for (int i = 0; i < BerthaSpawn; i++)
             {
                 float angle = i * Mathf.PI * 2 / BerthaSpawn;
                 Vector3 spawnPosition = new Vector3(

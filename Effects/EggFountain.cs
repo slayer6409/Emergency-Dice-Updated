@@ -31,6 +31,7 @@ namespace MysteryDice.Effects
             int count = 0;
             List<GameObject> spawnedItems = new List<GameObject>();
             List<NetworkObject> spawnedNetItems = new List<NetworkObject>();
+            List<Vector3> spawnedPoints = new List<Vector3>();
             bool useEgg = false;
 
             switch (choice)
@@ -49,22 +50,7 @@ namespace MysteryDice.Effects
                     break;
             }
 
-            PlayerControllerB player = null;
-
-            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
-            {
-                PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
-                if (playerComp == null) continue;
-
-                if (playerComp.playerClientId == callerID)
-                {
-                    player = playerComp;
-                }
-                if (player != null)
-                {
-                    break;
-                }
-            }
+            PlayerControllerB player = Misc.GetPlayerByUserID(callerID); 
 
             if (player == null) return;
 
@@ -78,11 +64,12 @@ namespace MysteryDice.Effects
                 );
                 spawnPosition += player.transform.position;
 
+                spawnedPoints.Add( spawnPosition );
                 GameObject obj = UnityEngine.Object.Instantiate(item.spawnPrefab, spawnPosition, Quaternion.identity, RoundManager.Instance.spawnedScrapContainer);
                 GrabbableObject component = obj.GetComponent<GrabbableObject>();
                 component.transform.rotation = Quaternion.Euler(component.itemProperties.restingRotation);
                 component.fallTime = 0f;
-                component.scrapValue = (int)(UnityEngine.Random.Range(item.minValue, item.maxValue) * RoundManager.Instance.scrapValueMultiplier);
+                component.targetFloorPosition = spawnPosition;
                 NetworkObject netObj = obj.GetComponent<NetworkObject>();
                 netObj.Spawn();
                 component.FallToGround(true);
@@ -90,18 +77,79 @@ namespace MysteryDice.Effects
                 spawnedItems.Add(obj);
                 spawnedNetItems.Add(netObj);
                
-                Networker.Instance.explodeItemServerRPC(netObj.NetworkObjectId, useEgg, count);
+
+            }
+            for (int i = 0; i < spawnedNetItems.Count; i++)
+            {
+                NetworkObject net = spawnedNetItems[i];
+                Vector3 spawnPos = spawnedPoints[i];
+                spawnPos.y=player.transform.position.y;
+                Networker.Instance.TeleportEggServerRPC(net, player.playerClientId, spawnPos);
+
+                Networker.Instance.explodeItemServerRPC(net.NetworkObjectId, useEgg, count);
                 count += 1;
             }
             //explodeStuff(spawnedNetItems, useEgg);
         }
+        public static void teleport(NetworkObjectReference netObjs, ulong userID, Vector3 pos)
+        {
+            PlayerControllerB player = Misc.GetPlayerByUserID(userID);
+                if (netObjs.TryGet(out NetworkObject netObj))
+                {
+                    GameObject obj = netObj.gameObject;
+                    if (obj == null) return;
+                    
+                    Vector3 targetPosition = pos;
+                    RaycastHit hit;
+                    if (Physics.Raycast(targetPosition + Vector3.up, Vector3.down, out hit))
+                    {
+                        targetPosition = hit.point;
+                    }
+                    obj.transform.position = targetPosition;
+                    GrabbableObject grabbableObject = obj.GetComponent<GrabbableObject>();
+                    if (grabbableObject != null)
+                    {
+                        grabbableObject.targetFloorPosition = targetPosition;
+                    }
+                }
+            
+        }
         public static IEnumerator explodeEgg(GameObject obj, int count)
         {
-            yield return new WaitForSeconds(count*MysteryDice.eggExplodeTime.Value);
-            obj.GetComponent<StunGrenadeItem>().chanceToExplode = 100;
-            AccessTools.Method(obj.GetComponent<StunGrenadeItem>().GetType(), "ExplodeStunGrenade")
-                ?.Invoke(obj.GetComponent<StunGrenadeItem>(), new object[] { true });
-            EggBoots.canSpawnAnother=true;
+            // Wait for the calculated delay based on the count
+            yield return new WaitForSeconds(count * MysteryDice.eggExplodeTime.Value);
+            
+            // Ensure the StunGrenadeItem component exists
+            var stunGrenadeItem = obj.GetComponent<StunGrenadeItem>();
+            if (stunGrenadeItem != null)
+            {
+                stunGrenadeItem.chanceToExplode = 100;
+
+                // Use reflection to invoke the private method
+                var explodeMethod = AccessTools.Method(stunGrenadeItem.GetType(), "ExplodeStunGrenade");
+                if (explodeMethod != null)
+                {
+                    try
+                    {
+                        explodeMethod.Invoke(stunGrenadeItem, new object[] { true });
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"Failed to invoke ExplodeStunGrenade: {ex}");
+                    }
+                }
+                else
+                {
+                    Debug.LogError("ExplodeStunGrenade method not found.");
+                }
+            }
+            else
+            {
+                Debug.LogError("StunGrenadeItem component missing on the object.");
+            }
+
+            // Reset the spawn flag
+            EggBoots.canSpawnAnother = true;
         }
 
         public static IEnumerator explodeStun(GameObject obj)

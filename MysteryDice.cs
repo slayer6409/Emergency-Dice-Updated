@@ -24,13 +24,17 @@ namespace MysteryDice
     [BepInDependency("Surfaced", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("LCTarotCard", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("evaisa.lethalthings", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("x753.Mimics", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("Chaos.Diversity", BepInDependency.DependencyFlags.SoftDependency)]
     public class MysteryDice : BaseUnityPlugin
     {
+        public static bool DEBUGMODE = false;
+
         public enum chatDebug { HostOnly, Everyone, None};
 
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.5.10";
+        private const string modVersion = "1.5.18";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -54,6 +58,7 @@ namespace MysteryDice
         public static bool SurfacedPresent = false;
         public static bool LCTarotCardPresent = false;
         public static bool TakeyPlushPresent = false;
+        public static bool DiversityPresent = false;
         public static Assembly LCOfficeAssembly;
         public static bool terminalLockout = false;
         public static CustomConfigs customCfg;
@@ -85,7 +90,11 @@ namespace MysteryDice
         public static ConfigEntry<float> BoombaEventSpeed;
         public static ConfigEntry<string> adminKeybind;
         public static ConfigEntry<bool> debugButton;
+        public static ConfigEntry<bool> superDebugMode;
         public static ConfigEntry<bool> DebugLogging;
+        public static ConfigEntry<bool> DicePosUpdate;
+        public static ConfigEntry<bool> BetterDebugMenu;
+        public static ConfigEntry<bool> DisableSizeBased;
         public static ConfigEntry<bool> DieEmergencyAsScrap;
         public static ConfigEntry<DieBehaviour.ShowEffect> DisplayResults;
 
@@ -108,19 +117,31 @@ namespace MysteryDice
                 "Debug Button",
                 false,
                 "Enables the debug button(Must be host)");
-            
+
+            superDebugMode = BepInExConfig.Bind<bool>(
+                "Admin",
+                "Super Debug",
+                false,
+                "You probably don't want this, it makes clients be able to use the menu");
+
             debugMenuShowsAll = BepInExConfig.Bind<bool>(
                 "Admin",
                 "Debug Menu Shows All Events",
                 false,
                 "Makes the debug menu show all the events even if turned off");
 
-            DebugLogging = BepInExConfig.Bind<bool>(
+            BetterDebugMenu = BepInExConfig.Bind<bool>(
                 "Admin",
-                "Debug Logging",
+                "Better Debug Menu",
                 false,
-                "This is so I can see what the names of a lot of things are, probably not useful for most people");
+                "Enables the Better Debug Menu");
 
+            DisableSizeBased = BepInExConfig.Bind<bool>(
+                "Misc",
+                "Disable Size Based Stuff",
+                false,
+                "Disables size based things");
+            
             debugDice = BepInExConfig.Bind<bool>(
                 "Admin",
                 "Show effects in the console",
@@ -234,6 +255,7 @@ namespace MysteryDice
                 "Custom Trap Events",
                 0,
                 "Sets the Number of Custom Trap Events");
+
             minNeckBreakTimer = BepInExConfig.Bind<int>(
                 "NeckBreak",
                 "Min Break Time",
@@ -258,6 +280,19 @@ namespace MysteryDice
                 DieBehaviour.ShowEffect.DEFAULT,
                 "Display the dice results or not \nAll - Shows all, None - shows none,\n Default, Shows the default ones, Random - Randomly shows them");
 
+            DicePosUpdate = BepInExConfig.Bind<bool>(
+                "Admin",
+                "Dice Position Update",
+                false,
+                "You don't want this on unless you want to help me figure out why gambler is being stupid");
+
+            DebugLogging = BepInExConfig.Bind<bool>(
+                "Admin",
+                "Debug Logging",
+                false,
+                "This is so I can see what the names of a lot of things are, probably not useful for most people");
+
+
             //if (lethalThingsPresent)
             //{
             //    BoombaEventSpeed = BepInExConfig.Bind<float>(
@@ -276,6 +311,7 @@ namespace MysteryDice
             //toSend.Add(adminKeybind);
             //toSend.Add(debugButton);
             toSend.Add(debugChat);
+            toSend.Add(superDebugMode);
             toSend.Add(DieEmergencyAsScrap);
             toSend.Add(EmergencyDiePrice);
             toSend.Add(hyperShakeTimer);
@@ -303,7 +339,6 @@ namespace MysteryDice
             CustomLogger = BepInEx.Logging.Logger.CreateLogSource(modGUID);
             lethalThingsAssembly = GetAssembly("evaisa.lethalthings");
             lethalThingsPresent = IsModPresent("evaisa.lethalthings", "LethalThings compatablilty enabled!");
-            //db(); //Enable this to get all assembly names
             LethalMonAssembly = GetAssembly("LethalMon"); //This was before I learned about soft dependencies lol
             LethalMonPresent = IsModPresent("LethalMon", "LethalMon compatablilty enabled!");
             LCOfficeAssembly = GetAssembly("Piggy.LCOffice"); //This was before I learned about soft dependencies lol
@@ -312,27 +347,28 @@ namespace MysteryDice
             LCTarotCardPresent = IsModPresent("LCTarotCard", "LCTarotCard compatablilty enabled!");
             TakeyPlushPresent = IsModPresent("com.github.zehsteam.TakeyPlush", "TakeyPlush compatablilty enabled!");
             CodeRebirthPresent = IsModPresent("CodeRebirth", "CodeRebirth compatablilty enabled!");
+            DiversityPresent = IsModPresent("Chaos.Diversity", "Diversity: Remastered compatablilty enabled!");
+            //MimicsPresent = IsModPresent("x753.Mimics", "Mimics compatablilty enabled!");
             BepInExConfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "Emergency Dice.cfg"),true);
             ModConfig();
             InvisibleEnemy.Config();
             SizeDifference.Config();
             BlameGlitch.Config();
+            if (SurfacedPresent)
+            {
+                Flinger.Config();
+            }
             customCfg = new CustomConfigs(BepInExConfig);
             customCfg.GenerateConfigs(CustomEnemyEventCount.Value, CustomItemEventCount.Value, CustomTrapEventCount.Value);
             DieBehaviour.Config();
 
-            //Orphaned Entries
-            PropertyInfo orphanedEntriesProp = Config.GetType().GetProperty("OrphanedEntries", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            var orphanedEntries = (Dictionary<ConfigDefinition, string>)orphanedEntriesProp.GetValue(Config, null);
-
-            orphanedEntries.Clear();
 
             //All config edits come before this
             if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("ainavt.lc.lethalconfig"))
                 ConfigManager.setupLethalConfig();
             NetcodeWeaver();
-            
+
+            if (superDebugMode.Value) db(); //Enable this to get all assembly names
 
             LoadedAssets = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "mysterydice"));
             LoadedAssets2 = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "mysterydice2"));
@@ -396,13 +432,28 @@ namespace MysteryDice
             }
         }
 
-        private void DebugMenu()
-        {   
-            if (Networker.Instance != null && ((Networker.Instance.IsHost && debugButton.Value) || GameNetworkManager.Instance.localPlayerController.playerSteamId == 76561198077184650))
+        public static void DebugMenu(bool bypassButton = false)
+        {
+            if (superDebugMode.Value)
             {
-                if(GameNetworkManager.Instance.localPlayerController.playerSteamId == 76561198077184650) SelectEffect.ShowCompleteSelectMenu();
-                else if (debugMenuShowsAll.Value) SelectEffect.ShowFullSelectMenu();
-                else SelectEffect.ShowSelectMenu();
+                SelectEffect.showDebugMenu(true, true);
+                return;
+            }
+            if (Networker.Instance != null && ((Networker.Instance.IsHost && (debugButton.Value||bypassButton)) || GameNetworkManager.Instance.localPlayerController.playerSteamId == 76561198077184650))
+            {
+                if (BetterDebugMenu.Value)
+                {
+                    if (GameNetworkManager.Instance.localPlayerController.playerSteamId == 76561198077184650) SelectEffect.showDebugMenu(true, true);
+                    else if (debugMenuShowsAll.Value) SelectEffect.showDebugMenu(true, false);
+                    else SelectEffect.showDebugMenu(false, false);
+                }
+                else
+                {
+                    if (GameNetworkManager.Instance.localPlayerController.playerSteamId == 76561198077184650) SelectEffect.ShowSelectMenu(true, true);
+                    else if (debugMenuShowsAll.Value) SelectEffect.ShowSelectMenu(true, false);
+                    else SelectEffect.ShowSelectMenu(false, false);
+                }
+                
             }   
         }
 
@@ -459,17 +510,6 @@ namespace MysteryDice
 
         public static void LoadDice()
         {
-            DieGambler = LoadedAssets.LoadAsset<Item>("MysteryDiceItem");
-
-            DieGambler.minValue = 100;
-            DieGambler.maxValue = 130;
-
-            GamblerDie scriptMystery = DieGambler.spawnPrefab.AddComponent<GamblerDie>();
-            scriptMystery.grabbable = true;
-            scriptMystery.grabbableToEnemies = true;
-            scriptMystery.itemProperties = DieGambler;
-
-            RegisteredDice.Add(DieGambler);
 
             DieEmergency = LoadedAssets.LoadAsset<Item>("Emergency Dice Script");
             DieEmergency.highestSalePercentage = 80;
@@ -495,6 +535,18 @@ namespace MysteryDice
             RegisteredDice.Add(DieChronos);
 
             ///
+
+            DieGambler = LoadedAssets.LoadAsset<Item>("MysteryDiceItem");
+
+            DieGambler.minValue = 100;
+            DieGambler.maxValue = 130;
+
+            GamblerDie scriptMystery = DieGambler.spawnPrefab.AddComponent<GamblerDie>();
+            scriptMystery.grabbable = true;
+            scriptMystery.grabbableToEnemies = true;
+            scriptMystery.itemProperties = DieGambler;
+
+            RegisteredDice.Add(DieGambler);
 
             DieSacrificer = LoadedAssets.LoadAsset<Item>("Sacrificer");
             DieSacrificer.minValue = 170;
@@ -656,7 +708,7 @@ namespace MysteryDice
                         die.itemName + " Spawn rates",
                         level.Key,
                         DefaultSpawnRates[(die.itemName, level.Key)],
-                        "Sets how often this item spawns on this level. 0-10 is very rare, 10-25 is rare, 25+ is common. This is only from my observations."
+                        "Sets how often this item spawns on this level. 0-10 is very rare, 10-25 is rare, 25+ is common. This is only from my observations. -Theronguard (These numbers are with no modded scrap from my observations - Slayer)"
                     );
                     Items.RegisterScrap(die, rate.Value, level.Value);
                 }

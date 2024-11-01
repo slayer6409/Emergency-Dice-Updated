@@ -6,23 +6,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 namespace MysteryDice.Dice
 {
     public class GamblerDie : DieBehaviour
     {
+        private Rigidbody dieRigidbody;
         public override void Start()
         {
             base.Start();
-            DiceModel.AddComponent<CycleSigns>();
-            GetComponent<GrabbableObject>().fallTime = 1f;
-            GetComponent<GrabbableObject>().FallWithCurve();
-            FallToGround();
-        }
-        public override void LateUpdate()
-        {
-            base.LateUpdate();
-            transform.rotation = Quaternion.identity;
+            //Maybe??? I am hoping it works! If so Thanks to Xuu!!!
+            GetComponent<Item>().verticalOffset = 0;
+            DiceModel.AddComponent<CycleSigns>(); 
         }
         public override void SetupRollToEffectMapping()
         {
@@ -67,6 +63,15 @@ namespace MysteryDice.Dice
                 return;
             }
             ShowDefaultTooltip(randomEffect, diceRoll);
+        }
+    }
+    public class logPos : MonoBehaviour
+    {
+        public void FixedUpdate()
+        {
+            //gonna try here too lol
+            GetComponent<Item>().verticalOffset = 0;
+            if (MysteryDice.DicePosUpdate.Value) MysteryDice.CustomLogger.LogDebug(this.transform.position);
         }
     }
 }

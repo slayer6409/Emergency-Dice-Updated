@@ -42,7 +42,7 @@ namespace MysteryDice.Effects
     //            NavMeshAgent agent = __instance.GetComponent<NavMeshAgent>();
     //            if (agent != null)
     //            {
-    //                agent.speed = MysteryDice.BoombaEventSpeed.Value; 
+    //                agent.speed = MysteryDice.BoombaEventSpeed.Value;
     //            }
     //        }
     //    }

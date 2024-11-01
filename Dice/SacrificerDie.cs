@@ -19,7 +19,7 @@ namespace MysteryDice.Dice
             RollToEffect.Add(3, new EffectType[] { EffectType.Awful, EffectType.Bad });
             RollToEffect.Add(4, new EffectType[] { EffectType.Bad });
             RollToEffect.Add(5, new EffectType[] { EffectType.Bad });
-            RollToEffect.Add(6, new EffectType[] { EffectType.Bad });
+            RollToEffect.Add(6, new EffectType[] { EffectType.Mixed, EffectType.Bad });
         }
 
         public override void Roll()

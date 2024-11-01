@@ -1,3 +1,52 @@
+-	**1.5.18**
+	- Added 2 Diversity Effects for the new Diversity Update
+	- - Chaos if you want you can choose the names/tooltips for the effects (just message me on discord)
+	- Debug Menu Changes
+		
+-	**1.5.17**
+	- Accidentally left the DebugMode on when Patching
+
+
+-	**1.5.16**
+	- Possible fix for Surprise Egg and Egg Boots
+	- Actually fixed Jaws Sound this time
+	- Scary
+	- \>:D
+	
+-	**1.5.15**
+	- Possible fix for burger flippers
+	- Flinger ***Should*** now work correctly for all players
+	- Tulip Trapeze spawns on a random player now 
+	- Debug menu now has Spawn Shop Items
+	- Added Beyblade mode for Flinger
+	- Chronos(roll 3) and Sacrificer (roll 6) can now spawned mixed effects
+	- Apparently Little Company checks don't work for some reason, so there is a config to turn off all sized based things with one click
+	 
+-	**1.5.14**
+	- Added Little Company checks to disable size based things for compatablility
+	- Added Where did my friends go
+	- Fixed scrolling with the selection menu
+	- Fixed Mine and a Hard Place to be not on the host only
+	- I might remove gambler and re-make it from scratch (with a potentially new name) if this doesn't work
+	- Fixed audio of Can I pet that Dog and Jaws
+
+-	**1.5.13**
+	- Added Spicy Nuggies Event (suggested by Lizzie)
+	- Added the ability to favorite things in the effect/debug menu by Right Clicking them
+	- Debug menu can now spawn items, monsters, and traps! Items and Traps spawn on you, and monsters spawn inside if you are inside, outside if you are outside. 
+	- - It is off by default since it might act weird at first until I know it works fine (It is 5am when I made this lol) (This was mainly so I can test things easier lol)
+	- - Also Apparently spawning enemies outside (that aren't meant there) might not have ai correctly without Starlancer AIFix or something similar (same with inside dog)
+	- Fixed Burger Flippers and Flinger (Probably)
+	- Fixed some things (I don't remember lol)
+	- Dev Stuff pt 2
+	
+-	**1.5.12**
+	- Fix for spawning items
+
+-	**1.5.11**
+	- Added a favorite system to the select/debug menu
+	- Possible fix for things
+
 -	**1.5.10**
 	- Possible fix for gambler again again again again
 	- Added Event Stuffing for Days

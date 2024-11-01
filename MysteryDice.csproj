@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MysteryDice</RootNamespace>
     <AssemblyName>MysteryDice</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -50,6 +51,15 @@
     <Reference Include="CodeRebirth">
       <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\XuXiaolan-CodeRebirth\CodeRebirth\CodeRebirth.dll</HintPath>
     </Reference>
+    <Reference Include="Diversity Remastered">
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\IntegrityChaos-Diversity\Diversity Remastered.dll</HintPath>
+    </Reference>
+    <Reference Include="DiversityDungeonGen">
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\IntegrityChaos-Diversity\DiversityDungeonGen.dll</HintPath>
+    </Reference>
+    <Reference Include="DiversityLib">
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\IntegrityChaos-Diversity\DiversityLib.dll</HintPath>
+    </Reference>
     <Reference Include="LCTarrotCard">
       <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\Asonyx-LCTarotCard\LCTarrotCard.dll</HintPath>
     </Reference>
@@ -63,6 +73,9 @@
     </Reference>
     <Reference Include="LethalThings">
       <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\Evaisa-LethalThings\LethalThings\LethalThings.dll</HintPath>
+    </Reference>
+    <Reference Include="Mimics">
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\x753-Mimics\Mimics.dll</HintPath>
     </Reference>
     <Reference Include="Surfaced">
       <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\SurfacedTeam-Surfaced\Surfaced.dll</HintPath>
@@ -132,11 +145,19 @@
     <Compile Include="Dice\ChronosDie.cs" />
     <Compile Include="Dice\GamblerDie.cs" />
     <Compile Include="Effects\AnythingGrenade.cs" />
+    <Compile Include="Effects\BigBees.cs" />
+    <Compile Include="Effects\Diversity2.cs" />
+    <Compile Include="Effects\Diversity1.cs" />
+    <Compile Include="Effects\Mimics.cs" />
+    <Compile Include="Effects\Scary.cs" />
+    <Compile Include="Effects\WhereDidMyFriendsGo.cs" />
     <Compile Include="Effects\Flinger.cs" />
     <Compile Include="Effects\BlameGlitch.cs" />
     <Compile Include="Effects\DrunkForAll.cs" />
     <Compile Include="Effects\EggBootsForAll.cs" />
     <Compile Include="Effects\HappyDay.cs" />
+    <Compile Include="Effects\RerollALL.cs" />
+    <Compile Include="Effects\SpicyNuggies.cs" />
     <Compile Include="Effects\MineHardPlace.cs" />
     <Compile Include="Effects\SizeDifferenceSwitcher.cs" />
     <Compile Include="Effects\SizeDifferenceForAll.cs" />
@@ -267,7 +288,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Misc.cs" />
-    <Compile Include="SoundClipManager.cs" />
     <Compile Include="Visual\ColorGradient.cs" />
     <Compile Include="Visual\CycleSigns.cs" />
     <Compile Include="Visual\Blinking.cs" />

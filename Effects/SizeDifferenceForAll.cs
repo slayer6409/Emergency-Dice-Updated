@@ -26,7 +26,6 @@ namespace MysteryDice.Effects
 
         public static void BecomeSmall(ulong userID)
         {
-            
             PlayerControllerB player = Misc.GetPlayerByUserID(userID);
             if (player == null) return;
             if (player.transform.localScale != Vector3.one)
