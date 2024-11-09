@@ -21,6 +21,11 @@ But, not always.
 * Rolling 2 will cause something bad to happen.
 * You don't want to roll a 1.
 
+## API
+
+You can now add your own dice effects in your own mods
+there is an example mod on how to do that here: https://github.com/slayer6409/Dice-Addon
+
 ## The Gambler
 
 ![](https://i.imgur.com/J6biRWU.png)
