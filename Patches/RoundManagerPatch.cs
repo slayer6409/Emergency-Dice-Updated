@@ -36,8 +36,6 @@ namespace MysteryDice.Patches
             RandomMapObject[] array = UnityEngine.Object.FindObjectsOfType<RandomMapObject>();
             foreach (RandomMapObject randomMapObj in array)
                 MapObjectsPositions.Add(randomMapObj.transform.position);
-
-
         }
 
     }

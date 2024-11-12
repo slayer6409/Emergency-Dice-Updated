@@ -48,6 +48,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\v55\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
+    <Reference Include="BombCollar">
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\Jordo-BombCollar\BombCollar.dll</HintPath>
+    </Reference>
     <Reference Include="CodeRebirth">
       <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\XuXiaolan-CodeRebirth\CodeRebirth\CodeRebirth.dll</HintPath>
     </Reference>
@@ -144,12 +147,22 @@
     <Compile Include="Dice\EmergencyDie.cs" />
     <Compile Include="Dice\ChronosDie.cs" />
     <Compile Include="Dice\GamblerDie.cs" />
+    <Compile Include="Dice\SurfacedDie.cs" />
     <Compile Include="Effects\AnythingGrenade.cs" />
-    <Compile Include="Effects\BigBees.cs" />
+    <Compile Include="Effects\BerthaLever.cs" />
+    <Compile Include="Effects\BIGBertha.cs" />
+    <Compile Include="Effects\BigJumpscare.cs" />
     <Compile Include="Effects\Diversity2.cs" />
     <Compile Include="Effects\Diversity1.cs" />
-    <Compile Include="Effects\Mimics.cs" />
+    <Compile Include="Effects\BombCollars.cs" />
+    <Compile Include="Effects\Flashers.cs" />
+    <Compile Include="Effects\Fans.cs" />
+    <Compile Include="Effects\InstantExplodingBerthas.cs" />
+    <Compile Include="Effects\Martyrdom.cs" />
+    <Compile Include="Effects\MicrowaveBertha.cs" />
+    <Compile Include="Effects\MovingBerthas.cs" />
     <Compile Include="Effects\Scary.cs" />
+    <Compile Include="Effects\Microwaves.cs" />
     <Compile Include="Effects\WhereDidMyFriendsGo.cs" />
     <Compile Include="Effects\Flinger.cs" />
     <Compile Include="Effects\BlameGlitch.cs" />
@@ -168,7 +181,6 @@
     <Compile Include="Effects\InsideDog.cs" />
     <Compile Include="Effects\EggBoots.cs" />
     <Compile Include="Effects\Tornado.cs" />
-    <Compile Include="Effects\SpeedyBoomba.cs" />
     <Compile Include="Effects\BellCrabs.cs" />
     <Compile Include="Effects\AllSameScrap.cs" />
     <Compile Include="Effects\TakeySmol.cs" />

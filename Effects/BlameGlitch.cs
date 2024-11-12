@@ -22,7 +22,7 @@ namespace MysteryDice.Effects
         public static ConfigEntry<int> maxNum;
         public static ConfigEntry<bool> isInside;
         public static ConfigEntry<bool> bothInsideOutside;
-
+        public static ConfigEntry<bool> GlitchedMeteorShower;
 
         public void Use()
         {
@@ -35,6 +35,8 @@ namespace MysteryDice.Effects
             int randomNumber = UnityEngine.Random.Range(minNum.Value, maxNum.Value);
             allenemies = allenemies.OrderBy(x => UnityEngine.Random.value).ToList();
             randomEnemies.AddRange(allenemies.Take(randomNumber));
+            
+            if(GlitchedMeteorShower.Value) Networker.Instance.SpawnMeteorsServerRPC();
             
             foreach (var enemy in randomEnemies)
             {
@@ -75,6 +77,11 @@ namespace MysteryDice.Effects
               "Both Inside and Outside",
               false,
               "Makes them spawn both inside and outside");
+            GlitchedMeteorShower = MysteryDice.BepInExConfig.Bind<bool>(
+              "BlameGlitch",
+              "MeteorShower",
+              true,
+              "Makes a meteor shower happen as well");
 
         }
     }

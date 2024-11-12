@@ -126,7 +126,15 @@ namespace MysteryDice.Patches
                 }
             }
         }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(PlayerControllerB), "KillPlayer")]
+        public static void MartyrdomPlayer(PlayerControllerB __instance, int causeOfDeath, int deathAnimation, bool spawnBody, Vector3 bodyVelocity)
+        {
+            if(Martyrdom.doMinesDrop) Networker.Instance.doMartyrdomServerRPC(__instance.transform.position);
+        }
     }
+    
     [HarmonyPatch(typeof(PlayerControllerB), "Jump_performed")]
     public static class JumpPerformedPatch
     {
@@ -139,4 +147,5 @@ namespace MysteryDice.Patches
             Networker.Instance.spawnExplodeEggServerRpc(StartOfRound.Instance.localPlayerController.playerClientId);
         }
     }
+    
 }

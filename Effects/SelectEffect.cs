@@ -39,7 +39,7 @@ namespace MysteryDice.Effects
             {
                 allEffects.Remove(ef);
             }
-            foreach (var e in DieBehaviour.favConfigs.Where(x => x.Value))
+            foreach (var e in DieBehaviour.favConfigs.Where(x => x.Value).OrderBy(x => x.Definition.Key))
             {
                 IEffect effect = allEffects.FirstOrDefault(x => x.Name == e.Definition.Key);
                 if (effect != null)
@@ -51,7 +51,7 @@ namespace MysteryDice.Effects
             effects.AddRange(allEffects);
             return effects;
         }
-        public static void showDebugMenu(bool full,bool complete)
+        public static void showDebugMenu(bool full, bool complete, bool su = false)
         {
             if (EffectMenu != null)
             {
@@ -81,7 +81,7 @@ namespace MysteryDice.Effects
             button.onClick.AddListener(() =>
             {
                 CloseSelectMenu();
-                ShowSelectMenu(full, complete);
+                ShowSelectMenu(full, complete,su);
             });
 
 
@@ -93,7 +93,7 @@ namespace MysteryDice.Effects
             button2.onClick.AddListener(() =>
             {
                 CloseSelectMenu();
-                spawnEnemy(full, complete);
+                spawnEnemy(full, complete,su);
             });
             GameObject effectObj3 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
             TMP_Text buttonText3 = effectObj3.transform.GetChild(0).GetComponent<TMP_Text>();
@@ -103,7 +103,7 @@ namespace MysteryDice.Effects
             button3.onClick.AddListener(() =>
             {
                 CloseSelectMenu();
-                spawnScrap(full, complete);
+                spawnScrap(full, complete,su);
             });
 
             GameObject effectObj5 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
@@ -114,7 +114,7 @@ namespace MysteryDice.Effects
             button5.onClick.AddListener(() =>
             {
                 CloseSelectMenu();
-                spawnShopItems(full, complete);
+                spawnShopItems(full, complete,su);
             });
 
             GameObject effectObj4 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
@@ -125,22 +125,36 @@ namespace MysteryDice.Effects
             button4.onClick.AddListener(() =>
             {
                 CloseSelectMenu();
-                spawnTrap(full, complete);
+                spawnTrap(full, complete,su);
             });
 
-            GameObject effectObj6 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
-            TMP_Text buttonText6 = effectObj6.transform.GetChild(0).GetComponent<TMP_Text>();
-            buttonText6.text = $"Spawn Outside Objects";
-
-            Button button6 = effectObj6.GetComponent<Button>();
-            button6.onClick.AddListener(() =>
+            // GameObject effectObj6 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            // TMP_Text buttonText6 = effectObj6.transform.GetChild(0).GetComponent<TMP_Text>();
+            // buttonText6.text = $"Spawn Outside Objects";
+            //
+            // Button button6 = effectObj6.GetComponent<Button>();
+            // button6.onClick.AddListener(() =>
+            // {
+            //     CloseSelectMenu();
+            //     spawnWorldObject(full, complete, su);
+            // });
+            if (su)
             {
-                CloseSelectMenu();
-                spawnWorldObject(full, complete);
-            });
+                GameObject effectObj7 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                TMP_Text buttonText7 = effectObj7.transform.GetChild(0).GetComponent<TMP_Text>();
+                buttonText7.text = $"Grant/Revoke Admin";
+
+                Button button7 = effectObj7.GetComponent<Button>();
+                button7.onClick.AddListener(() =>
+                {
+                    CloseSelectMenu();
+                    grantAdmin(full, complete, su);
+                });
+            }
+           
         }
 
-        public static void spawnEnemy(bool full, bool complete)
+        public static void spawnEnemy(bool full, bool complete, bool su = false)
         {
             if (EffectMenu != null)
             {
@@ -158,7 +172,7 @@ namespace MysteryDice.Effects
             exitText.text = "Back";
             exitButton.onClick.AddListener(() =>
             {
-                showDebugMenu(full, complete);
+                showDebugMenu(full, complete,su);
             });
 
             Cursor.visible = true;
@@ -198,7 +212,7 @@ namespace MysteryDice.Effects
             }
 
         }
-        public static void spawnTrap(bool full, bool complete)
+        public static void spawnTrap(bool full, bool complete, bool su = false)
         {
             if (EffectMenu != null)
             {
@@ -216,7 +230,7 @@ namespace MysteryDice.Effects
             exitText.text = "Back";
             exitButton.onClick.AddListener(() =>
             {
-                showDebugMenu(full,complete);
+                showDebugMenu(full,complete,su);
             });
 
             Cursor.visible = true;
@@ -252,7 +266,7 @@ namespace MysteryDice.Effects
                 });
             }
         }
-        public static void spawnScrap(bool full, bool complete)
+        public static void spawnScrap(bool full, bool complete, bool su = false)
         {
             if (EffectMenu != null)
             {
@@ -270,7 +284,7 @@ namespace MysteryDice.Effects
             exitText.text = "Back";
             exitButton.onClick.AddListener(() =>
             {
-                showDebugMenu(full, complete);
+                showDebugMenu(full, complete,su);
             });
 
             Cursor.visible = true;
@@ -306,7 +320,7 @@ namespace MysteryDice.Effects
                 });
             }
         }
-        public static void spawnWorldObject(bool full, bool complete)
+        public static void spawnWorldObject(bool full, bool complete, bool su = false)
         {
             if (EffectMenu != null)
             {
@@ -324,7 +338,7 @@ namespace MysteryDice.Effects
             exitText.text = "Back";
             exitButton.onClick.AddListener(() =>
             {
-                showDebugMenu(full, complete);
+                showDebugMenu(full, complete,su);
             });
 
             Cursor.visible = true;
@@ -360,7 +374,7 @@ namespace MysteryDice.Effects
                 });
             }
         }
-        public static void spawnShopItems(bool full, bool complete)
+        public static void spawnShopItems(bool full, bool complete, bool su = false)
         {
             if (EffectMenu != null)
             {
@@ -378,7 +392,7 @@ namespace MysteryDice.Effects
             exitText.text = "Back";
             exitButton.onClick.AddListener(() =>
             {
-                showDebugMenu(full, complete);
+                showDebugMenu(full, complete,su);
             });
 
             Cursor.visible = true;
@@ -410,7 +424,58 @@ namespace MysteryDice.Effects
                 });
             }
         }
-        public static void ShowSelectMenu(bool full, bool complete = false)
+        public static void grantAdmin(bool full, bool complete, bool su = false)
+        {
+            if (EffectMenu != null)
+            {
+                GameObject.Destroy(EffectMenu);
+                EffectMenu = null;
+            }
+
+            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
+            Panel.text = "Grant Admin";
+
+            Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
+            Button exitButton = EffectMenu.transform.Find("Panel/Exit").GetComponent<Button>();
+            TMP_Text exitText = EffectMenu.transform.Find("Panel/Exit/Text (TMP)").GetComponent<TMP_Text>();
+            exitText.text = "Back";
+            exitButton.onClick.AddListener(() =>
+            {
+                showDebugMenu(full, complete, su);
+            });
+
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None; 
+
+            List<PlayerControllerB> allPlayers = StartOfRound.Instance.allPlayerScripts.ToList();
+            
+            
+            allPlayers = allPlayers
+            .GroupBy(x => x.playerUsername)
+            .Select(g => g.First())
+            .OrderBy(x => x.playerUsername)
+            .ToList();
+
+            foreach (var player in allPlayers)
+            {
+                if(!Misc.IsPlayerReal(player))continue;
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
+                buttonText.text = $"{player.playerUsername}";
+
+                Button button = effectObj.GetComponent<Button>();
+                button.onClick.AddListener(() =>
+                {
+                    CloseSelectMenu();
+                    Networker.Instance.becomeAdminServerRPC(player.playerClientId);
+                    string txtToSay = "";
+                    txtToSay = $"Made {player.playerUsername} an admin"; 
+                    Networker.Instance.MessageToHostServerRPC($"Admin", txtToSay);
+                });
+            }
+        }
+        public static void ShowSelectMenu(bool full, bool complete = false, bool su = false)
         {
             if (EffectMenu != null)
             {
@@ -426,7 +491,7 @@ namespace MysteryDice.Effects
             exitText.text = "Back";
             exitButton.onClick.AddListener(() =>
             {
-                showDebugMenu(full, complete);
+                showDebugMenu(full, complete ,su);
             });
 
             Cursor.visible = true;

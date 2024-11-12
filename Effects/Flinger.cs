@@ -52,7 +52,7 @@ namespace MysteryDice.Effects
             beybladeMode = MysteryDice.BepInExConfig.Bind<bool>(
               "Flinger",
               "Beyblade",
-              true,
+              false,
               "Makes the flinger a Beyblade Flinger");
            
 
@@ -63,7 +63,7 @@ namespace MysteryDice.Effects
 
             void Update()
             {
-                transform.Rotate(Vector3.up * spinSpeed * Time.deltaTime);
+                transform.Rotate(Vector3.up * (spinSpeed * Time.deltaTime));
             }
         }
     }

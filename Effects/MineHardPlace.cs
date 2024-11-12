@@ -16,32 +16,8 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.MineHardPlaceServerRPC(StartOfRound.Instance.localPlayerController.playerClientId);
+            Networker.Instance.SpawnSurroundedTrapServerRPC(GetEnemies.Bertha.prefabToSpawn.name,8,7,true,new Vector3(1.25f,.75f,1.25f));
         }
-        public static void spawn(ulong playerID)
-        {
-            
-            int BerthaSpawn = 8;
-            if (GetEnemies.Bertha == null)
-                return;
-            var player = Misc.GetPlayerByUserID(playerID);
-            float radius = 8;
-            for (int i = 0; i < BerthaSpawn; i++)
-            {
-                float angle = i * Mathf.PI * 2 / BerthaSpawn;
-                Vector3 spawnPosition = new Vector3(
-                    Mathf.Cos(angle) * radius,
-                    player.transform.position.y + 0.25f,
-                    Mathf.Sin(angle) * radius
-                );
-                spawnPosition += player.transform.position;
-                var RM = RoundManager.Instance;
-                GameObject enemyObject = UnityEngine.Object.Instantiate(
-                    GetEnemies.Bertha.prefabToSpawn,
-                    spawnPosition,
-                    Quaternion.Euler(new Vector3(0f, 0f, 0f)));
-                enemyObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
-            }
-        }
+        
     }
 }

@@ -22,26 +22,9 @@ namespace MysteryDice.Effects
             Networker.Instance.DrunkServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId,true);
         }
 
-        public static void FixedUpdate()
-        {
-            if (DrunkTimer <= 0f) return;
-            if (DrunkTimer > 0f)
-            {
-                DrunkTimer -= Time.fixedDeltaTime;
-                BecomeDrunk(GameNetworkManager.Instance.localPlayerController.playerClientId);
-            }
-        }
         public static void startDrinking(ulong userID)
         {
-            DrunkTimer = UnityEngine.Random.Range(10,30);
-        }
-        public static void BecomeDrunk(ulong userID)
-        {
-            PlayerControllerB player = Misc.GetPlayerByUserID(userID);
-            if (player == null) return;
-            player.drunkness = DrunkTimer;
-            player.drunknessInertia = DrunkTimer;
-            player.drunknessSpeed = DrunkTimer;
+            Drunk.DrunkTimer = UnityEngine.Random.Range(10,30);
         }
     }
 }

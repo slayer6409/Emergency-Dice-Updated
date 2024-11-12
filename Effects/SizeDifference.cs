@@ -60,7 +60,7 @@ namespace MysteryDice.Effects
             sizeOption = MysteryDice.BepInExConfig.Bind<sizeRevert>(
                "SizeDifference",
                "Size Change Option",
-               sizeRevert.bothAgainAfter,
+               sizeRevert.close,
                "Determines when the size difference reverts back to normal. \nAfter - Sets it to after you take off.\nClose - Sets it to after the game/lobby closes \nAgain - Makes it to where you have to get the effect again \nBothAgainAfter - Is both Again and After, so you will revert after or if you get the effect again (default) ");
            
         }

@@ -14,6 +14,7 @@ namespace MysteryDice.Dice
         {
             base.Start();
             DiceModel.AddComponent<Blinking>();
+            this.itemProperties.verticalOffset = 0;
         }
         public override void SetupRollToEffectMapping()
         {

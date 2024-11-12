@@ -1,13 +1,8 @@
 ﻿using BepInEx.Configuration;
-using BepInEx;
 using MysteryDice.Effects;
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using GameNetcodeStuff;
@@ -29,6 +24,8 @@ namespace MysteryDice.Dice
         public static List<ConfigEntry<bool>> favConfigs = new List<ConfigEntry<bool>>();
         protected GameObject DiceModel;
         public List<IEffect> Effects = new List<IEffect>();
+        private static List<string> surfacedNames = new List<string>();
+        public List<IEffect> SurfacedEffects = new List<IEffect>();
         public Dictionary<int, EffectType[]> RollToEffect = new Dictionary<int, EffectType[]>();
 
         public PlayerControllerB PlayerUser = null;
@@ -41,8 +38,8 @@ namespace MysteryDice.Dice
         }
         public virtual void SetupDiceEffects()
         {
-            foreach (IEffect effect in AllowedEffects)
-                Effects.Add(effect);
+            Effects = new List<IEffect>(AllowedEffects);
+            SurfacedEffects = AllowedEffects.Where(e=>surfacedNames.Contains(e.Name)).ToList();
         }
         public virtual void SetupRollToEffectMapping()
         {
@@ -62,11 +59,11 @@ namespace MysteryDice.Dice
             SetupDiceEffects();
             SetupRollToEffectMapping();
         }
-
+        
         public override void PocketItem()
         {
 
-            if (DiceModel.GetComponent<Renderer>() != null)
+            if (DiceModel.GetComponent<Renderer>())
             {
                 DiceModel.GetComponent<Renderer>().enabled = true;
             }
@@ -98,7 +95,7 @@ namespace MysteryDice.Dice
             {
                 if (StartOfRound.Instance == null) return;
                 if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
-
+                if (playerHeldBy == null) return;
                 PlayerUser = playerHeldBy;
 
                 ulong dropperID = playerHeldBy.playerClientId;
@@ -119,13 +116,13 @@ namespace MysteryDice.Dice
 
             if (GameNetworkManager.Instance.localPlayerController.playerClientId == userID)
             {
-                if (StartOfRound.Instance == null) yield break;
+                if (StartOfRound.Instance is null) yield break;
                 if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) yield break;
 
                 if (StartOfRound.Instance.currentLevel.PlanetName == "71 Gordion")
                 {
                     Misc.SafeTipMessage($"Company penalty", "Do not try this again.");
-                    (new Detonate()).Use();
+                    doPenalty();
                     yield break;
                 }
 
@@ -191,8 +188,8 @@ namespace MysteryDice.Dice
         public IEffect GetRandomEffect(int diceRoll, List<IEffect> effects)
         {
             List<IEffect> rolledEffects = new List<IEffect>();
-
-            foreach (IEffect effect in Effects)
+            if(effects.Count == 0) effects = new List<IEffect>(Effects);
+            foreach (IEffect effect in effects)
                 if (RollToEffect[diceRoll].Contains(effect.Outcome))
                     rolledEffects.Add(effect);
 
@@ -235,16 +232,16 @@ namespace MysteryDice.Dice
                     effectTypeMessage = awfulMessages[UnityEngine.Random.Range(0,awfulMessages.Length)];
                     break;
                 case EffectType.Bad:
-                    effectTypeMessage = badMessages[UnityEngine.Random.Range(0, badMessages.Length)]; ;
+                    effectTypeMessage = badMessages[UnityEngine.Random.Range(0, badMessages.Length)];
                     break;
                 case EffectType.Good:
-                    effectTypeMessage = goodMessages[UnityEngine.Random.Range(0, goodMessages.Length)]; ;
+                    effectTypeMessage = goodMessages[UnityEngine.Random.Range(0, goodMessages.Length)];
                     break;
                 case EffectType.Great:
-                    effectTypeMessage = greatMessages[UnityEngine.Random.Range(0, greatMessages.Length)]; ;
+                    effectTypeMessage = greatMessages[UnityEngine.Random.Range(0, greatMessages.Length)];
                     break;
                 case EffectType.Mixed:
-                    effectTypeMessage = mixedMessages[UnityEngine.Random.Range(0, mixedMessages.Length)]; ;
+                    effectTypeMessage = mixedMessages[UnityEngine.Random.Range(0, mixedMessages.Length)];
                     break;
             }
 
@@ -285,205 +282,250 @@ namespace MysteryDice.Dice
             Misc.SafeTipMessage($"Rolled {diceRoll}", message);
         }
 
+        public static void doPenalty()
+        {
+            if (MysteryDice.NavMeshInCompanyPresent)
+            {
+                Networker.Instance.doPenaltyServerRPC(10);
+            }
+            else
+            {
+                (new Detonate()).Use();
+            }
+            Misc.SafeTipMessage($"Penalty", "Next time roll it inside :)");
+        }
 
         public static void Config()
         {
-            AllEffects.Add(new NeckBreak());
-            AllEffects.Add(new SelectEffect());
-            AllEffects.Add(new Fly());
-            AllEffects.Add(new LeverShake());
-            AllEffects.Add(new HyperShake());
-            AllEffects.Add(new MovingLandmines());
-            AllEffects.Add(new OutsideCoilhead());
-            AllEffects.Add(new Arachnophobia());
-            AllEffects.Add(new BrightFlashlight());
-            AllEffects.Add(new IncreasedRate());
-            AllEffects.Add(new DoorMalfunction());
-            AllEffects.Add(new Purge());
-            AllEffects.Add(new InfiniteStaminaAll());
-            AllEffects.Add(new InfiniteStamina());
-            AllEffects.Add(new Pathfinder());
-            AllEffects.Add(new Shotgun());
-            AllEffects.Add(new ShipTurret());
-            AllEffects.Add(new TurretHell());
-            AllEffects.Add(new SilentMine());
-            AllEffects.Add(new ZombieToShip());
-            AllEffects.Add(new InvertDoorLock());
-            AllEffects.Add(new AlarmCurse());
-            AllEffects.Add(new JumpscareGlitch());
-            AllEffects.Add(new Armageddon());
-            AllEffects.Add(new Beepocalypse());
-            AllEffects.Add(new RebeliousCoilHeads());
-            AllEffects.Add(new TurnOffLights());
-            AllEffects.Add(new HealAndRestore());
-            AllEffects.Add(new ScrapJackpot());
-            AllEffects.Add(new Swap());
-            AllEffects.Add(new ModifyPitch());
-            AllEffects.Add(new MineOverflow());
-            AllEffects.Add(new MineOverflowOutside());
-            AllEffects.Add(new InstaJester());
-            AllEffects.Add(new FakeFireExits());
-            AllEffects.Add(new FireExitBlock());
-            AllEffects.Add(new ReturnToShip());
-            AllEffects.Add(new TeleportInside());
-            AllEffects.Add(new BugPlague());
-            AllEffects.Add(new ZombieApocalypse());
-            AllEffects.Add(new Revive());
-            AllEffects.Add(new Detonate());
-            AllEffects.Add(new RandomStoreItem());
-            AllEffects.Add(new RandomGreatStoreItem());
-            AllEffects.Add(new BatteryDrain());
-            AllEffects.Add(new EveryoneToSomeone());
-            AllEffects.Add(new LightBurden());
-            AllEffects.Add(new ItemDuplicator());
-            AllEffects.Add(new HeavyBurden());
-            CompleteEffects.Add(new DrunkForAll());
-            AllEffects.Add(new Drunk());
-            //AllEffects.Add(new ItemSwap()); //Need to be fixed
-            AllEffects.Add(new GoldenTouch());
-            AllEffects.Add(new Reroll());
-            AllEffects.Add(new NeckSpin());
-            AllEffects.Add(new GiveAllDice());
-            AllEffects.Add(new InsideGiant());
-            AllEffects.Add(new OutsideBugs());
-            AllEffects.Add(new Maneaters());
-            AllEffects.Add(new Delay());
-            AllEffects.Add(new SpikeOverflowOutside());
-            AllEffects.Add(new Lasso());
-            AllEffects.Add(new Meteors());
-            AllEffects.Add(new Barbers());
-            AllEffects.Add(new InvisibleEnemy());
-            AllEffects.Add(new EmergencyMeeting());
-            AllEffects.Add(new Ghosts());
-            AllEffects.Add(new MerryChristmas());
-            AllEffects.Add(new NutcrackerOutside());
-            AllEffects.Add(new AllSameScrap());
-            AllEffects.Add(new Eggs());
-            AllEffects.Add(new EggFountain());
-            AllEffects.Add(new FlashFountain());
-            AllEffects.Add(new InsideDog());
-            AllEffects.Add(new EggBoots());
-            CompleteEffects.Add(new EggBootsForAll());
-            CompleteEffects.Add(new RerollALL());
-            AllEffects.Add(new TulipTrapeze());
-            AllEffects.Add(new BlameGlitch());
-            AllEffects.Add(new HappyDay());
-            AllEffects.Add(new SpicyNuggies());
-            AllEffects.Add(new WhereDidMyFriendsGo());
-            //AllEffects.Add(new BigBees());
-            //AllEffects.Add(new AnythingGrenade());
-            //AllEffects.Add(new TerminalLockout());
+            MysteryDice.MainRegisterNewEffect(new NeckBreak());
+            MysteryDice.MainRegisterNewEffect(new SelectEffect());
+            MysteryDice.MainRegisterNewEffect(new Fly());
+            MysteryDice.MainRegisterNewEffect(new LeverShake());
+            MysteryDice.MainRegisterNewEffect(new HyperShake());
+            MysteryDice.MainRegisterNewEffect(new MovingLandmines());
+            MysteryDice.MainRegisterNewEffect(new OutsideCoilhead());
+            MysteryDice.MainRegisterNewEffect(new Arachnophobia());
+            MysteryDice.MainRegisterNewEffect(new BrightFlashlight());
+            MysteryDice.MainRegisterNewEffect(new IncreasedRate());
+            MysteryDice.MainRegisterNewEffect(new DoorMalfunction());
+            MysteryDice.MainRegisterNewEffect(new Purge());
+            MysteryDice.MainRegisterNewEffect(new InfiniteStaminaAll());
+            MysteryDice.MainRegisterNewEffect(new InfiniteStamina());
+            MysteryDice.MainRegisterNewEffect(new Pathfinder());
+            MysteryDice.MainRegisterNewEffect(new Shotgun());
+            MysteryDice.MainRegisterNewEffect(new ShipTurret());
+            MysteryDice.MainRegisterNewEffect(new TurretHell());
+            MysteryDice.MainRegisterNewEffect(new SilentMine());
+            MysteryDice.MainRegisterNewEffect(new ZombieToShip());
+            MysteryDice.MainRegisterNewEffect(new InvertDoorLock());
+            MysteryDice.MainRegisterNewEffect(new AlarmCurse());
+            MysteryDice.MainRegisterNewEffect(new JumpscareGlitch());
+            MysteryDice.MainRegisterNewEffect(new Armageddon());
+            MysteryDice.MainRegisterNewEffect(new Beepocalypse());
+            MysteryDice.MainRegisterNewEffect(new RebeliousCoilHeads());
+            MysteryDice.MainRegisterNewEffect(new TurnOffLights());
+            MysteryDice.MainRegisterNewEffect(new HealAndRestore());
+            MysteryDice.MainRegisterNewEffect(new ScrapJackpot());
+            MysteryDice.MainRegisterNewEffect(new Swap());
+            MysteryDice.MainRegisterNewEffect(new ModifyPitch());
+            MysteryDice.MainRegisterNewEffect(new MineOverflow());
+            MysteryDice.MainRegisterNewEffect(new MineOverflowOutside());
+            MysteryDice.MainRegisterNewEffect(new InstaJester());
+            MysteryDice.MainRegisterNewEffect(new FakeFireExits());
+            MysteryDice.MainRegisterNewEffect(new FireExitBlock());
+            MysteryDice.MainRegisterNewEffect(new ReturnToShip());
+            MysteryDice.MainRegisterNewEffect(new ReturnToShipTogether());
+            MysteryDice.MainRegisterNewEffect(new TeleportInside());
+            MysteryDice.MainRegisterNewEffect(new BugPlague());
+            MysteryDice.MainRegisterNewEffect(new ZombieApocalypse());
+            MysteryDice.MainRegisterNewEffect(new Revive());
+            MysteryDice.MainRegisterNewEffect(new Detonate());
+            MysteryDice.MainRegisterNewEffect(new RandomStoreItem());
+            MysteryDice.MainRegisterNewEffect(new RandomGreatStoreItem());
+            MysteryDice.MainRegisterNewEffect(new BatteryDrain());
+            MysteryDice.MainRegisterNewEffect(new EveryoneToSomeone());
+            MysteryDice.MainRegisterNewEffect(new LightBurden());
+            MysteryDice.MainRegisterNewEffect(new ItemDuplicator());
+            MysteryDice.MainRegisterNewEffect(new HeavyBurden());
+            MysteryDice.MainRegisterNewEffect(new DrunkForAll(),false,true);
+            MysteryDice.MainRegisterNewEffect(new Drunk());
+            MysteryDice.MainRegisterNewEffect(new GoldenTouch());
+            MysteryDice.MainRegisterNewEffect(new Reroll());
+            MysteryDice.MainRegisterNewEffect(new NeckSpin());
+            MysteryDice.MainRegisterNewEffect(new GiveAllDice());
+            MysteryDice.MainRegisterNewEffect(new InsideGiant());
+            MysteryDice.MainRegisterNewEffect(new OutsideBugs());
+            MysteryDice.MainRegisterNewEffect(new Maneaters());
+            MysteryDice.MainRegisterNewEffect(new Delay());
+            MysteryDice.MainRegisterNewEffect(new SpikeOverflowOutside(),true);
+            MysteryDice.MainRegisterNewEffect(new Lasso());
+            MysteryDice.MainRegisterNewEffect(new Meteors());
+            MysteryDice.MainRegisterNewEffect(new Barbers());
+            MysteryDice.MainRegisterNewEffect(new InvisibleEnemy());
+            MysteryDice.MainRegisterNewEffect(new EmergencyMeeting());
+            MysteryDice.MainRegisterNewEffect(new Ghosts());
+            MysteryDice.MainRegisterNewEffect(new MerryChristmas());
+            MysteryDice.MainRegisterNewEffect(new NutcrackerOutside());
+            MysteryDice.MainRegisterNewEffect(new AllSameScrap());
+            MysteryDice.MainRegisterNewEffect(new Eggs());
+            MysteryDice.MainRegisterNewEffect(new EggFountain());
+            MysteryDice.MainRegisterNewEffect(new FlashFountain());
+            MysteryDice.MainRegisterNewEffect(new InsideDog());
+            MysteryDice.MainRegisterNewEffect(new EggBoots());
+            MysteryDice.MainRegisterNewEffect(new EggBootsForAll(),false,true);
+            MysteryDice.MainRegisterNewEffect(new RerollALL(),false,true);
+            MysteryDice.MainRegisterNewEffect(new TulipTrapeze());
+            MysteryDice.MainRegisterNewEffect(new BlameGlitch(),true);
+            MysteryDice.MainRegisterNewEffect(new HappyDay());
+            MysteryDice.MainRegisterNewEffect(new SpicyNuggies());
+            MysteryDice.MainRegisterNewEffect(new Martyrdom());
+            //MysteryDice.MainRegisterNewEffect(new WhereDidMyFriendsGo());
             if (MysteryDice.lethalThingsPresent)
             {
-                AllEffects.Add(new TPTraps());
-                AllEffects.Add(new MovingTPTraps());
-                AllEffects.Add(new TpOverflowOutside());
-                AllEffects.Add(new SilentTP());
-                AllEffects.Add(new Friends());
-                //AllEffects.Add(new SpeedyBoomba());
+                MysteryDice.MainRegisterNewEffect(new TPTraps());
+                MysteryDice.MainRegisterNewEffect(new MovingTPTraps());
+                MysteryDice.MainRegisterNewEffect(new TpOverflowOutside());
+                MysteryDice.MainRegisterNewEffect(new SilentTP());
+                MysteryDice.MainRegisterNewEffect(new Friends());
             }
             if (MysteryDice.LethalMonPresent) 
             {
-                AllEffects.Add(new CatchEmAll());
-                AllEffects.Add(new LegendaryCatch());
+                MysteryDice.MainRegisterNewEffect(new CatchEmAll());
+                MysteryDice.MainRegisterNewEffect(new LegendaryCatch());
             }
             if (MysteryDice.LCOfficePresent)
             {
-                AllEffects.Add(new InsideShrimps());
+                MysteryDice.MainRegisterNewEffect(new InsideShrimps());
             }
             if (MysteryDice.SurfacedPresent)
             {
-                AllEffects.Add(new MantisShrimps());
-                AllEffects.Add(new SeaminesOutside());
-                AllEffects.Add(new BerthaOutside());
-                AllEffects.Add(new Bruce());
-                AllEffects.Add(new Nemo());
-                AllEffects.Add(new BellCrabs());
-                AllEffects.Add(new UrchinIndoors());
-                AllEffects.Add(new MineHardPlace());
-                AllEffects.Add(new Flinger());
-                AllEffects.Add(new BurgerFlippers());
-                AllEffects.Add(new ScaryMon());
+                surfacedNames.Add(new Martyrdom().Name);
+                surfacedNames.Add(new MantisShrimps().Name);
+                MysteryDice.MainRegisterNewEffect(new MantisShrimps());
+                surfacedNames.Add(new SeaminesOutside().Name);
+                MysteryDice.MainRegisterNewEffect(new SeaminesOutside());
+                surfacedNames.Add(new BerthaOutside().Name);
+                MysteryDice.MainRegisterNewEffect(new BerthaOutside());
+                surfacedNames.Add(new Bruce().Name);
+                MysteryDice.MainRegisterNewEffect(new Bruce());
+                surfacedNames.Add(new Nemo().Name);
+                MysteryDice.MainRegisterNewEffect(new Nemo());
+                surfacedNames.Add(new BellCrabs().Name);
+                MysteryDice.MainRegisterNewEffect(new BellCrabs());
+                surfacedNames.Add(new UrchinIndoors().Name);
+                MysteryDice.MainRegisterNewEffect(new UrchinIndoors());
+                surfacedNames.Add(new MineHardPlace().Name);
+                MysteryDice.MainRegisterNewEffect(new MineHardPlace());
+                surfacedNames.Add(new Flinger().Name);
+                MysteryDice.MainRegisterNewEffect(new Flinger());
+                surfacedNames.Add(new BurgerFlippers().Name);
+                MysteryDice.MainRegisterNewEffect(new BurgerFlippers());
+                surfacedNames.Add(new ScaryMon().Name);
+                MysteryDice.MainRegisterNewEffect(new ScaryMon());
+                surfacedNames.Add(new BerthaLever().Name);
+                MysteryDice.MainRegisterNewEffect(new BerthaLever());
+                surfacedNames.Add(new InstantExplodingBerthas().Name);
+                MysteryDice.MainRegisterNewEffect(new InstantExplodingBerthas());
+                surfacedNames.Add(new BigJumpscare().Name);
+                MysteryDice.MainRegisterNewEffect(new BigJumpscare());
+                surfacedNames.Add(new BIGBertha().Name);
+                MysteryDice.MainRegisterNewEffect(new BIGBertha());
+                surfacedNames.Add(new MovingSeaTraps().Name);
+                MysteryDice.MainRegisterNewEffect(new MovingSeaTraps());
+
+                if (MysteryDice.CodeRebirthPresent)
+                {
+                    //     surfacedNames.Add(new MicrowaveBertha().Name);
+                    //     MysteryDice.MainRegisterNewEffect(new MicrowaveBertha());
+                }
             }
             if (MysteryDice.LCTarotCardPresent)
             {
-                AllEffects.Add(new TarotCards());
+                MysteryDice.MainRegisterNewEffect(new TarotCards());
             }
             if (MysteryDice.TakeyPlushPresent)
             {
-                AllEffects.Add(new TakeySmol());
+                MysteryDice.MainRegisterNewEffect(new TakeySmol());
             }
             if (MysteryDice.CodeRebirthPresent) 
             {
-                AllEffects.Add(new Tornado());
-                AllEffects.Add(new CratesOutside());
-                AllEffects.Add(new CratesInside());
+                MysteryDice.MainRegisterNewEffect(new Tornado());
+                MysteryDice.MainRegisterNewEffect(new CratesOutside());
+                MysteryDice.MainRegisterNewEffect(new CratesInside());
+                MysteryDice.MainRegisterNewEffect(new Fans());
+                MysteryDice.MainRegisterNewEffect(new Flashers());
+                MysteryDice.MainRegisterNewEffect(new Microwave());
             }
             if (!MysteryDice.DisableSizeBased.Value)
             {
-                AllEffects.Add(new SizeDifference());
-                CompleteEffects.Add(new SizeDifferenceForAll());
-                AllEffects.Add(new SizeDifferenceSwitcher());
+                MysteryDice.MainRegisterNewEffect(new SizeDifference());
+                MysteryDice.MainRegisterNewEffect(new SizeDifferenceForAll(),false,true);
+                MysteryDice.MainRegisterNewEffect(new SizeDifferenceSwitcher());
             }
             if (MysteryDice.DiversityPresent)
             {
-                AllEffects.Add(new DiversityEffect1());
-                AllEffects.Add(new DiversityEffect2());
+                if (DiversityEffect1.checkConfigs()) MysteryDice.MainRegisterNewEffect(new DiversityEffect1());
+                if (DiversityEffect2.checkConfigs()) MysteryDice.MainRegisterNewEffect(new DiversityEffect2());
+            }
+            if (MysteryDice.BombCollarPresent) 
+            {
+                MysteryDice.MainRegisterNewEffect(new BombCollars());
+                MysteryDice.MainRegisterNewEffect(new EveryoneFriends());
             }
 
-            List<IEffect> sortedList = AllEffects.OrderBy(o=>o.Name).ToList();
+            List<IEffect> sortedList = AllEffects.OrderBy(o => o.Name).ToList();
             CompleteEffects.AddRange(AllEffects);
             CompleteEffects = CompleteEffects.OrderBy(o => o.Name).ToList();
             AllEffects = sortedList;
-
-            foreach (var effect in AllEffects)
-            {
-                ConfigEntry<bool> cfg;
-                ConfigEntry<bool> fav;
-                if (effect.Name == new SpikeOverflowOutside().Name || effect.Name == new BlameGlitch().Name) //Default off 
-                {
-                    cfg = MysteryDice.BepInExConfig.Bind<bool>("Allowed Effects",
-                    effect.Name,
-                    false,
-                    effect.Tooltip);
-                }
-                else  //Rest of them Default on
-                {
-                    cfg = MysteryDice.BepInExConfig.Bind<bool>("Allowed Effects",
-                    effect.Name,
-                    true,
-                    effect.Tooltip);
-                }
-                fav = MysteryDice.BepInExConfig.Bind<bool>("Favorites", effect.Name, false, effect.Tooltip);
-
-               
-                effectConfigs.Add(cfg);
-                favConfigs.Add(fav);
-                if (cfg.Value)
-                    AllowedEffects.Add(effect);
-            }
-
-            foreach (var effect in AllowedEffects)
-            {
-                switch (effect.Outcome)
-                {
-                    case EffectType.Awful:
-                        AwfulEffects.Add(effect);
-                        break;
-                    case EffectType.Bad:
-                        BadEffects.Add(effect);
-                        break;
-                    case EffectType.Mixed:
-                        MixedEffects.Add(effect);
-                        break;
-                    case EffectType.Good:
-                        GoodEffects.Add(effect);
-                        break;
-                    case EffectType.Great:
-                        GreatEffects.Add(effect);
-                        break;
-                }
-            }
+            //
+            // foreach (var effect in AllEffects)
+            // {
+            //     ConfigEntry<bool> cfg;
+            //     ConfigEntry<bool> fav;
+            //     if (effect.Name == new SpikeOverflowOutside().Name || effect.Name == new BlameGlitch().Name) //Default off 
+            //     {
+            //         cfg = MysteryDice.BepInExConfig.Bind<bool>("Allowed Effects",
+            //         effect.Name,
+            //         false,
+            //         effect.Tooltip);
+            //     }
+            //     else  //Rest of them Default on
+            //     {
+            //         cfg = MysteryDice.BepInExConfig.Bind<bool>("Allowed Effects",
+            //         effect.Name,
+            //         true,
+            //         effect.Tooltip);
+            //     }
+            //     fav = MysteryDice.BepInExConfig.Bind<bool>("Favorites", effect.Name, false, effect.Tooltip);
+            //
+            //    
+            //     effectConfigs.Add(cfg);
+            //     favConfigs.Add(fav);
+            //     if (cfg.Value)
+            //         AllowedEffects.Add(effect);
+            // }
+            //
+            // foreach (var effect in AllowedEffects)
+            // {
+            //     switch (effect.Outcome)
+            //     {
+            //         case EffectType.Awful:
+            //             AwfulEffects.Add(effect);
+            //             break;
+            //         case EffectType.Bad:
+            //             BadEffects.Add(effect);
+            //             break;
+            //         case EffectType.Mixed:
+            //             MixedEffects.Add(effect);
+            //             break;
+            //         case EffectType.Good:
+            //             GoodEffects.Add(effect);
+            //             break;
+            //         case EffectType.Great:
+            //             GreatEffects.Add(effect);
+            //             break;
+            //     }
+            // }
         }
     }
    

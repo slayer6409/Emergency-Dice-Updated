@@ -94,24 +94,24 @@ namespace MysteryDice.Effects
         public static void teleport(NetworkObjectReference netObjs, ulong userID, Vector3 pos)
         {
             PlayerControllerB player = Misc.GetPlayerByUserID(userID);
-                if (netObjs.TryGet(out NetworkObject netObj))
+            if (netObjs.TryGet(out NetworkObject netObj))
+            {
+                GameObject obj = netObj.gameObject;
+                if (obj == null) return;
+                
+                Vector3 targetPosition = pos;
+                RaycastHit hit;
+                if (Physics.Raycast(targetPosition + Vector3.up, Vector3.down, out hit))
                 {
-                    GameObject obj = netObj.gameObject;
-                    if (obj == null) return;
-                    
-                    Vector3 targetPosition = pos;
-                    RaycastHit hit;
-                    if (Physics.Raycast(targetPosition + Vector3.up, Vector3.down, out hit))
-                    {
-                        targetPosition = hit.point;
-                    }
-                    obj.transform.position = targetPosition;
-                    GrabbableObject grabbableObject = obj.GetComponent<GrabbableObject>();
-                    if (grabbableObject != null)
-                    {
-                        grabbableObject.targetFloorPosition = targetPosition;
-                    }
+                    targetPosition = hit.point;
                 }
+                obj.transform.position = targetPosition;
+                GrabbableObject grabbableObject = obj.GetComponent<GrabbableObject>();
+                if (grabbableObject != null)
+                {
+                    grabbableObject.targetFloorPosition = targetPosition;
+                }
+            }
             
         }
         public static IEnumerator explodeEgg(GameObject obj, int count)

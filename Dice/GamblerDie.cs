@@ -1,30 +1,23 @@
 ﻿using MysteryDice.Effects;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 namespace MysteryDice.Dice
 {
     public class GamblerDie : DieBehaviour
     {
-        private Rigidbody dieRigidbody;
         public override void Start()
         {
             base.Start();
-            //Maybe??? I am hoping it works! If so Thanks to Xuu!!!
-            GetComponent<Item>().verticalOffset = 0;
             DiceModel.AddComponent<CycleSigns>(); 
+            this.itemProperties.verticalOffset = 0;
         }
+       
         public override void SetupRollToEffectMapping()
         {
             RollToEffect.Add(1, new EffectType[] { EffectType.Awful });
             RollToEffect.Add(2, new EffectType[] { EffectType.Awful, EffectType.Bad });
-            RollToEffect.Add(3, new EffectType[] { EffectType.Bad });
+            RollToEffect.Add(3, new EffectType[] { EffectType.Bad, EffectType.Mixed });
             RollToEffect.Add(4, new EffectType[] { EffectType.Mixed, EffectType.Good });
             RollToEffect.Add(5, new EffectType[] { EffectType.Good });
             RollToEffect.Add(6, new EffectType[] { EffectType.Great });
@@ -63,15 +56,6 @@ namespace MysteryDice.Dice
                 return;
             }
             ShowDefaultTooltip(randomEffect, diceRoll);
-        }
-    }
-    public class logPos : MonoBehaviour
-    {
-        public void FixedUpdate()
-        {
-            //gonna try here too lol
-            GetComponent<Item>().verticalOffset = 0;
-            if (MysteryDice.DicePosUpdate.Value) MysteryDice.CustomLogger.LogDebug(this.transform.position);
         }
     }
 }

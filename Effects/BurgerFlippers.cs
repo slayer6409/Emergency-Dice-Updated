@@ -16,34 +16,8 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.spawnBurgerFlippersServerRPC(StartOfRound.Instance.localPlayerController.playerClientId);
+            Networker.Instance.SpawnSurroundedServerRPC(GetEnemies.Horse.enemyType.enemyName, 12);
         }
-        public static void spawnBurgerFlippers(ulong userID)
-        {
-            var RM = RoundManager.Instance;
-            int HorseSpawn = UnityEngine.Random.Range(6, 10);
-            if (GetEnemies.Horse == null)
-                return;
-            var player = Misc.GetRandomAlivePlayer();
-            float radius = 3;
-            for (int i = 0; i < HorseSpawn; i++)
-            {
-                float angle = i * Mathf.PI * 2 / HorseSpawn;
-                Vector3 spawnPosition = new Vector3(
-                    Mathf.Cos(angle) * radius,
-                    player.transform.position.y + 0.25f,
-                    Mathf.Sin(angle) * radius
-                );
-                spawnPosition += player.transform.position;
-                Vector3 directionToPlayer = player.transform.position - spawnPosition;
-                Quaternion rotation = Quaternion.LookRotation(directionToPlayer);
-                GameObject enemyObject = UnityEngine.Object.Instantiate(
-                    GetEnemies.Horse.enemyType.enemyPrefab,
-                    spawnPosition,
-                    rotation);
-                enemyObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
-                RM.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
-            }
-        }
+
     }
 }

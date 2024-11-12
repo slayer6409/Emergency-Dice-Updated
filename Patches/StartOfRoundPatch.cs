@@ -86,20 +86,21 @@ namespace MysteryDice.Patches
             PlayerControllerBPatch.HasInfiniteStamina = false;
             HyperShake.ShakingData = null;
             EggBoots.eggBootsEnabled = false;
-
+            Martyrdom.doMinesDrop = false;
+            
             if (LeverShake.IsShaking)
             {
                 LeverShake.ShipLeverTrigger.transform.localPosition = LeverShake.InitialLevelTriggerLocalPosition;
                 LeverShake.ShipLever.transform.localPosition = LeverShake.InitialLevelTriggerLocalPosition;
             }
-
-            foreach (var playerControllerB in StartOfRound.Instance.allPlayerScripts)
-            {
-                if (playerControllerB != null && playerControllerB.actualClientId != StartOfRound.Instance.localPlayerController.actualClientId) 
-                {
-                    playerControllerB.gameObject.SetActive(true);
-                }
-            }
+            //
+            // foreach (var playerControllerB in StartOfRound.Instance.allPlayerScripts)
+            // {
+            //     if (playerControllerB != null && playerControllerB.actualClientId != StartOfRound.Instance.localPlayerController.actualClientId) 
+            //     {
+            //         playerControllerB.gameObject.SetActive(true);
+            //     }
+            // }
             LeverShake.IsShaking = false;
             LeverShake.ShipLeverTrigger = null;
 

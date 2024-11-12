@@ -1,3 +1,48 @@
+-	**1.6.3**
+    - Fixed some issues
+    - Added a Alarm curse new sfx option
+
+-	**1.6.2**
+    - Added a bunch of new effects (mostly surfaced for the new die)
+    - Fixed Select Effect menu favorites to actually be sorted now
+
+-   **1.6.1**
+    - Networker is now public to allow for easier dice effect making
+    - IEBerthas >:D
+
+-	**1.6.0**
+    - Added a surfaced die! Thank you so much Rodrigo for the model!
+      - The surfaced die, only has surfaced events unless you don't have surfaced installed which it just goes to random 
+    - Added a new Surfaced Event 
+
+-	**1.5.24**
+    - Changed some debug menu stuff
+    - Blame Glitch is worse thanks to glitch
+
+-	**1.5.23**
+    - Disabled Where did my friends go in an attempt to fix stuff
+    - Fixed Ghost codes and Hoarding bugs doing wierd things with the dice
+    - Added an API so mod developers can add their own dice effects to their own mods!
+    - Possibly Fixed some other issues
+
+-	**1.5.22**
+    - Screaming in the void hoping it will fix things
+
+-   **1.5.21**
+    - Fixed some things
+    - IDK what else I did tbh 
+
+-	**1.5.20**
+    - Possibly Fixed a ton of issues
+      - Glitch I swear if you break things...
+        - I will have to fix them I guess...
+ 
+-	**1.5.19**
+	- Maybe hopefully possibly fixed gambler?!?
+	- Bomb Collars Event(s)???
+	- Code Rebirth Event(s)???
+	- \>:D
+	
 -	**1.5.18**
 	- Added 2 Diversity Effects for the new Diversity Update
 	- - Chaos if you want you can choose the names/tooltips for the effects (just message me on discord)
@@ -5,7 +50,6 @@
 		
 -	**1.5.17**
 	- Accidentally left the DebugMode on when Patching
-
 
 -	**1.5.16**
 	- Possible fix for Surprise Egg and Egg Boots
@@ -23,7 +67,7 @@
 	- Apparently Little Company checks don't work for some reason, so there is a config to turn off all sized based things with one click
 	 
 -	**1.5.14**
-	- Added Little Company checks to disable size based things for compatablility
+	- Added Little Company checks to disable size based things for compatibility
 	- Added Where did my friends go
 	- Fixed scrolling with the selection menu
 	- Fixed Mine and a Hard Place to be not on the host only
@@ -32,10 +76,10 @@
 
 -	**1.5.13**
 	- Added Spicy Nuggies Event (suggested by Lizzie)
-	- Added the ability to favorite things in the effect/debug menu by Right Clicking them
+	- Added the ability to favorite things in the effect/debug menu by Right-Clicking them
 	- Debug menu can now spawn items, monsters, and traps! Items and Traps spawn on you, and monsters spawn inside if you are inside, outside if you are outside. 
 	- - It is off by default since it might act weird at first until I know it works fine (It is 5am when I made this lol) (This was mainly so I can test things easier lol)
-	- - Also Apparently spawning enemies outside (that aren't meant there) might not have ai correctly without Starlancer AIFix or something similar (same with inside dog)
+	- - Also Apparently spawning enemies outside (that aren't meant there) might not have AI correctly without Starlancer AIFix or something similar (same with inside dog)
 	- Fixed Burger Flippers and Flinger (Probably)
 	- Fixed some things (I don't remember lol)
 	- Dev Stuff pt 2
@@ -102,7 +146,7 @@
 	- Fixed item weight not being updated properly with Heavy and Light Burden
 
 -	**1.5.0**
-	- Added 6 New Dice Rolls with Surfaced (Woops name error)
+	- Added 6 New Dice Rolls with Surfaced (Whoops name error)
 	- Added a New Dice Roll with LCTarotCards
 	- Fixed some other bugs (probably)
 	
@@ -161,7 +205,7 @@
 	
 -	**1.3.4**
 	- Added a new event Barbers
-	- Fixed an line of code that accidentally got deleted (woops)
+	- Fixed a line of code that accidentally got deleted (whoops)
 
 -   **1.3.3**
 	- Fixed a blank config issue with lethal performance 
@@ -177,7 +221,7 @@
 	- Added a bunch of new Rolls and Rolls with other mods, LCOffice and LethalMon
 	- Possible fix for hud disappearing when revived pt.2 
 	- Fixed Item Dupe event not working right
-	- Fixed/Replaced a lot of code that dissapeared for some reason
+	- Fixed/Replaced a lot of code that disappeared for some reason
 	- Optimized a bit of code (especially with spawning in Teleporter traps cuz I am still learning lol)
 	
 -   **1.2.11**
@@ -186,10 +230,10 @@
 	- Possible fix for hud disappearing when revived
 	
 -   **1.2.10**
-	- Changed Readme to add the original creator's plugin github
+	- Changed Readme to add the original creator's plugin GitHub
 	
 -   **1.2.9**
-	- Added a Invisible Teleporter Trap Event
+	- Added an Invisible Teleporter Trap Event
 	
 -   **1.2.8**
 	- Fixes a few things
@@ -200,7 +244,7 @@
 	- Added integration with Lethal Things for Teleporter Traps
 	
 -   **1.2.5**
-	- Turns out I am a bit dumb and didn't know how netcode worked in regards to modding.
+	- Turns out I am a bit dumb and didn't know how netcode worked in regard to modding.
 	- Added back the random dice spin time
 	
 -   **1.2.4**
@@ -225,11 +269,11 @@
 	- Neck Break can go further
 	- Config options for changing the force of Hypershake
 	- Config option for random dice spin time
-	- Config option for use of Gambler and Cronos outside
+	- Config option for use of Gambler and Chronos outside
 	- Maybe something else, I honestly don't remember, it is 8am and I need sleep
 	
 -   **1.1.8**
-    - As of this update, check out my github for any version changes: https://github.com/Theronguard/Emergency-Dice/
+    - As of this update, check out my GitHub for any version changes: https://github.com/Theronguard/Emergency-Dice/
 	
 -   **1.1.7**
 

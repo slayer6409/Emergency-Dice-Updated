@@ -39,7 +39,7 @@ namespace MysteryDice.Effects
         public static void BecomeDrunk(ulong userID)
         {
             PlayerControllerB player = Misc.GetPlayerByUserID(userID);
-            if (player == null) return;
+            if (player is null) return;
             player.drunkness = DrunkTimer;
             player.drunknessInertia = DrunkTimer;
             player.drunknessSpeed = DrunkTimer;

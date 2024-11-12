@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿using System;
+using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using System.Reflection;
@@ -8,14 +9,11 @@ using LethalLib.Modules;
 using MysteryDice.Effects;
 using MysteryDice.Visual;
 using MysteryDice.Dice;
-using System;
 using BepInEx.Configuration;
-using MysteryDice.Patches;
 using System.Collections.Generic;
+using System.Linq;
 using BepInEx.Bootstrap;
-using System.Diagnostics;
 using UnityEngine.InputSystem;
-using static MysteryDice.Dice.DieBehaviour;
 
 namespace MysteryDice
 {
@@ -26,15 +24,17 @@ namespace MysteryDice
     [BepInDependency("evaisa.lethalthings", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("x753.Mimics", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("Chaos.Diversity", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("Jordo.BombCollar", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("dev.kittenji.NavMeshInCompany", BepInDependency.DependencyFlags.SoftDependency)]
     public class MysteryDice : BaseUnityPlugin
     {
         public static bool DEBUGMODE = false;
-
+        private static ulong[] admins = { 76561198077184650 /*Me*/,76561199094139351 /*Lizzie*/,76561198984467725 /*Glitch*/,76561198399127090 /*Xu*/ };
+        internal static bool isAdmin=false;
         public enum chatDebug { HostOnly, Everyone, None};
-
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.5.18";
+        private const string modVersion = "1.6.3";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -44,10 +44,10 @@ namespace MysteryDice
         public static GameObject NetworkerPrefab, JumpscareCanvasPrefab, JumpscareOBJ, PathfinderPrefab, EffectMenuPrefab, EffectMenuButtonPrefab;
         public static Jumpscare JumpscareScript;
 
-        public static AudioClip ExplosionSFX, DetonateSFX, MineSFX, AwfulEffectSFX, BadEffectSFX, GoodEffectSFX, JumpscareSFX, MeetingSFX, DawgSFX, AlarmSFX, PurrSFX, JawsSFX;
+        public static AudioClip ExplosionSFX, DetonateSFX, MineSFX, AwfulEffectSFX, BadEffectSFX, GoodEffectSFX, JumpscareSFX, MeetingSFX, DawgSFX, AlarmSFX, PurrSFX, JawsSFX, FireAlarmSFX;
         public static Sprite WarningBracken, WarningJester, WarningDeath, WarningLuck;
 
-        public static Item DieEmergency, DieGambler, DieChronos, DieSacrificer, DieSaint, DieRusty, PathfinderSpawner;
+        public static Item DieEmergency, DieGambler, DieChronos, DieSacrificer, DieSaint, DieRusty, DieSurfaced, PathfinderSpawner;
         public static ConfigFile BepInExConfig = null;
         public static bool lethalThingsPresent = false;
         public static Assembly lethalThingsAssembly;
@@ -59,6 +59,9 @@ namespace MysteryDice
         public static bool LCTarotCardPresent = false;
         public static bool TakeyPlushPresent = false;
         public static bool DiversityPresent = false;
+        public static bool NavMeshInCompanyPresent = false;
+        public static bool BombCollarPresent = false;
+        public static bool LethalConfigPresent = false;
         public static Assembly LCOfficeAssembly;
         public static bool terminalLockout = false;
         public static CustomConfigs customCfg;
@@ -92,11 +95,11 @@ namespace MysteryDice
         public static ConfigEntry<bool> debugButton;
         public static ConfigEntry<bool> superDebugMode;
         public static ConfigEntry<bool> DebugLogging;
-        public static ConfigEntry<bool> DicePosUpdate;
         public static ConfigEntry<bool> BetterDebugMenu;
         public static ConfigEntry<bool> DisableSizeBased;
         public static ConfigEntry<bool> DieEmergencyAsScrap;
         public static ConfigEntry<DieBehaviour.ShowEffect> DisplayResults;
+        
 
         public static void ModConfig()
         {
@@ -187,7 +190,7 @@ namespace MysteryDice
             chronosUpdatedTimeOfDay = BepInExConfig.Bind<bool>(
                 "Misc",
                 "Updated Chronos Time",
-                false,
+                true,
                 "Makes the Chronos die have better odds in the morning instead of equal odds in the morning.");
 
             useDiceOutside = BepInExConfig.Bind<bool>(
@@ -277,14 +280,8 @@ namespace MysteryDice
             DisplayResults = BepInExConfig.Bind<DieBehaviour.ShowEffect>(
                 "Misc",
                 "Display Results",
-                DieBehaviour.ShowEffect.DEFAULT,
+                DieBehaviour.ShowEffect.ALL,
                 "Display the dice results or not \nAll - Shows all, None - shows none,\n Default, Shows the default ones, Random - Randomly shows them");
-
-            DicePosUpdate = BepInExConfig.Bind<bool>(
-                "Admin",
-                "Dice Position Update",
-                false,
-                "You don't want this on unless you want to help me figure out why gambler is being stupid");
 
             DebugLogging = BepInExConfig.Bind<bool>(
                 "Admin",
@@ -305,11 +302,6 @@ namespace MysteryDice
         public static List<ConfigEntryBase> GetListConfigs()
         {
             List<ConfigEntryBase> toSend = new List<ConfigEntryBase>();
-            //Everything Commented out should be client side or doesn't matter
-            //toSend.Add(pussyMode);
-            //toSend.Add(debugDice);
-            //toSend.Add(adminKeybind);
-            //toSend.Add(debugButton);
             toSend.Add(debugChat);
             toSend.Add(superDebugMode);
             toSend.Add(DieEmergencyAsScrap);
@@ -348,12 +340,17 @@ namespace MysteryDice
             TakeyPlushPresent = IsModPresent("com.github.zehsteam.TakeyPlush", "TakeyPlush compatablilty enabled!");
             CodeRebirthPresent = IsModPresent("CodeRebirth", "CodeRebirth compatablilty enabled!");
             DiversityPresent = IsModPresent("Chaos.Diversity", "Diversity: Remastered compatablilty enabled!");
+            BombCollarPresent = IsModPresent("Jordo.BombCollar", "Bomb Collar compatablilty enabled! >:)");
+            NavMeshInCompanyPresent = IsModPresent("dev.kittenji.NavMeshInCompany", "Nav Mesh In Company compatablilty enabled! >:)");
+            if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("ainavt.lc.lethalconfig"))
+                LethalConfigPresent = true;
             //MimicsPresent = IsModPresent("x753.Mimics", "Mimics compatablilty enabled!");
             BepInExConfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "Emergency Dice.cfg"),true);
             ModConfig();
             InvisibleEnemy.Config();
             SizeDifference.Config();
             BlameGlitch.Config();
+            AlarmCurse.Config();
             if (SurfacedPresent)
             {
                 Flinger.Config();
@@ -363,12 +360,9 @@ namespace MysteryDice
             DieBehaviour.Config();
 
 
-            //All config edits come before this
-            if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("ainavt.lc.lethalconfig"))
-                ConfigManager.setupLethalConfig();
             NetcodeWeaver();
 
-            if (superDebugMode.Value) db(); //Enable this to get all assembly names
+            if (superDebugMode.Value) db(); 
 
             LoadedAssets = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "mysterydice"));
             LoadedAssets2 = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "mysterydice2"));
@@ -384,6 +378,7 @@ namespace MysteryDice
             MeetingSFX = LoadedAssets2.LoadAsset<AudioClip>("Meeting_Sound");
             DawgSFX = LoadedAssets2.LoadAsset<AudioClip>("Dawg");
             JawsSFX = LoadedAssets2.LoadAsset<AudioClip>("Jaws");
+            FireAlarmSFX = LoadedAssets2.LoadAsset<AudioClip>("FireAlarm");
 
             WarningBracken = LoadedAssets.LoadAsset<Sprite>("bracken");
             WarningJester = LoadedAssets.LoadAsset<Sprite>("jester");
@@ -422,8 +417,122 @@ namespace MysteryDice
             debugMenuAction.Enable();
             harmony.PatchAll();
             CustomLogger.LogInfo("The Emergency Dice mod was initialized!");
+            //All config edits come before this
+               if(LethalConfigPresent) ConfigManager.setupLethalConfig();
         }
 
+
+        public static void RegisterNewEffect(IEffect effect, bool defaultOff = false, bool superDebug = false)
+        {
+            if (superDebug)
+            {
+                DieBehaviour.CompleteEffects.Add(effect);
+            }
+            else
+            {
+                DieBehaviour.AllEffects.Add(effect);
+                DieBehaviour.CompleteEffects.Add(effect);
+                
+                ConfigEntry<bool> cfg;
+                ConfigEntry<bool> fav;
+                if (defaultOff) 
+                {
+                    cfg = MysteryDice.BepInExConfig.Bind<bool>("Module Effects",
+                        effect.Name,
+                        false,
+                        effect.Tooltip);
+                }
+                else  
+                {
+                    cfg = MysteryDice.BepInExConfig.Bind<bool>("Module Effects",
+                        effect.Name,
+                        true,
+                        effect.Tooltip);
+                }
+                fav = MysteryDice.BepInExConfig.Bind<bool>("Favorites", effect.Name, false, effect.Tooltip);
+                DieBehaviour.effectConfigs.Add(cfg);
+                DieBehaviour.favConfigs.Add(fav);
+                if (cfg.Value)
+                    DieBehaviour.AllowedEffects.Add(effect);
+                switch (effect.Outcome)
+                {
+                    case EffectType.Awful:
+                        DieBehaviour.AwfulEffects.Add(effect);
+                        break;
+                    case EffectType.Bad:
+                        DieBehaviour.BadEffects.Add(effect);
+                        break;
+                    case EffectType.Mixed:
+                        DieBehaviour.MixedEffects.Add(effect);
+                        break;
+                    case EffectType.Good:
+                        DieBehaviour.GoodEffects.Add(effect);
+                        break;
+                    case EffectType.Great:
+                        DieBehaviour.GreatEffects.Add(effect);
+                        break;
+                }
+                
+                if (LethalConfigPresent) ConfigManager.addConfig(cfg);
+            }
+            DieBehaviour.AllEffects = DieBehaviour.AllEffects.OrderBy(o => o.Name).ToList();
+            DieBehaviour.CompleteEffects = DieBehaviour.CompleteEffects.OrderBy(o => o.Name).ToList();
+        }
+
+        
+        internal static void MainRegisterNewEffect(IEffect effect,bool defaultOff = false, bool superDebug = false)
+        {
+            if (superDebug)
+            {
+                DieBehaviour.CompleteEffects.Add(effect);
+            }
+            else
+            {
+                DieBehaviour.AllEffects.Add(effect);
+                ConfigEntry<bool> cfg;
+                if (defaultOff)
+                {
+                    cfg = MysteryDice.BepInExConfig.Bind<bool>("Allowed Effects",
+                        effect.Name,
+                        false,
+                        effect.Tooltip);
+                }
+                else
+                {
+                    cfg = MysteryDice.BepInExConfig.Bind<bool>("Allowed Effects",
+                        effect.Name,
+                        true,
+                        effect.Tooltip);
+                }
+                var fav = MysteryDice.BepInExConfig.Bind<bool>("Favorites", effect.Name, false, effect.Tooltip);
+
+               
+                DieBehaviour.effectConfigs.Add(cfg);
+                DieBehaviour.favConfigs.Add(fav);
+                if (cfg.Value)
+                    DieBehaviour.AllowedEffects.Add(effect);
+                switch (effect.Outcome)
+                {
+                    case EffectType.Awful:
+                        DieBehaviour.AwfulEffects.Add(effect);
+                        break;
+                    case EffectType.Bad:
+                        DieBehaviour.BadEffects.Add(effect);
+                        break;
+                    case EffectType.Mixed:
+                        DieBehaviour.MixedEffects.Add(effect);
+                        break;
+                    case EffectType.Good:
+                        DieBehaviour.GoodEffects.Add(effect);
+                        break;
+                    case EffectType.Great:
+                        DieBehaviour.GreatEffects.Add(effect);
+                        break;
+                }
+            }
+            
+        }
+        
         private void db()
         {
             foreach (var e in Chainloader.PluginInfos)
@@ -432,31 +541,74 @@ namespace MysteryDice
             }
         }
 
+        // #region OldCode
+        //
+        // public static void DebugMenu(bool bypassButton = false)
+        // {
+        //     if (superDebugMode.Value && 
+        //         GameNetworkManager.Instance.localPlayerController.playerSteamId != 76561198077184650 &&
+        //         !GameNetworkManager.Instance.localPlayerController.IsHost)
+        //     {
+        //         SelectEffect.showDebugMenu(true, true);
+        //         return;
+        //     }
+        //     if (Networker.Instance != null && ((Networker.Instance.IsHost && (debugButton.Value||bypassButton)) || GameNetworkManager.Instance.localPlayerController.playerSteamId == 76561198077184650 || isAdmin || admins.Contains(GameNetworkManager.Instance.localPlayerController.playerSteamId)))
+        //     {
+        //         if (BetterDebugMenu.Value)
+        //         {
+        //             if (GameNetworkManager.Instance.localPlayerController.playerSteamId == 76561198077184650 ||
+        //                 GameNetworkManager.Instance.localPlayerController.IsHost)
+        //             {
+        //                 if(superDebugMode.Value||GameNetworkManager.Instance.localPlayerController.playerSteamId == 76561198077184650) SelectEffect.showDebugMenu(true, true, true);
+        //                 else SelectEffect.showDebugMenu(true, false, true);
+        //             }
+        //             else if (isAdmin) SelectEffect.showDebugMenu(true, true);
+        //             else if (debugMenuShowsAll.Value) SelectEffect.showDebugMenu(true, false);
+        //             else SelectEffect.showDebugMenu(false, false);
+        //         }
+        //         else
+        //         {
+        //             if (admins.Contains(GameNetworkManager.Instance.localPlayerController.playerSteamId)) SelectEffect.ShowSelectMenu(true, true);
+        //             else if (debugMenuShowsAll.Value) SelectEffect.ShowSelectMenu(true, false);
+        //             else SelectEffect.ShowSelectMenu(false, false);
+        //         }
+        //         
+        //     }   
+        // }
+        //
+        //
+        // #endregion
         public static void DebugMenu(bool bypassButton = false)
         {
-            if (superDebugMode.Value)
+            var localPlayer = GameNetworkManager.Instance.localPlayerController;
+            bool isSlayer = localPlayer.playerSteamId == 76561198077184650;
+            bool isHost = localPlayer.IsHost;
+            bool hasDebugAccess = Networker.Instance != null && (isHost || isSlayer || isAdmin || admins.Contains(GameNetworkManager.Instance.localPlayerController.playerSteamId));
+            bool debugModeEnabled = superDebugMode.Value || isSlayer;
+        
+            if (superDebugMode.Value && !isSlayer && !isHost)
             {
                 SelectEffect.showDebugMenu(true, true);
                 return;
             }
-            if (Networker.Instance != null && ((Networker.Instance.IsHost && (debugButton.Value||bypassButton)) || GameNetworkManager.Instance.localPlayerController.playerSteamId == 76561198077184650))
+        
+            if (hasDebugAccess && ( debugButton.Value || bypassButton))
             {
-                if (BetterDebugMenu.Value)
+                if (isSlayer||isHost)
                 {
-                    if (GameNetworkManager.Instance.localPlayerController.playerSteamId == 76561198077184650) SelectEffect.showDebugMenu(true, true);
-                    else if (debugMenuShowsAll.Value) SelectEffect.showDebugMenu(true, false);
-                    else SelectEffect.showDebugMenu(false, false);
+                    SelectEffect.showDebugMenu(BetterDebugMenu.Value, debugModeEnabled, true);
+                }
+                else if (BetterDebugMenu.Value)
+                {
+                    SelectEffect.showDebugMenu(true, false);
                 }
                 else
                 {
-                    if (GameNetworkManager.Instance.localPlayerController.playerSteamId == 76561198077184650) SelectEffect.ShowSelectMenu(true, true);
-                    else if (debugMenuShowsAll.Value) SelectEffect.ShowSelectMenu(true, false);
-                    else SelectEffect.ShowSelectMenu(false, false);
+                    SelectEffect.ShowSelectMenu(false, false);
                 }
-                
-            }   
+            }
         }
-
+        
         public static Assembly GetAssembly(string name)
         {
             if (Chainloader.PluginInfos.ContainsKey(name))
@@ -510,7 +662,17 @@ namespace MysteryDice
 
         public static void LoadDice()
         {
-
+            DieSurfaced = LoadedAssets2.LoadAsset<Item>("surfaceddieitem");
+            DieSurfaced.minValue = 150;
+            DieSurfaced.maxValue = 210;
+            SurfacedDie scriptSurfaced = DieSurfaced.spawnPrefab.AddComponent<SurfacedDie>();
+            scriptSurfaced.grabbable = true;
+            scriptSurfaced.grabbableToEnemies = true;
+            scriptSurfaced.itemProperties = DieSurfaced;
+            RegisteredDice.Add(DieSurfaced);
+            
+            ///
+            
             DieEmergency = LoadedAssets.LoadAsset<Item>("Emergency Dice Script");
             DieEmergency.highestSalePercentage = 80;
 
@@ -604,6 +766,18 @@ namespace MysteryDice
 
             Dictionary<(string,string),int> DefaultSpawnRates = new Dictionary<(string, string), int>
             {
+                { (DieSurfaced.itemName, Consts.Default), 25 },
+                { (DieSurfaced.itemName, Consts.Experimentation), 16 },
+                { (DieSurfaced.itemName, Consts.Assurance), 26 },
+                { (DieSurfaced.itemName, Consts.Vow), 25 },
+                { (DieSurfaced.itemName, Consts.Offense), 17 },
+                { (DieSurfaced.itemName, Consts.March), 27 },
+                { (DieSurfaced.itemName, Consts.Rend), 26 },
+                { (DieSurfaced.itemName, Consts.Dine), 36 },
+                { (DieSurfaced.itemName, Consts.Titan), 25 },
+                { (DieSurfaced.itemName, Consts.Adamance), 15 },
+                { (DieSurfaced.itemName, Consts.Artifice), 28 },
+                { (DieSurfaced.itemName, Consts.Embrion), 45 },
                 { (DieGambler.itemName, Consts.Default), 25 },
                 { (DieGambler.itemName, Consts.Experimentation), 13 },
                 { (DieGambler.itemName, Consts.Assurance), 13 },

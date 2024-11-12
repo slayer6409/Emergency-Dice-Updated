@@ -15,7 +15,7 @@ using UnityEngine.AI;
 
 namespace MysteryDice
 {
-    internal class Misc
+    public class Misc
     {
         public static Item GetItemByName(string itemName, bool matchCase = true)
         {
@@ -46,8 +46,6 @@ namespace MysteryDice
                             randomVent.floorNode.position,
                             Quaternion.Euler(new Vector3(0f, 0f, 0f)));
                         SetObjectInvisible(enemyObject);
-                        EnemyAI enemyai = enemyObject.GetComponent<EnemyAI>();
-                        SetNavmesh(enemyai, false);
                         enemyObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
                         RM.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
                     }
@@ -96,6 +94,33 @@ namespace MysteryDice
                 }
             }
         }
+
+        public static PlayerControllerB getPlayerBySteamID(ulong steamID)
+        {
+            List<PlayerControllerB> validPlayers = new List<PlayerControllerB>();
+            foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
+            {
+                if (IsPlayerReal(player))
+                    validPlayers.Add(player);
+            }
+            return validPlayers.Where(x=>x.playerSteamId == steamID).FirstOrDefault();
+        }
+        public static int getIntPlayerID(ulong playerID)
+        {
+            int index = -1; 
+
+            for (int i = 0; i < StartOfRound.Instance.allPlayerObjects.Count(); i++)
+            {
+                PlayerControllerB player = StartOfRound.Instance.allPlayerObjects[i].GetComponent<PlayerControllerB>();
+                if (IsPlayerReal(player))
+                    if (player.playerClientId == playerID)
+                    {
+                        index = i;
+                        break;
+                    }
+            }
+            return index;
+        }
         public static void SpawnOutsideEnemy(SpawnableEnemyWithRarity enemy)
         {
             RoundManager RM = RoundManager.Instance;
@@ -111,19 +136,8 @@ namespace MysteryDice
                 enemy.enemyType.enemyPrefab,
                 position,
                 Quaternion.Euler(new Vector3(0f, 0f, 0f)));
-            EnemyAI enemyai = enemyObject.GetComponent<EnemyAI>();
-            SetNavmesh(enemyai,true);
             enemyObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
             RM.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
-        }
-        public static void SetNavmesh(EnemyAI enemy, bool outside)
-        {
-            if (outside)
-                enemy.allAINodes = GameObject.FindGameObjectsWithTag("OutsideAINode");
-            else
-                enemy.allAINodes = GameObject.FindGameObjectsWithTag("InsideAINode");
-
-            enemy.isOutside = outside;
         }
         public static List<GameObject> SpawnEnemy(SpawnableEnemyWithRarity enemy, int amount, bool isInside, bool isInvisible = false, bool returnObject = false)
         {
@@ -219,9 +233,8 @@ namespace MysteryDice
 
         public static PlayerControllerB GetPlayerByUserID(ulong userID)
         {
-            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
+            foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
             {
-                PlayerControllerB player = playerPrefab.GetComponent<PlayerControllerB>();
                 if (player.playerClientId == userID)
                     return player;
             }
@@ -283,12 +296,13 @@ namespace MysteryDice
         {
             List<PlayerControllerB> validPlayers = new List<PlayerControllerB>();
 
-            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
+            foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
             {
-                PlayerControllerB player = playerPrefab.GetComponent<PlayerControllerB>();
                 if (IsPlayerAliveAndControlled(player))
                     validPlayers.Add(player);
             }
+
+            if (validPlayers.Count == 1) return validPlayers[0];
 
             return validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)];
         }
@@ -296,12 +310,12 @@ namespace MysteryDice
         {
             List<PlayerControllerB> validPlayers = new List<PlayerControllerB>();
 
-            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
+            foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
             {
-                PlayerControllerB player = playerPrefab.GetComponent<PlayerControllerB>();
-                if (IsPlayerReal(player))
+                if (IsPlayerAliveAndControlled(player))
                     validPlayers.Add(player);
             }
+            if(validPlayers.Count==1) return validPlayers[0].playerClientId;
 
             return validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)].playerClientId;
         }
@@ -315,18 +329,32 @@ namespace MysteryDice
         }
         public static bool IsPlayerReal(PlayerControllerB player)
         {
-            return !player.isPlayerDead &&
-                    player.isActiveAndEnabled &&
-                    player.IsSpawned &&
-                    player.isPlayerControlled;
+            return player.isActiveAndEnabled &&
+                   player.isPlayerControlled;
         }
 
+        public static SpawnableEnemyWithRarity getEnemyByName(string name)
+        {
+            var enemySet = new HashSet<SpawnableEnemyWithRarity>();
+            foreach (var level in StartOfRound.Instance.levels)
+            {
+                enemySet.UnionWith(level.Enemies);
+                enemySet.UnionWith(level.OutsideEnemies);
+                enemySet.UnionWith(level.DaytimeEnemies);
+            }
+
+            var uniqueEnemies = enemySet
+                .GroupBy(x => x.enemyType.enemyName)
+                .Select(g => g.First())
+                .OrderBy(x => x.enemyType.enemyName)
+                .ToList();
+            return uniqueEnemies.FirstOrDefault(x => x.enemyType.enemyName == name);
+        }
         public static void AdjustWeight(ulong userID, float factor)
         {
             PlayerControllerB player = null;
-            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
+            foreach (PlayerControllerB playerComp in StartOfRound.Instance.allPlayerScripts)
             {
-                PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
                 if (playerComp.playerClientId == userID)
                 {
                     player = playerComp;

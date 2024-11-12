@@ -20,11 +20,11 @@ using static UnityEngine.EventSystems.EventTrigger;
 namespace MysteryDice.Patches
 {
     [HarmonyPatch(typeof(Terminal))]
-    internal class GetEnemies
+    public class GetEnemies
     {
 
         public static SpawnableEnemyWithRarity Masked, HoardingBug, Scary, Ghost, Boomba, Tulip, Centipede, Dog, Jester, Bracken, Stomper, Coilhead, Beehive, Sandworm, Spider, Giant, Maneater, Nutcracker, Shrimp, CrystalRay, Lasso, Barber, BellCrab, Urchin, Horse, Nemo, Bruce, MantisShrimp, Tornado;
-        public static SpawnableMapObject SpawnableLandmine, SpawnableTurret, SpawnableTP, SpawnableSpikeTrap, Seamine, Bertha; 
+        public static SpawnableMapObject SpawnableLandmine, SpawnableTurret, SpawnableTP, SpawnableSpikeTrap, Microwave, Fan, FlashTurret, Seamine, Bertha; 
         private static readonly string teleporterTrapId = "TeleporterTrap"; 
         [HarmonyPatch("Start")]
         [HarmonyPostfix]
@@ -125,6 +125,15 @@ namespace MysteryDice.Patches
 
                     if (item.prefabToSpawn.name == "Bertha" && Bertha == null)
                         Bertha = item;
+
+                    if (item.prefabToSpawn.name == "FunctionalMicrowave" && Microwave == null)
+                        Microwave = item;
+
+                    if (item.prefabToSpawn.name == "FanTrapAnimated" && Fan == null)
+                        Fan = item;
+
+                    if (item.prefabToSpawn.name == "FlashTurretUpdated" && FlashTurret == null)
+                        FlashTurret = item;
 
                 }
                 

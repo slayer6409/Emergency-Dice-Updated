@@ -14,8 +14,12 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-
             DiversityRemastered.Misc.StartOfRoundRevamp.Instance.TeleportToStairsServerRpc(Misc.GetRandomPlayerID());
+        }
+        public static bool checkConfigs()
+        {
+            if(DiversityRemastered.Configuration.walker.Value != true) return false;
+            return true;
         }
     }
 }

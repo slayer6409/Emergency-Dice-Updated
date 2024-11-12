@@ -9,6 +9,12 @@ namespace MysteryDice
 {
     internal class ConfigManager
     {
+        public static void addConfig(ConfigEntry<bool> config)
+        {
+            var addCongigField = new BoolCheckBoxConfigItem(config, true);
+            LethalConfigManager.AddConfigItem(addCongigField);
+
+        }
         public static void setupLethalConfig() 
         {
             var minHyperSlider = new FloatSliderConfigItem(MysteryDice.minHyperShake, new FloatSliderOptions
@@ -73,13 +79,14 @@ namespace MysteryDice
             var chronosUpdatedTimeOfDayBoolField = new BoolCheckBoxConfigItem(MysteryDice.chronosUpdatedTimeOfDay, false);
             var useDiceOutsideBoolField = new BoolCheckBoxConfigItem(MysteryDice.useDiceOutside, false);
             var debugDiceBoolField = new BoolCheckBoxConfigItem(MysteryDice.debugDice, false);
-            var DicePosBoolField = new BoolCheckBoxConfigItem(MysteryDice.DicePosUpdate, false);
             var allowChatCommandsBoolField = new BoolCheckBoxConfigItem(MysteryDice.allowChatCommands, true);
             var useNeckBreakTimerBoolField = new BoolCheckBoxConfigItem(MysteryDice.useNeckBreakTimer, false);
             var debugMenuShowsAllBoolField = new BoolCheckBoxConfigItem(MysteryDice.debugMenuShowsAll, false);
             var DebugButtonBoolField = new BoolCheckBoxConfigItem(MysteryDice.debugButton, true);
             var DisableSizeBasedBoolField = new BoolCheckBoxConfigItem(MysteryDice.DisableSizeBased, true);
             var BetterDebugMenuBoolField = new BoolCheckBoxConfigItem(MysteryDice.BetterDebugMenu, false);
+            var BlameGlitchMeteorsBoolField = new BoolCheckBoxConfigItem(BlameGlitch.GlitchedMeteorShower, false);
+            var AlarmBoolField = new BoolCheckBoxConfigItem(AlarmCurse.fireAlarm, false);
 
             var adminKeybindStringField = new TextInputFieldConfigItem(MysteryDice.adminKeybind, false);
 
@@ -91,7 +98,6 @@ namespace MysteryDice
             LethalConfigManager.AddConfigItem(chronosUpdatedTimeOfDayBoolField);
             LethalConfigManager.AddConfigItem(randomSpinTimeBoolField);
             LethalConfigManager.AddConfigItem(pussyModeBoolField);
-            LethalConfigManager.AddConfigItem(DicePosBoolField);
             LethalConfigManager.AddConfigItem(useNeckBreakTimerBoolField);
             LethalConfigManager.AddConfigItem(SizeDifferenceEnumField);
             LethalConfigManager.AddConfigItem(DisplayResultsEnumField);
@@ -116,6 +122,8 @@ namespace MysteryDice
             LethalConfigManager.AddConfigItem(GrabDebugBoolField);
             LethalConfigManager.AddConfigItem(EmergencyDiePriceSlider);
             LethalConfigManager.AddConfigItem(EmergencyDieScrapBoolField);
+            LethalConfigManager.AddConfigItem(BlameGlitchMeteorsBoolField);
+            LethalConfigManager.AddConfigItem(AlarmBoolField);
 
             if (MysteryDice.SurfacedPresent)
             {
@@ -132,11 +140,11 @@ namespace MysteryDice
                 var effectBoolField = new BoolCheckBoxConfigItem(config,true);
                 LethalConfigManager.AddConfigItem(effectBoolField);
             }
-            foreach (ConfigEntry<bool> config in DieBehaviour.favConfigs)
-            {
-                var effectBoolField = new BoolCheckBoxConfigItem(config,false);
-                LethalConfigManager.AddConfigItem(effectBoolField);
-            }
+            // foreach (ConfigEntry<bool> config in DieBehaviour.favConfigs)
+            // {
+            //     var effectBoolField = new BoolCheckBoxConfigItem(config,false);
+            //     LethalConfigManager.AddConfigItem(effectBoolField);
+            // }
         }
 
 

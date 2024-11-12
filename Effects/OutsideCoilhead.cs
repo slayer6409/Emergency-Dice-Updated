@@ -30,7 +30,7 @@ namespace MysteryDice.Effects
             gameObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
             RoundManager.Instance.SpawnedEnemies.Add(gameObject.GetComponent<EnemyAI>());
 
-            Misc.SetNavmesh(gameObject.GetComponent<EnemyAI>(), true);
+            SetNavmesh(gameObject.GetComponent<EnemyAI>(), true);
 
             NetworkObjectReference netObj = gameObject.GetComponentInChildren<NetworkObject>();
             Networker.Instance.StartCoroutine(Networker.Instance.ServerDelayedCoilheadSetProperties(netObj));
@@ -54,6 +54,15 @@ namespace MysteryDice.Effects
             return mainEntrance.transform.position;
         }
 
+        public static void SetNavmesh(EnemyAI enemy, bool outside)
+        {
+            if (outside)
+                enemy.allAINodes = GameObject.FindGameObjectsWithTag("OutsideAINode");
+            else
+                enemy.allAINodes = GameObject.FindGameObjectsWithTag("InsideAINode");
+
+            enemy.isOutside = outside;
+        }
         
     }
 }
