@@ -160,7 +160,20 @@ To get the item name or enemy name, turn on DebugLogging and for items pick it u
 
 
 ### Special thanks
+
+Thanks to the Original creator, [Theronguard](https://github.com/Theronguard/Emergency-Dice), who gave me permission to work on and upload this mod!
+
+Thanks to:
+
+[QWERTYRodrigo](https://www.youtube.com/watch?v=I0VF90vxZT8), who made some models for the mod (surfaced die and another other future thing)!
+
+[Xu Xiaolan](https://github.com/XuuXiaolan) for so much help with the code! 
+
+[Glitch](https://www.twitch.tv/a_glitched_npc), [Lizzie](https://www.twitch.tv/lizziegirl0099), [Lunxara](https://www.twitch.tv/lunxara) and so many more amazing people that the list is too long to put, for testing and bug finding! 
+
 Thanks to everyone who participates on github -
 for the suggestions, and bug reporting!
+
+Thank you all for rolling the dice!
 
 ### All players need this mod

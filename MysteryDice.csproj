@@ -13,6 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
+    <LangVersion>12</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -150,7 +151,9 @@
     <Compile Include="Dice\SurfacedDie.cs" />
     <Compile Include="Effects\AnythingGrenade.cs" />
     <Compile Include="Effects\BerthaLever.cs" />
+    <Compile Include="Effects\Horseshootnt.cs" />
     <Compile Include="Effects\BIGBertha.cs" />
+    <Compile Include="Effects\BigFling.cs" />
     <Compile Include="Effects\BigJumpscare.cs" />
     <Compile Include="Effects\Diversity2.cs" />
     <Compile Include="Effects\Diversity1.cs" />
@@ -158,11 +161,18 @@
     <Compile Include="Effects\Flashers.cs" />
     <Compile Include="Effects\Fans.cs" />
     <Compile Include="Effects\InstantExplodingBerthas.cs" />
+    <Compile Include="Effects\Lovers.cs" />
     <Compile Include="Effects\Martyrdom.cs" />
     <Compile Include="Effects\MicrowaveBertha.cs" />
+    <Compile Include="Effects\MovingBeartraps.cs" />
     <Compile Include="Effects\MovingBerthas.cs" />
+    <Compile Include="Effects\MovingFans.cs" />
+    <Compile Include="Effects\Paparazzi.cs" />
     <Compile Include="Effects\Scary.cs" />
     <Compile Include="Effects\Microwaves.cs" />
+    <Compile Include="Effects\SkyFan.cs" />
+    <Compile Include="Effects\SuperFlinger.cs" />
+    <Compile Include="Effects\TheRumbling.cs" />
     <Compile Include="Effects\WhereDidMyFriendsGo.cs" />
     <Compile Include="Effects\Flinger.cs" />
     <Compile Include="Effects\BlameGlitch.cs" />
@@ -300,6 +310,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Misc.cs" />
+    <Compile Include="SmartAgentNavigator.cs" />
     <Compile Include="Visual\ColorGradient.cs" />
     <Compile Include="Visual\CycleSigns.cs" />
     <Compile Include="Visual\Blinking.cs" />

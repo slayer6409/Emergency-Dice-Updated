@@ -1,4 +1,22 @@
--	**1.6.3**
+-	**1.7.0**
+    - Added a better way to move traps
+    - Added more events
+
+-	**1.6.6**
+    - Fixed Meteors
+    - Added more to blame glitch (from glitch)
+    - Fixed The Emergency Dice not generating its config
+    - Testing out a new Revive Method (can be enabled in the config settings)
+
+-	**1.6.5**
+    - Fixed Same scrap different dice
+- 
+-	**1.6.4**
+    - Possible fix for unchained
+    - Other Fixes with spawning in objects
+    - New Events 
+
+-   **1.6.3**
     - Fixed some issues
     - Added a Alarm curse new sfx option
 

@@ -44,7 +44,7 @@ namespace MysteryDice.Dice
 
             if(diceRoll == 6)
             {
-                SelectEffect.ShowSelectMenu(false,false);
+                SelectEffect.ShowSelectMenu(false,false, fromSaint: true);
                 Misc.SafeTipMessage($"Rolled 6", "Choose an effect");
                 return;
             }

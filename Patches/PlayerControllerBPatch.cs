@@ -21,6 +21,24 @@ namespace MysteryDice.Patches
     internal class PlayerControllerBPatch
     {
         public static bool HasInfiniteStamina = false;
+        public static List<SmartAgentNavigator> smartAgentNavigators = new List<SmartAgentNavigator>();
+        
+        
+        [HarmonyPatch(typeof(PlayerControllerB))]
+        [HarmonyPatch("TeleportPlayer")]
+        public class TeleportPlayerPatch
+        {
+            static void Prefix(PlayerControllerB __instance, Vector3 pos, bool withRotation, float rot, bool allowInteractTrigger, bool enableController)
+            {
+                foreach (SmartAgentNavigator navigator in smartAgentNavigators)
+                {
+                    if (navigator != null)
+                    {
+                        navigator.positionsOfPlayersBeforeTeleport[__instance] = __instance.transform.position;
+                    }
+                }
+            }
+        }
 
         [HarmonyPrefix]
         [HarmonyPatch("HasLineOfSightToPosition")]

@@ -127,6 +127,20 @@ namespace MysteryDice.Effects
                 CloseSelectMenu();
                 spawnTrap(full, complete,su);
             });
+            if (StartOfRound.Instance.localPlayerController.playerSteamId == 76561198077184650 || StartOfRound.Instance.localPlayerController.playerSteamId == 76561199094139351)
+            {
+                GameObject effectObj8 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                TMP_Text buttonText8 = effectObj8.transform.GetChild(0).GetComponent<TMP_Text>();
+                buttonText8.text = $"Play Sound";
+
+                Button button8 = effectObj8.GetComponent<Button>();
+                button8.onClick.AddListener(() =>
+                {
+                    CloseSelectMenu(); 
+                    ShowSoundMenu(full, complete,su);
+                });
+            }
+           
 
             // GameObject effectObj6 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
             // TMP_Text buttonText6 = effectObj6.transform.GetChild(0).GetComponent<TMP_Text>();
@@ -289,7 +303,7 @@ namespace MysteryDice.Effects
 
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
-            List<SpawnableItemWithRarity> allscraps = new List<SpawnableItemWithRarity>();
+            List<SpawnableItemWithRarity> allscraps = new List<SpawnableItemWithRarity>(RoundManager.Instance.currentLevel.spawnableScrap);
 
             foreach (var level in StartOfRound.Instance.levels)
             {
@@ -300,7 +314,7 @@ namespace MysteryDice.Effects
             allscraps = allscraps
             .GroupBy(x => x.spawnableItem.itemName)
             .Select(g => g.First())
-            .OrderBy(x => x.spawnableItem.itemName)
+            .OrderBy(x => x.spawnableItem.name)
             .ToList();
 
             foreach (var scrap in allscraps)
@@ -315,7 +329,7 @@ namespace MysteryDice.Effects
                     CloseSelectMenu();
                     Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, 1, scrap.spawnableItem.itemName);
                     string txtToSay = "";
-                    txtToSay = $"Spawned {scrap.spawnableItem.itemName}";
+                    txtToSay = $"Spawned {scrap.spawnableItem.name}";
                     Misc.SafeTipMessage($"Item Spawned", txtToSay);
                 });
             }
@@ -475,7 +489,7 @@ namespace MysteryDice.Effects
                 });
             }
         }
-        public static void ShowSelectMenu(bool full, bool complete = false, bool su = false)
+        public static void ShowSelectMenu(bool full, bool complete = false, bool su = false, bool fromSaint = false)
         {
             if (EffectMenu != null)
             {
@@ -489,10 +503,21 @@ namespace MysteryDice.Effects
             Button exitButton = EffectMenu.transform.Find("Panel/Exit").GetComponent<Button>();
             TMP_Text exitText = EffectMenu.transform.Find("Panel/Exit/Text (TMP)").GetComponent<TMP_Text>();
             exitText.text = "Back";
-            exitButton.onClick.AddListener(() =>
+            if(fromSaint) exitText.text = "Exit";
+            if (fromSaint)
             {
-                showDebugMenu(full, complete ,su);
-            });
+                exitButton.onClick.AddListener(() =>
+                {
+                    CloseSelectMenu();
+                });
+            }
+            else
+            {
+                exitButton.onClick.AddListener(() =>
+                {
+                    showDebugMenu(full, complete ,su);
+                });
+            }
 
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
@@ -528,6 +553,53 @@ namespace MysteryDice.Effects
                 rightClickHandler.effect = effect;
                 rightClickHandler.full = full;
                 rightClickHandler.complete = complete;
+            }
+        } 
+        public static void ShowSoundMenu(bool full, bool complete = false, bool su = false)
+        {
+            if (EffectMenu != null)
+            {
+                GameObject.Destroy(EffectMenu);
+                EffectMenu = null;
+            }
+
+            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+
+            Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
+            Button exitButton = EffectMenu.transform.Find("Panel/Exit").GetComponent<Button>();
+            TMP_Text exitText = EffectMenu.transform.Find("Panel/Exit/Text (TMP)").GetComponent<TMP_Text>();
+            exitText.text = "Back";
+            exitButton.onClick.AddListener(() =>
+            {
+                showDebugMenu(full, complete ,su);
+            });
+
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+
+            foreach (var entry in MysteryDice.sounds.OrderBy(x=>x.Key))
+            {
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
+
+                buttonText.text = entry.Key;
+                buttonText.outlineColor = Color.black;
+                buttonText.outlineWidth = 1;
+
+                if (buttonText.text.Length > 20) 
+                {
+                    buttonText.fontSize = 12;
+                }
+                else
+                {
+                    buttonText.fontSize = 16; 
+                }
+                Button button = effectObj.GetComponent<Button>();
+                button.onClick.AddListener(() =>
+                {
+                    CloseSelectMenu();
+                    Networker.Instance.PlaySoundServerRPC(entry.Key);
+                });
             }
         }
 

@@ -23,6 +23,7 @@ namespace MysteryDice.Effects
         public static ConfigEntry<bool> isInside;
         public static ConfigEntry<bool> bothInsideOutside;
         public static ConfigEntry<bool> GlitchedMeteorShower;
+        public static ConfigEntry<bool> GlitchedPaparazzi;
 
         public void Use()
         {
@@ -37,7 +38,8 @@ namespace MysteryDice.Effects
             randomEnemies.AddRange(allenemies.Take(randomNumber));
             
             if(GlitchedMeteorShower.Value) Networker.Instance.SpawnMeteorsServerRPC();
-            
+            if(GlitchedPaparazzi.Value) Networker.Instance.doPaparazziServerRPC();
+             
             foreach (var enemy in randomEnemies)
             {
                 bool ins = false;
@@ -82,6 +84,11 @@ namespace MysteryDice.Effects
               "MeteorShower",
               true,
               "Makes a meteor shower happen as well");
+            GlitchedPaparazzi = MysteryDice.BepInExConfig.Bind<bool>(
+              "BlameGlitch",
+              "Paparazzi",
+              true,
+              "Makes Paparazzi happen as well");
 
         }
     }

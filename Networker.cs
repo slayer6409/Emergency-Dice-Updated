@@ -8,6 +8,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using CodeRebirth.src.Content.Maps;
+using CodeRebirth.src.MiscScripts;
 using Unity.Netcode;
 using UnityEngine;
 using static MysteryDice.Effects.MovingLandmines;
@@ -198,6 +200,38 @@ namespace MysteryDice
             }
         }
 
+        // [ServerRpc(RequireOwnership = false)]
+        // public void MoveTrapServerRpc(int getInstanceID, Vector3 targetPosition, bool isInside)
+        // {
+        //     MoveTrapClientRpc(getInstanceID, targetPosition, isInside);
+        // }
+        //
+        // [ClientRpc]
+        // public void MoveTrapClientRpc(int getInstanceID, Vector3 targetPosition, bool isInside)
+        // {
+        //     SmartAgentNavigator agent = PlayerControllerBPatch.smartAgentNavigators.Find(x => x.GetInstanceID() == getInstanceID);
+        //     if (agent == null)
+        //     {
+        //         Debug.LogError($"No SmartAgent found for instance ID {getInstanceID}. Total smartAgents: {PlayerControllerBPatch.smartAgentNavigators.Count}");
+        //         return;
+        //     }
+        //     Debug.LogWarning($"Trying to move trap to {targetPosition} and inside is {isInside}");
+        //     agent.DoPathingToDestination(targetPosition, isInside, false, null);
+        // }
+        [ServerRpc(RequireOwnership = false)]
+        public void MoveTrapServerRpc(int getInstanceID, Vector3 targetPosition, bool isInside)
+        { 
+            SmartAgentNavigator agent = PlayerControllerBPatch.smartAgentNavigators.Find(x => x.GetInstanceID() == getInstanceID);
+            if (agent == null)
+            {
+                //MysteryDice.CustomLogger.LogError($"No SmartAgent found for instance ID {getInstanceID}. Total smartAgents: {PlayerControllerBPatch.smartAgentNavigators.Count}");
+                return;
+            }
+            //MysteryDice.CustomLogger.LogWarning($"Trying to move trap to {targetPosition} and inside is {isInside}");
+            agent.DoPathingToDestination(targetPosition, isInside, false, null);
+        }
+
+
         #region SpawnSurrounded
 
         [ServerRpc(RequireOwnership = false)]
@@ -266,16 +300,32 @@ namespace MysteryDice
         }
 
         [ClientRpc]
-        public void setSizeClientRPC(ulong objectId, Vector3 size)
+        public void setSizeClientRPC(ulong objectId, Vector3 size, Quaternion rotation = default)
         {
             if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(objectId, out var networkObj))
             {
                 GameObject obj = networkObj.gameObject;
-                Vector3 newSize = new Vector3(obj.transform.localScale.x*size.x, obj.transform.localScale.y*size.y, obj.transform.localScale.z*size.z);
+                Vector3 newSize = new Vector3(obj.transform.localScale.x * size.x, obj.transform.localScale.y * size.y,
+                    obj.transform.localScale.z * size.z);
                 obj.transform.localScale = newSize;
+                if(rotation != default) obj.transform.localRotation = rotation;
             }
         }
         
+        [ClientRpc]
+        public void removeShadowsClientRPC(ulong objectId)
+        {
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(objectId, out var networkObj))
+            {
+                GameObject obj = networkObj.gameObject;
+                Renderer renderer = obj.GetComponent<Renderer>();
+                foreach (GameObject child in obj.transform)
+                {
+                    Renderer renderer2 = child.GetComponent<Renderer>();
+                    if(renderer2 !=null) renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
+            }
+        }
 
         #endregion
 
@@ -288,12 +338,12 @@ namespace MysteryDice
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void setHorseStuffServerRPC(ulong netObject)
+        public void setHorseStuffServerRPC(ulong netObject, int super = 0)
         {
-            setHorseStuffClientRPC(netObject);
+            setHorseStuffClientRPC(netObject, super, Random.Range(-20, 20), Random.Range(-40, 40), Random.Range(-100, 100));
         }
         [ClientRpc]
-        public void setHorseStuffClientRPC(ulong netObject)
+        public void setHorseStuffClientRPC(ulong netObject, int super, int a, int b, int c)
         {
             try
             {
@@ -301,7 +351,9 @@ namespace MysteryDice
                 {
                     GameObject obj = networkObj.gameObject;
 
-                    Flinger.horseStuff(obj);
+                    if(super == 0) Flinger.horseStuff(obj);
+                    else if(super==1) SuperFlinger.horseStuff(obj, a,b,c);
+                    else if (super == 2) Horseshootnt.horseStuff(obj);
                 }
             }
             catch (Exception ex) 
@@ -330,6 +382,19 @@ namespace MysteryDice
         public void DelayedReactionClientRPC(ulong userID)
         {
             Delay.DelayedReaction(userID);
+        }
+        #endregion
+        
+        #region Alarm
+        [ServerRpc(RequireOwnership = false)]
+        public void AlarmServerRPC(ulong userID)
+        {
+            AlarmClientRPC(userID);
+        }
+        [ClientRpc]
+        public void AlarmClientRPC(ulong userID)
+        {
+            if(StartOfRound.Instance.localPlayerController.playerClientId==userID) AlarmCurse.setAlarm();
         }
         #endregion
 
@@ -406,7 +471,8 @@ namespace MysteryDice
                 if (player.playerClientId == clientID &&
                     Misc.IsPlayerAliveAndControlled(player))
                 {
-                    AudioSource.PlayClipAtPoint(MysteryDice.MineSFX, player.transform.position);
+                    MysteryDice.sounds.TryGetValue("MineTrigger", out AudioClip clip);
+                    AudioSource.PlayClipAtPoint(clip, player.transform.position);
                     StartCoroutine(SpawnExplosionAfterSFX(player.transform.position));
                     break;
                 }
@@ -444,21 +510,20 @@ namespace MysteryDice
                 player.hinderedMultiplier = 1f;
                 player.isMovementHindered = 0;
                 player.sourcesCausingSinking = 0;
+                player.deadBody.gameObject.SetActive(false);
                 //HUDManager.Instance.HideHUD(false);
             }
 
         }
         [ServerRpc(RequireOwnership = false)]
-        public void GiveLifeServerRpc(int num)
+        public void RevivePlayerServerRpc(int ID, Vector3 SpawnPosition)
         {
-            GiveLifeClientRpc(num);
+            RevivePlayerClientRpc(ID, SpawnPosition);
         }
-
         [ClientRpc]
-        public void GiveLifeClientRpc(int num)
+        public void RevivePlayerClientRpc(int ID, Vector3 SpawnPosition)
         {
-            Revive.lives += num;
-            HUDManager.Instance.DisplayTip("Extra life", "You just got an extra life!");
+            Revive.revivePlayer(ID, SpawnPosition);
         }
 
         #endregion
@@ -591,19 +656,24 @@ namespace MysteryDice
             audioSource.spatialBlend = 0;
             audioSource.volume = 0.75f;
             
+            MysteryDice.sounds.TryGetValue(sound, out AudioClip audioClip);
+            audioSource.clip = audioClip;
 
-            switch (sound)
-            {
-                case "Jaws":
-                    audioSource.clip = MysteryDice.JawsSFX;
-                    break;
-                case "Dawg":
-                    audioSource.clip = MysteryDice.DawgSFX;
-                    break;
-                default:
-                    MysteryDice.CustomLogger.LogWarning($"Sound '{sound}' not recognized.");
-                    return;
-            }
+            // switch (sound)
+            // {
+            //     case "Paparazzi":
+            //         audioSource.clip = MysteryDice.PaparazziSFX;
+            //         break;
+            //     case "Jaws":
+            //         audioSource.clip = MysteryDice.JawsSFX;
+            //         break;
+            //     case "Dawg":
+            //         audioSource.clip = MysteryDice.DawgSFX;
+            //         break;
+            //     default:
+            //         MysteryDice.CustomLogger.LogWarning($"Sound '{sound}' not recognized.");
+            //         return;
+            // }
 
             if (audioSource.clip != null)
             {
@@ -753,7 +823,6 @@ namespace MysteryDice
         {
             DynamicTrapEffect.spawnTrap(max, trap, inside);
         }
-
         [ServerRpc(RequireOwnership =false)]
         public void spawnTrapOnServerRPC(string trap, int num, bool inside, ulong userID)
         {
@@ -819,6 +888,92 @@ namespace MysteryDice
         {
             BerthaLever.SpawnBerthaOnLever();
         }
+        #endregion
+
+        #region SkyFan
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void SkyFanServerRPC()
+        {
+            SkyFan.SpawnSkyFan();
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void setSuctionServerRPC(ulong objectId)
+        {
+            setSuctionClientRPC(objectId);
+        }
+        [ClientRpc]
+        public void setSuctionClientRPC(ulong objectId)
+        {
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(objectId, out var networkObj))
+            {
+                GameObject obj = networkObj.gameObject;
+                SkyFan.setSuck(obj);
+            }
+        }
+        #endregion
+
+        #region Paparazzi
+
+        [ServerRpc(RequireOwnership = false)]
+        public void setParentServerRPC(ulong objectId, ulong objectParentId, string renameParent="", bool hostOnly = false)
+        {
+            setParentClientRPC(objectId, objectParentId, renameParent, hostOnly);
+        }
+        
+        [ClientRpc]
+        public void setParentClientRPC(ulong objectId, ulong objectParentId,string renameParent = "", bool hostOnly = false)
+        {
+            try
+            {  
+                if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(objectId, out var networkObj))
+                {
+                    if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(objectParentId, out var networkObj2))
+                    {
+                        if (hostOnly)
+                        {
+                            if(!IsHost) return;
+                        }
+                        GameObject obj = networkObj.gameObject;
+                        GameObject obj2 = networkObj2.gameObject;
+                        obj.transform.SetParent(obj2.transform);
+                        if (renameParent != "")
+                        {
+                            obj2.name = renameParent;
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                
+            }
+          
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void doPaparazziServerRPC()
+        {
+            Paparazzi.SpawnPaparazzi(UnityEngine.Random.Range(Paparazzi.MinMinesToSpawn,Paparazzi.MaxMinesToSpawn + 1));
+            AddMovingTrapClientRPC("Paparazzi");
+        }
+
+        #endregion
+
+        #region Lovers
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void makeLoverServerRPC(ulong p1, ulong p2)
+        {
+            makeLoverClientRPC(p1, p2);
+        }
+        [ClientRpc]
+        public void makeLoverClientRPC(ulong p1, ulong p2)
+        {
+            Lovers.makeLovers(p1,p2);
+        }
+
         #endregion
         
         #region SilentTP
@@ -972,6 +1127,7 @@ namespace MysteryDice
         }
 
         #endregion
+        
         // #region WhereTheyGo
         // [ServerRpc(RequireOwnership =false)]
         // public void WhereGoServerRPC(ulong who)
@@ -1257,17 +1413,17 @@ namespace MysteryDice
         #region AlarmCurse
 
         [ServerRpc(RequireOwnership = false)]
-        public void AlarmCurseServerRPC(Vector3 position)
+        public void AlarmCurseServerRPC(Vector3 position, int AudioNum = 0, bool isGlitch = false)
         {
-            AlarmCurse.AlarmAudio(position);
-            AlarmCurseClientRPC(position);
+            AlarmCurse.AlarmAudio(position, AudioNum, isGlitch);
+            AlarmCurseClientRPC(position,AudioNum, isGlitch);
         }
 
         [ClientRpc]
-        public void AlarmCurseClientRPC(Vector3 position)
+        public void AlarmCurseClientRPC(Vector3 position, int AudioNum, bool isGlitch)
         {
             if (IsServer) return;
-            AlarmCurse.AlarmAudio(position);
+            AlarmCurse.AlarmAudio(position, AudioNum, isGlitch);
         }
 
         #endregion
@@ -1588,46 +1744,81 @@ namespace MysteryDice
         [ClientRpc]
         public void AddMovingMinesClientRPC()
         {
-            StartCoroutine(WaitForMineInit());
+            StartCoroutine(MovingFans.WaitForTrapInit(GetEnemies.SpawnableLandmine.prefabToSpawn.name));
         }
-
-        IEnumerator WaitForMineInit()
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void MovingBeartrapsServerRPC()
         {
-            yield return new WaitForSeconds(5f);
-            foreach (Landmine mine in GameObject.FindObjectsOfType<Landmine>())
-            {
-                if (mine.transform.parent.gameObject.GetComponent<LandmineMovement>() == null)
-                {
-                    mine.transform.parent.gameObject.AddComponent<LandmineMovement>().LandmineScr = mine;
-                }
-            }
+            //MovingBeartraps.spawnBeartraps(Random.value < 0.5f);
+            MovingBeartrapsClientRPC();
         }
-
-        /// <summary>
-        /// this is inefficient, but stays for now
-        /// </summary>
-        /// <param name="mineID"></param>
-        /// <param name="speed"></param>
-        /// <param name="currentPosition"></param>
-        /// <param name="syncedPaths"></param>
-        /// <param name="blockedid"></param>
         [ClientRpc]
-        public void SyncDataClientRPC(ulong mineID, float speed, Vector3 currentPosition, Vector3 targetPosition, int blockedid)
+        public void MovingBeartrapsClientRPC()
         {
-            if (IsServer) return;
-
-            foreach (LandmineMovement mine in GameObject.FindObjectsOfType<LandmineMovement>())
-            {
-                if (mine.LandmineScr.NetworkObjectId != mineID) continue;
-
-                mine.transform.position = currentPosition;
-                mine.TargetPosition = targetPosition;
-                mine.MoveSpeed = speed;
-                mine.BlockedID = blockedid;
-                mine.CalculateNewPath();
-            }
-
+            StartCoroutine(MovingFans.WaitForTrapInit("Beartrap"));
         }
+        [ServerRpc(RequireOwnership = false)]
+        public void SuperFlingerServerRPC(ulong playerID)
+        {
+            Horseshootnt.spawnFlinger(playerID);
+        }
+
+        // IEnumerator WaitForMineInit()
+        // {
+        //     yield return new WaitForSeconds(5f);
+        //     foreach (Landmine mine in GameObject.FindObjectsOfType<Landmine>())
+        //     {
+        //         if (mine.transform.parent.gameObject.GetComponent<LandmineMovement>() == null)
+        //         {
+        //             mine.transform.parent.gameObject.AddComponent<LandmineMovement>().LandmineScr = mine;
+        //         }
+        //     }
+        // }
+        //
+        // /// <summary>
+        // /// this is inefficient, but stays for now
+        // /// </summary>
+        // /// <param name="mineID"></param>
+        // /// <param name="speed"></param>
+        // /// <param name="currentPosition"></param>
+        // /// <param name="syncedPaths"></param>
+        // /// <param name="blockedid"></param>
+        // [ClientRpc]
+        // public void SyncDataClientRPC(ulong mineID, float speed, Vector3 currentPosition, Vector3 targetPosition, int blockedid)
+        // {
+        //     if (IsServer) return;
+        //
+        //     foreach (LandmineMovement mine in GameObject.FindObjectsOfType<LandmineMovement>())
+        //     {
+        //         if (mine.LandmineScr.NetworkObjectId != mineID) continue;
+        //
+        //         mine.transform.position = currentPosition;
+        //         mine.TargetPosition = targetPosition;
+        //         mine.MoveSpeed = speed;
+        //         mine.BlockedID = blockedid;
+        //         mine.CalculateNewPath();
+        //     }
+        //
+        // }
+        #endregion
+        
+        #region MovingFans
+
+        [ServerRpc(RequireOwnership = false)]
+        public void MovingFansServerRPC()
+        {
+            CustomTrapServerRPC(6, GetEnemies.Fan.prefabToSpawn.name, false);
+            AddMovingTrapClientRPC(GetEnemies.Fan.prefabToSpawn.name);
+        }
+        [ClientRpc]
+        public void AddMovingTrapClientRPC(string trapName)
+        {
+            StartCoroutine(MovingFans.WaitForTrapInit(trapName));
+        }
+
+        
+
         #endregion
         
         #region Moving Seatraps
@@ -1642,7 +1833,8 @@ namespace MysteryDice
         [ClientRpc]
         public void AddMovingSeatrapsClientRPC()
         {
-            StartCoroutine(MovingSeaTraps.WaitForSeaTrapInit());
+            StartCoroutine(MovingFans.WaitForTrapInit("Bertha"));
+            StartCoroutine(MovingFans.WaitForTrapInit("Seamine"));
         }
 
        
@@ -1655,111 +1847,127 @@ namespace MysteryDice
         /// <param name="currentPosition"></param>
         /// <param name="syncedPaths"></param>
         /// <param name="blockedid"></param>
-        [ClientRpc]
-        public void SyncSeaTrapDataClientRPC(ulong mineID, float speed, Vector3 currentPosition, Vector3 targetPosition, int blockedid)
-        {
-            if (IsServer) return;
-
-            foreach (MovingSeaTraps.BerthaMovement mine in GameObject.FindObjectsOfType<MovingSeaTraps.BerthaMovement>())
-            {
-                if (mine.bigbertha.NetworkObjectId != mineID) continue;
-
-                mine.transform.position = currentPosition;
-                mine.TargetPosition = targetPosition;
-                mine.MoveSpeed = speed;
-                mine.BlockedID = blockedid;
-                mine.CalculateNewPath();
-            }
-            foreach (MovingSeaTraps.SeamineMovement mine in GameObject.FindObjectsOfType<MovingSeaTraps.SeamineMovement>())
-            {
-                if (mine.seamine.NetworkObjectId != mineID) continue;
-
-                mine.transform.position = currentPosition;
-                mine.TargetPosition = targetPosition;
-                mine.MoveSpeed = speed;
-                mine.BlockedID = blockedid;
-                mine.CalculateNewPath();
-            }
-
-        }
+        // [ClientRpc]
+        // public void SyncSeaTrapDataClientRPC(ulong mineID, float speed, Vector3 currentPosition, Vector3 targetPosition, int blockedid)
+        // {
+        //     if (IsServer) return;
+        //
+        //     foreach (MovingSeaTraps.BerthaMovement mine in GameObject.FindObjectsOfType<MovingSeaTraps.BerthaMovement>())
+        //     {
+        //         if (mine.bigbertha.NetworkObjectId != mineID) continue;
+        //
+        //         mine.transform.position = currentPosition;
+        //         mine.TargetPosition = targetPosition;
+        //         mine.MoveSpeed = speed;
+        //         mine.BlockedID = blockedid;
+        //         mine.CalculateNewPath();
+        //     }
+        //     foreach (MovingSeaTraps.SeamineMovement mine in GameObject.FindObjectsOfType<MovingSeaTraps.SeamineMovement>())
+        //     {
+        //         if (mine.seamine.NetworkObjectId != mineID) continue;
+        //
+        //         mine.transform.position = currentPosition;
+        //         mine.TargetPosition = targetPosition;
+        //         mine.MoveSpeed = speed;
+        //         mine.BlockedID = blockedid;
+        //         mine.CalculateNewPath();
+        //     }
+        //
+        // } 
+        // [ClientRpc]
+        // public void SyncTrapClientRPC(ulong mineID, float speed, Vector3 currentPosition, Vector3 targetPosition, int blockedid)
+        // {
+        //     if (IsServer) return;
+        //
+        //     foreach (MovingLandmines.TrapMovement mine in GameObject.FindObjectsOfType<MovingLandmines.TrapMovement>())
+        //     {
+        //         if (mine.mapObject.GetComponent<NetworkObject>().NetworkObjectId != mineID) continue;
+        //
+        //         mine.transform.position = currentPosition;
+        //         mine.TargetPosition = targetPosition;
+        //         mine.MoveSpeed = speed;
+        //         mine.BlockedID = blockedid;
+        //         mine.CalculateNewPath();
+        //     }
+        // }
         #endregion
 
         #region Moving traps
 
-
-            [ServerRpc(RequireOwnership = false)]
-                public void MovingTrapsInitServerRPC()
-                {
-                    TPTraps.SpawnTeleporterTraps(5);
-                    AddMovingTrapsClientRPC();
-                }
-
-                [ClientRpc]
-                public void AddMovingTrapsClientRPC()
-                {
-                    StartCoroutine(WaitForTrapInit());
-                }
-
-                IEnumerator WaitForTrapInit()
-                {
-                    yield return new WaitForSeconds(5f);
-
-                    foreach (var trap in GameObject.FindObjectsOfType<UnityEngine.Component>().Where(c => c.GetType().Name == "TeleporterTrap"))
+                //
+                [ServerRpc(RequireOwnership = false)]
+                    public void MovingTrapsInitServerRPC()
                     {
-                        if (trap == null)
-                        {
-                            MysteryDice.CustomLogger.LogWarning("Trap is null.");
-                            continue;
-                        }
-
-                        var targetObject = trap.transform.parent?.gameObject ?? trap.gameObject;
-
-                        if (targetObject.GetComponent<MovingTPTraps.TeleporterTrapMovement>() == null)
-                        {
-                            var movementComponent = targetObject.AddComponent<MovingTPTraps.TeleporterTrapMovement>(); 
-                            movementComponent.TeleporterTrapScr = trap;
-
-                            if (movementComponent.TeleporterTrapScr == null)
-                            {
-                                MysteryDice.CustomLogger.LogWarning("Failed to set TeleporterTrapScr for trap: " + trap.name);
-                            }
-                            else
-                            {
-                                MysteryDice.CustomLogger.LogInfo("Successfully set TeleporterTrapScr for trap: " + trap.name);
-                            }
-                        }
-                        else
-                        {
-                            MysteryDice.CustomLogger.LogInfo("Movement component already exists for trap: " + trap.name);
-                        }
+                        TPTraps.SpawnTeleporterTraps(5);
+                        AddMovingTrapClientRPC(GetEnemies.SpawnableTP.prefabToSpawn.name);
                     }
-                }
-
-                /// <summary>
-                /// this is inefficient, but stays for now
-                /// </summary>
-                /// <param name="trapID"></param>
-                /// <param name="speed"></param>
-                /// <param name="currentPosition"></param>
-                /// <param name="syncedPaths"></param>
-                /// <param name="blockedid"></param>
-                [ClientRpc]
-                public void SyncDataTPClientRPC(ulong trapID, float speed, Vector3 currentPosition, Vector3 targetPosition, int blockedid)
-                {
-                    if (IsServer) return;
-
-                    foreach (var trap in GameObject.FindObjectsOfType<MovingTPTraps.TeleporterTrapMovement>())
-                    {
-                        var networkObjectIdProp = trap.TeleporterTrapScr.GetType().GetProperty("NetworkObjectId", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                        if (networkObjectIdProp != null && (ulong)networkObjectIdProp.GetValue(trap.TeleporterTrapScr) != trapID) continue;
-
-                        trap.transform.position = currentPosition;
-                        trap.TargetPosition = targetPosition;
-                        trap.MoveSpeed = speed;
-                        trap.BlockedID = blockedid;
-                        trap.CalculateNewPath();
-                    }
-                }
+                
+                // [ClientRpc]
+                // public void AddMovingTrapsClientRPC()
+                // {
+                //     StartCoroutine(WaitForTrapInit());
+                // }
+                //
+                // IEnumerator WaitForTrapInit()
+                // {
+                //     yield return new WaitForSeconds(5f);
+                //
+                //     foreach (var trap in GameObject.FindObjectsOfType<UnityEngine.Component>().Where(c => c.GetType().Name == "TeleporterTrap"))
+                //     {
+                //         if (trap == null)
+                //         {
+                //             MysteryDice.CustomLogger.LogWarning("Trap is null.");
+                //             continue;
+                //         }
+                //
+                //         var targetObject = trap.transform.parent?.gameObject ?? trap.gameObject;
+                //
+                //         if (targetObject.GetComponent<MovingTPTraps.TeleporterTrapMovement>() == null)
+                //         {
+                //             var movementComponent = targetObject.AddComponent<MovingTPTraps.TeleporterTrapMovement>(); 
+                //             movementComponent.TeleporterTrapScr = trap;
+                //
+                //             if (movementComponent.TeleporterTrapScr == null)
+                //             {
+                //                 MysteryDice.CustomLogger.LogWarning("Failed to set TeleporterTrapScr for trap: " + trap.name);
+                //             }
+                //             else
+                //             {
+                //                 MysteryDice.CustomLogger.LogInfo("Successfully set TeleporterTrapScr for trap: " + trap.name);
+                //             }
+                //         }
+                //         else
+                //         {
+                //             MysteryDice.CustomLogger.LogInfo("Movement component already exists for trap: " + trap.name);
+                //         }
+                //     }
+                // }
+                //
+                // /// <summary>
+                // /// this is inefficient, but stays for now
+                // /// </summary>
+                // /// <param name="trapID"></param>
+                // /// <param name="speed"></param>
+                // /// <param name="currentPosition"></param>
+                // /// <param name="syncedPaths"></param>
+                // /// <param name="blockedid"></param>
+                // [ClientRpc]
+                // public void SyncDataTPClientRPC(ulong trapID, float speed, Vector3 currentPosition, Vector3 targetPosition, int blockedid)
+                // {
+                //     if (IsServer) return;
+                //
+                //     foreach (var trap in GameObject.FindObjectsOfType<MovingTPTraps.TeleporterTrapMovement>())
+                //     {
+                //         var networkObjectIdProp = trap.TeleporterTrapScr.GetType().GetProperty("NetworkObjectId", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                //         if (networkObjectIdProp != null && (ulong)networkObjectIdProp.GetValue(trap.TeleporterTrapScr) != trapID) continue;
+                //
+                //         trap.transform.position = currentPosition;
+                //         trap.TargetPosition = targetPosition;
+                //         trap.MoveSpeed = speed;
+                //         trap.BlockedID = blockedid;
+                //         trap.CalculateNewPath();
+                //     }
+                // }
 
             #endregion
 

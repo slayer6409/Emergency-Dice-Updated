@@ -1,31 +1,34 @@
-﻿using MysteryDice.Patches;
-using System;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using DunGen;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CodeRebirth.src.Content.Maps;
+using MysteryDice.Patches;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
 namespace MysteryDice.Effects
 {
-    internal class SeaminesOutside : IEffect
+    internal class Paparazzi : IEffect
     {
-        public string Name => "Seamines";
-        public static int MinMinesToSpawn = 4;
-        public static int MaxMinesToSpawn = 8;
+        public string Name => "Paparazzi";
+        public static int MinMinesToSpawn = 3;
+        public static int MaxMinesToSpawn = 6;
 
         private static List<Vector3> allPositions = new List<Vector3>();
-        public EffectType Outcome => EffectType.Bad;
+        public EffectType Outcome => EffectType.Awful;
         public bool ShowDefaultTooltip => false;
-        public string Tooltip => "Where they are supposed to be";
+        public string Tooltip => "Papa-paparazzi";
+
         public void Use()
         {
-            Networker.Instance.SeaminesOutsideServerRPC();
+            Networker.Instance.doPaparazziServerRPC();
         }
-
-        public static void SpawnSeaminesOutside(int MinesToSpawn, float positionOffsetRadius = 5f)
+        public static void SpawnPaparazzi(int MinesToSpawn, float positionOffsetRadius = 5f)
         {
             int spawnedMines = 0;
             System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed);
@@ -61,28 +64,35 @@ namespace MysteryDice.Effects
                                 validPositionFound = true;
 
                                 GameObject gameObject = UnityEngine.Object.Instantiate(
-                                    GetEnemies.Seamine.prefabToSpawn,
+                                    GetEnemies.Fan.prefabToSpawn,
                                     groundPosition,
+                                    Quaternion.identity,
+                                    RoundManager.Instance.mapPropsContainer.transform);
+                                GameObject gameObject2 = UnityEngine.Object.Instantiate(
+                                    GetEnemies.FlashTurret.prefabToSpawn,
+                                    gameObject.transform.position,
                                     Quaternion.identity,
                                     RoundManager.Instance.mapPropsContainer.transform);
 
                                 allPositions.Add(groundPosition);
-                                gameObject.transform.eulerAngles = new Vector3(gameObject.transform.eulerAngles.x, UnityEngine.Random.Range(0, 360), gameObject.transform.eulerAngles.z);
-                                gameObject.GetComponent<NetworkObject>().Spawn(destroyWithScene: true);
+                                var netobj = gameObject.GetComponent<NetworkObject>();
+                                var netobj2 = gameObject2.GetComponent<NetworkObject>();
+                                netobj.Spawn(destroyWithScene: true);
+                                netobj2.Spawn(destroyWithScene: true);
+                                Networker.Instance.setParentServerRPC(netobj.NetworkObjectId, netobj2.NetworkObjectId, "Paparazzi");
                                 spawnedMines++;
+
                             }
                         }
                     }
-
                     if (!validPositionFound)
                     {
                         Debug.LogWarning("Could not find a valid position for mine at spawn point: " + pos);
                     }
                 }
+                Networker.Instance.PlaySoundServerRPC("Paparazzi");
             }
-        }
-
-        public static float GetShortestDistanceSqr(Vector3 position, List<Vector3> positions)
+        }public static float GetShortestDistanceSqr(Vector3 position, List<Vector3> positions)
         {
             float shortestLength = float.MaxValue;
             foreach (Vector3 pos in positions)
@@ -94,5 +104,4 @@ namespace MysteryDice.Effects
             return shortestLength;
         }
     }
-    
 }

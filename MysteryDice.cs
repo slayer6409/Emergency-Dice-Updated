@@ -17,6 +17,7 @@ using UnityEngine.InputSystem;
 
 namespace MysteryDice
 {
+    //CompanyCruiser(Clone)
     [BepInPlugin(modGUID, modName, modVersion)]
     [BepInDependency("ainavt.lc.lethalconfig", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("Surfaced", BepInDependency.DependencyFlags.SoftDependency)]
@@ -28,23 +29,31 @@ namespace MysteryDice
     [BepInDependency("dev.kittenji.NavMeshInCompany", BepInDependency.DependencyFlags.SoftDependency)]
     public class MysteryDice : BaseUnityPlugin
     {
-        public static bool DEBUGMODE = false;
-        private static ulong[] admins = { 76561198077184650 /*Me*/,76561199094139351 /*Lizzie*/,76561198984467725 /*Glitch*/,76561198399127090 /*Xu*/ };
+        //public static bool DEBUGMODE = false;
+        private static ulong[] admins = { 76561198077184650 /*Me*/,76561199094139351 /*Lizzie*/,76561198984467725 /*Glitch*/,76561198399127090 /*Xu*/ /*,76561198833013489 */ /*asterrosee*/, 76561199182474292 /*Rat*/};
         internal static bool isAdmin=false;
         public enum chatDebug { HostOnly, Everyone, None};
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.6.3";
+        private const string modVersion = "1.7.0";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
         public static AssetBundle LoadedAssets, LoadedAssets2;
 
         public static InputAction debugMenuAction = null;
-        public static GameObject NetworkerPrefab, JumpscareCanvasPrefab, JumpscareOBJ, PathfinderPrefab, EffectMenuPrefab, EffectMenuButtonPrefab;
+
+        public static GameObject NetworkerPrefab,
+            JumpscareCanvasPrefab,
+            JumpscareOBJ,
+            PathfinderPrefab,
+            EffectMenuPrefab,
+            EffectMenuButtonPrefab,
+            AgentObjectPrefab;
         public static Jumpscare JumpscareScript;
 
-        public static AudioClip ExplosionSFX, DetonateSFX, MineSFX, AwfulEffectSFX, BadEffectSFX, GoodEffectSFX, JumpscareSFX, MeetingSFX, DawgSFX, AlarmSFX, PurrSFX, JawsSFX, FireAlarmSFX;
+        //public static AudioClip ExplosionSFX, DetonateSFX, MineSFX, AwfulEffectSFX, BadEffectSFX, GoodEffectSFX, JumpscareSFX, MeetingSFX, DawgSFX, AlarmSFX, PurrSFX, JawsSFX, FireAlarmSFX, PaparazziSFX;
+        public static Dictionary<string, AudioClip> sounds = new Dictionary<string, AudioClip>();
         public static Sprite WarningBracken, WarningJester, WarningDeath, WarningLuck;
 
         public static Item DieEmergency, DieGambler, DieChronos, DieSacrificer, DieSaint, DieRusty, DieSurfaced, PathfinderSpawner;
@@ -330,18 +339,18 @@ namespace MysteryDice
         {
             CustomLogger = BepInEx.Logging.Logger.CreateLogSource(modGUID);
             lethalThingsAssembly = GetAssembly("evaisa.lethalthings");
-            lethalThingsPresent = IsModPresent("evaisa.lethalthings", "LethalThings compatablilty enabled!");
+            lethalThingsPresent = IsModPresent("evaisa.lethalthings", "LethalThings compatibility enabled!");
             LethalMonAssembly = GetAssembly("LethalMon"); //This was before I learned about soft dependencies lol
-            LethalMonPresent = IsModPresent("LethalMon", "LethalMon compatablilty enabled!");
+            LethalMonPresent = IsModPresent("LethalMon", "LethalMon compatibility enabled!");
             LCOfficeAssembly = GetAssembly("Piggy.LCOffice"); //This was before I learned about soft dependencies lol
-            LCOfficePresent = IsModPresent("Piggy.LCOffice", "LCOffice compatablilty enabled!");
-            SurfacedPresent = IsModPresent("Surfaced", "Surfaced compatablilty enabled!");
-            LCTarotCardPresent = IsModPresent("LCTarotCard", "LCTarotCard compatablilty enabled!");
-            TakeyPlushPresent = IsModPresent("com.github.zehsteam.TakeyPlush", "TakeyPlush compatablilty enabled!");
-            CodeRebirthPresent = IsModPresent("CodeRebirth", "CodeRebirth compatablilty enabled!");
-            DiversityPresent = IsModPresent("Chaos.Diversity", "Diversity: Remastered compatablilty enabled!");
-            BombCollarPresent = IsModPresent("Jordo.BombCollar", "Bomb Collar compatablilty enabled! >:)");
-            NavMeshInCompanyPresent = IsModPresent("dev.kittenji.NavMeshInCompany", "Nav Mesh In Company compatablilty enabled! >:)");
+            LCOfficePresent = IsModPresent("Piggy.LCOffice", "LCOffice compatibility enabled!");
+            SurfacedPresent = IsModPresent("Surfaced", "Surfaced compatibility enabled!");
+            LCTarotCardPresent = IsModPresent("LCTarotCard", "LCTarotCard compatibility enabled!");
+            TakeyPlushPresent = IsModPresent("com.github.zehsteam.TakeyPlush", "TakeyPlush compatibility enabled!");
+            CodeRebirthPresent = IsModPresent("CodeRebirth", "CodeRebirth compatibility enabled!");
+            DiversityPresent = IsModPresent("Chaos.Diversity", "Diversity: Remastered compatibility enabled!");
+            BombCollarPresent = IsModPresent("Jordo.BombCollar", "Bomb Collar compatibility enabled! >:)");
+            NavMeshInCompanyPresent = IsModPresent("dev.kittenji.NavMeshInCompany", "Nav Mesh In Company compatibility enabled! >:)");
             if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("ainavt.lc.lethalconfig"))
                 LethalConfigPresent = true;
             //MimicsPresent = IsModPresent("x753.Mimics", "Mimics compatablilty enabled!");
@@ -351,6 +360,7 @@ namespace MysteryDice
             SizeDifference.Config();
             BlameGlitch.Config();
             AlarmCurse.Config();
+            Revive.Config();
             if (SurfacedPresent)
             {
                 Flinger.Config();
@@ -367,18 +377,24 @@ namespace MysteryDice
             LoadedAssets = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "mysterydice"));
             LoadedAssets2 = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "mysterydice2"));
             
-            ExplosionSFX = LoadedAssets.LoadAsset<AudioClip>("MineDetonate");
-            MineSFX = LoadedAssets.LoadAsset<AudioClip>("MineTrigger");
-            AwfulEffectSFX = LoadedAssets.LoadAsset<AudioClip>("Bell2");
-            BadEffectSFX = LoadedAssets.LoadAsset<AudioClip>("Bad1");
-            GoodEffectSFX = LoadedAssets.LoadAsset<AudioClip>("Good2");
-            JumpscareSFX = LoadedAssets.LoadAsset<AudioClip>("glitch");
-            PurrSFX = LoadedAssets.LoadAsset<AudioClip>("purr");
-            AlarmSFX = LoadedAssets.LoadAsset<AudioClip>("alarmcurse");
-            MeetingSFX = LoadedAssets2.LoadAsset<AudioClip>("Meeting_Sound");
-            DawgSFX = LoadedAssets2.LoadAsset<AudioClip>("Dawg");
-            JawsSFX = LoadedAssets2.LoadAsset<AudioClip>("Jaws");
-            FireAlarmSFX = LoadedAssets2.LoadAsset<AudioClip>("FireAlarm");
+            sounds.Add("MineDetonate", LoadedAssets.LoadAsset<AudioClip>("MineDetonate"));
+            sounds.Add("MineTrigger", LoadedAssets.LoadAsset<AudioClip>("MineTrigger"));
+            sounds.Add("Bell2", LoadedAssets.LoadAsset<AudioClip>("Bell2"));
+            sounds.Add("Bad1", LoadedAssets.LoadAsset<AudioClip>("Bad1"));
+            sounds.Add("Good2", LoadedAssets.LoadAsset<AudioClip>("Good2"));
+            sounds.Add("glitch", LoadedAssets.LoadAsset<AudioClip>("glitch"));
+            sounds.Add("purr", LoadedAssets.LoadAsset<AudioClip>("purr"));
+            sounds.Add("alarmcurse", LoadedAssets.LoadAsset<AudioClip>("alarmcurse"));
+            sounds.Add("Meeting_Sound", LoadedAssets2.LoadAsset<AudioClip>("Meeting_Sound"));
+            sounds.Add("Dawg", LoadedAssets2.LoadAsset<AudioClip>("Dawg"));
+            sounds.Add("Jaws", LoadedAssets2.LoadAsset<AudioClip>("Jaws"));
+            sounds.Add("FireAlarm", LoadedAssets2.LoadAsset<AudioClip>("FireAlarm"));
+            sounds.Add("Paparazzi", LoadedAssets2.LoadAsset<AudioClip>("Paparazzi"));
+            sounds.Add("WindowsError", LoadedAssets2.LoadAsset<AudioClip>("WindowsError"));
+            sounds.Add("disconnect", LoadedAssets2.LoadAsset<AudioClip>("disconnect"));
+            sounds.Add("DoorLeft", LoadedAssets2.LoadAsset<AudioClip>("DoorLeft"));
+            sounds.Add("DoorRight", LoadedAssets2.LoadAsset<AudioClip>("DoorRight"));
+            sounds.Add("AudioTest", LoadedAssets2.LoadAsset<AudioClip>("AudioTest"));
 
             WarningBracken = LoadedAssets.LoadAsset<Sprite>("bracken");
             WarningJester = LoadedAssets.LoadAsset<Sprite>("jester");
@@ -387,6 +403,8 @@ namespace MysteryDice
 
             NetworkerPrefab = LoadedAssets.LoadAsset<GameObject>("Networker");
             NetworkerPrefab.AddComponent<Networker>();
+            AgentObjectPrefab = LoadedAssets2.LoadAsset<GameObject>("AgentObject");
+            AgentObjectPrefab.AddComponent<SmartAgentNavigator>();
 
             EffectMenuPrefab = LoadedAssets.LoadAsset<GameObject>("Choose Effect");
             EffectMenuButtonPrefab = LoadedAssets.LoadAsset<GameObject>("Effect");
@@ -404,6 +422,8 @@ namespace MysteryDice
             scriptBlobspawner.grabbableToEnemies = true;
             scriptBlobspawner.itemProperties = PathfinderSpawner;
 
+            LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(AgentObjectPrefab);
+            
             LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(PathfinderSpawner.spawnPrefab);
             LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(PathfinderPrefab);
 
@@ -420,8 +440,6 @@ namespace MysteryDice
             //All config edits come before this
                if(LethalConfigPresent) ConfigManager.setupLethalConfig();
         }
-
-
         public static void RegisterNewEffect(IEffect effect, bool defaultOff = false, bool superDebug = false)
         {
             if (superDebug)
@@ -580,6 +598,7 @@ namespace MysteryDice
         // #endregion
         public static void DebugMenu(bool bypassButton = false)
         {
+            Debug.LogWarning("This is the new version");
             var localPlayer = GameNetworkManager.Instance.localPlayerController;
             bool isSlayer = localPlayer.playerSteamId == 76561198077184650;
             bool isHost = localPlayer.IsHost;
@@ -709,6 +728,8 @@ namespace MysteryDice
             scriptMystery.itemProperties = DieGambler;
 
             RegisteredDice.Add(DieGambler);
+            
+            ///
 
             DieSacrificer = LoadedAssets.LoadAsset<Item>("Sacrificer");
             DieSacrificer.minValue = 170;
@@ -866,7 +887,7 @@ namespace MysteryDice
 
             foreach (Item die in RegisteredDice)
             {
-                if (die == DieEmergency) continue;
+                if (die == DieEmergency && !DieEmergencyAsScrap.Value) continue;
 
                 ConfigEntry<int> defaultRate = BepInExConfig.Bind<int>(
                     die.itemName + " Spawn rates",

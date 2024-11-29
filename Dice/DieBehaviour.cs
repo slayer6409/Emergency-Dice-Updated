@@ -200,19 +200,21 @@ namespace MysteryDice.Dice
 
         public void PlaySoundBasedOnEffect(EffectType effectType)
         {
+            AudioClip clip;
             switch (effectType)
             {
                 case EffectType.Awful:
-                    AudioSource.PlayClipAtPoint(MysteryDice.AwfulEffectSFX, GameNetworkManager.Instance.localPlayerController.transform.position);
+                    MysteryDice.sounds.TryGetValue("Bell2", out clip);
                     break;
                 case EffectType.Bad:
-                    AudioSource.PlayClipAtPoint(MysteryDice.BadEffectSFX, GameNetworkManager.Instance.localPlayerController.transform.position);
+                    MysteryDice.sounds.TryGetValue("Bad1", out clip);
                     break;
                 default:
-                    AudioSource.PlayClipAtPoint(MysteryDice.GoodEffectSFX, GameNetworkManager.Instance.localPlayerController.transform.position);
+                    MysteryDice.sounds.TryGetValue("Good2", out clip);
                     break;
             }
 
+            AudioSource.PlayClipAtPoint(clip, GameNetworkManager.Instance.localPlayerController.transform.position);
         }
         public static void ShowDefaultTooltip(IEffect effect, int diceRoll)
         {
@@ -379,6 +381,7 @@ namespace MysteryDice.Dice
             MysteryDice.MainRegisterNewEffect(new HappyDay());
             MysteryDice.MainRegisterNewEffect(new SpicyNuggies());
             MysteryDice.MainRegisterNewEffect(new Martyrdom());
+            MysteryDice.MainRegisterNewEffect(new Lovers());
             //MysteryDice.MainRegisterNewEffect(new WhereDidMyFriendsGo());
             if (MysteryDice.lethalThingsPresent)
             {
@@ -432,7 +435,16 @@ namespace MysteryDice.Dice
                 MysteryDice.MainRegisterNewEffect(new BIGBertha());
                 surfacedNames.Add(new MovingSeaTraps().Name);
                 MysteryDice.MainRegisterNewEffect(new MovingSeaTraps());
+                surfacedNames.Add(new BigFling().Name);
+                MysteryDice.MainRegisterNewEffect(new BigFling());
+                surfacedNames.Add(new SuperFlinger().Name);
+                MysteryDice.MainRegisterNewEffect(new SuperFlinger());
+                surfacedNames.Add(new Horseshootnt().Name);
+                MysteryDice.MainRegisterNewEffect(new Horseshootnt());
 
+                
+                // Bertha 0.19
+                // Seamine 0.4573873
                 if (MysteryDice.CodeRebirthPresent)
                 {
                     //     surfacedNames.Add(new MicrowaveBertha().Name);
@@ -447,6 +459,7 @@ namespace MysteryDice.Dice
             {
                 MysteryDice.MainRegisterNewEffect(new TakeySmol());
             }
+            
             if (MysteryDice.CodeRebirthPresent) 
             {
                 MysteryDice.MainRegisterNewEffect(new Tornado());
@@ -455,6 +468,11 @@ namespace MysteryDice.Dice
                 MysteryDice.MainRegisterNewEffect(new Fans());
                 MysteryDice.MainRegisterNewEffect(new Flashers());
                 MysteryDice.MainRegisterNewEffect(new Microwave());
+                MysteryDice.MainRegisterNewEffect(new MovingFans());
+                MysteryDice.MainRegisterNewEffect(new SkyFan(),true); //Need to turn shadows off
+                MysteryDice.MainRegisterNewEffect(new Paparazzi());
+                MysteryDice.MainRegisterNewEffect(new MovingBeartraps());
+                MysteryDice.MainRegisterNewEffect(new TheRumbling());
             }
             if (!MysteryDice.DisableSizeBased.Value)
             {

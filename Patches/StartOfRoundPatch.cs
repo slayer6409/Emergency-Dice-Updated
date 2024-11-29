@@ -87,6 +87,17 @@ namespace MysteryDice.Patches
             HyperShake.ShakingData = null;
             EggBoots.eggBootsEnabled = false;
             Martyrdom.doMinesDrop = false;
+            if(StartOfRound.Instance.IsHost)
+            // foreach (var agent in PlayerControllerBPatch.smartAgentNavigators)
+            // {
+            //     foreach (GameObject child in agent.transform)
+            //     {
+            //         var NO = child.GetComponent<NetworkObject>();
+            //         if (NO != null) NO.Despawn();
+            //     }
+            //     agent.GetComponent<NetworkObject>().Despawn();
+            // }
+            //PlayerControllerBPatch.smartAgentNavigators = null;
             
             if (LeverShake.IsShaking)
             {
@@ -118,10 +129,10 @@ namespace MysteryDice.Patches
                 }
             }
             
-            
             NeckSpin.FixNeck();
             TimeOfDay.Instance.overrideMeteorChance = -1;
             TimeOfDay.Instance.meteorShowerAtTime = -1;
+            Meteors.isRunning = false;
 
             if (!MysteryDice.DisableSizeBased.Value)
             {

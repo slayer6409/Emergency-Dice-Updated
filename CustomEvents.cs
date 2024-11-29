@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using static UnityEngine.EventSystems.EventTrigger;
+using Random = UnityEngine.Random;
 
 namespace MysteryDice
 {
@@ -358,7 +359,7 @@ namespace MysteryDice
             {
                 for (int i = 0; i < totalSpawnPoints && spawnedMines < MinesToSpawn; i++)
                 {
-                    Vector3 pos = spawnPoints[i].transform.position;
+                    Vector3 pos = spawnPoints[Random.Range(0,totalSpawnPoints)].transform.position;
                     bool validPositionFound = false;
                     for (int attempt = 0; attempt < maxAttempts && !validPositionFound; attempt++)
                     {

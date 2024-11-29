@@ -35,19 +35,21 @@ namespace MysteryDice.Effects
         }
         public static void PlaySoundBasedOnEffect(EffectType effectType)
         {
+            AudioClip clip;
             switch (effectType)
             {
                 case EffectType.Awful:
-                    AudioSource.PlayClipAtPoint(MysteryDice.AwfulEffectSFX, GameNetworkManager.Instance.localPlayerController.transform.position);
+                    MysteryDice.sounds.TryGetValue("Bell2", out clip);
                     break;
                 case EffectType.Bad:
-                    AudioSource.PlayClipAtPoint(MysteryDice.BadEffectSFX, GameNetworkManager.Instance.localPlayerController.transform.position);
+                    MysteryDice.sounds.TryGetValue("Bad1", out clip);
                     break;
                 default:
-                    AudioSource.PlayClipAtPoint(MysteryDice.GoodEffectSFX, GameNetworkManager.Instance.localPlayerController.transform.position);
+                    MysteryDice.sounds.TryGetValue("Good2", out clip);
                     break;
             }
 
+            AudioSource.PlayClipAtPoint(clip, GameNetworkManager.Instance.localPlayerController.transform.position);
         }
         public static IEffect GetRandomEffect(int diceRoll)
         {

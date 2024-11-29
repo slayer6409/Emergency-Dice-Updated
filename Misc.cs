@@ -27,6 +27,14 @@ namespace MysteryDice
                     return items;
                 }
             }
+            foreach (SpawnableItemWithRarity items in RoundManager.Instance.currentLevel.spawnableScrap)
+            {
+                if (items.spawnableItem.itemName.Equals(itemName, comparisonType))
+                {
+                    return items.spawnableItem;
+                }
+            }
+            
             return null;
         }
         public static void SpawnEnemy(SpawnableEnemyWithRarity enemy, int amount, bool isInside, bool isInvisible = false)

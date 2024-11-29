@@ -44,8 +44,11 @@ namespace MysteryDice.Visual
 
         IEnumerator ScareTime(bool meeting = false)
         {
-            AudioClip sfx = MysteryDice.pussyMode.Value ? MysteryDice.PurrSFX : MysteryDice.JumpscareSFX;
-            if(meeting) sfx = MysteryDice.MeetingSFX;
+            
+            //AudioClip sfx = MysteryDice.pussyMode.Value ? MysteryDice.PurrSFX : MysteryDice.JumpscareSFX;
+            //if(meeting) sfx = MysteryDice.MeetingSFX;
+            MysteryDice.sounds.TryGetValue(MysteryDice.pussyMode.Value ? "purr" : "glitch", out AudioClip sfx);
+            if(meeting) MysteryDice.sounds.TryGetValue("Meeting_Sound",out sfx);
             AudioSource.PlayClipAtPoint(sfx, GameNetworkManager.Instance.localPlayerController.transform.position, 10f);
             AudioSource.PlayClipAtPoint(sfx, GameNetworkManager.Instance.localPlayerController.transform.position, 10f);
             AudioSource.PlayClipAtPoint(sfx, GameNetworkManager.Instance.localPlayerController.transform.position, 10f);

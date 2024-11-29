@@ -1,9 +1,11 @@
 ﻿using LethalLib.Modules;
 using MysteryDice.Patches;
 using System;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using static UnityEngine.EventSystems.EventTrigger;
+using Object = UnityEngine.Object;
 
 namespace MysteryDice.Effects
 {
@@ -34,6 +36,11 @@ namespace MysteryDice.Effects
                 RoundManager.Instance.currentLevel.Enemies.Add(GetEnemies.Tulip);
                 removeAfter = true;
             }
+
+            var entrance = Object.FindObjectsOfType<EntranceTeleport>()
+                .FirstOrDefault((EntranceTeleport e) => e.entranceId == 0 && e.isEntranceToBuilding);
+            Vector3 pos = entrance.entrancePoint.position;
+            if(entrance) player.TeleportPlayer(pos,false);
             for (int i = 0; i < TulipSpawn; i++)
             {
                 float angle = i * Mathf.PI * 2 / TulipSpawn;

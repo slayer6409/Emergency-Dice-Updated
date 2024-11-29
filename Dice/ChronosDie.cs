@@ -84,10 +84,7 @@ namespace MysteryDice.Dice
                 Misc.SafeTipMessage($"Penalty", "Next time roll it inside :)");
                 return;
             }
-            if (randomEffect.ShowDefaultTooltip)
-                ShowDefaultTooltip(randomEffect, diceRoll);
-            else
-                Misc.SafeTipMessage($"Rolled {diceRoll}", randomEffect.Tooltip);
+            ShowDefaultTooltip(randomEffect, diceRoll);
         }
     }
 }
