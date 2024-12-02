@@ -87,12 +87,14 @@ namespace MysteryDice
             var BetterDebugMenuBoolField = new BoolCheckBoxConfigItem(MysteryDice.BetterDebugMenu, false);
             var BlameGlitchMeteorsBoolField = new BoolCheckBoxConfigItem(BlameGlitch.GlitchedMeteorShower, false);
             var AlarmBoolField = new BoolCheckBoxConfigItem(AlarmCurse.fireAlarm, false);
+            var AlarmHorribleBoolField = new BoolCheckBoxConfigItem(AlarmCurse.HorribleVersion, false);
+            var doDiceExplosionBoolField = new BoolCheckBoxConfigItem(MysteryDice.doDiceExplosion, false);
 
-            var adminKeybindStringField = new TextInputFieldConfigItem(MysteryDice.adminKeybind, false);
+            //var adminKeybindStringField = new TextInputFieldConfigItem(MysteryDice.adminKeybind, false);
 
 
             LethalConfigManager.AddConfigItem(debugDiceBoolField);
-            LethalConfigManager.AddConfigItem(adminKeybindStringField);
+            //LethalConfigManager.AddConfigItem(adminKeybindStringField);
             LethalConfigManager.AddConfigItem(useDiceOutsideBoolField);
             LethalConfigManager.AddConfigItem(BetterDebugMenuBoolField);
             LethalConfigManager.AddConfigItem(chronosUpdatedTimeOfDayBoolField);
@@ -122,8 +124,10 @@ namespace MysteryDice
             LethalConfigManager.AddConfigItem(GrabDebugBoolField);
             LethalConfigManager.AddConfigItem(EmergencyDiePriceSlider);
             LethalConfigManager.AddConfigItem(EmergencyDieScrapBoolField);
+            LethalConfigManager.AddConfigItem(doDiceExplosionBoolField);
             LethalConfigManager.AddConfigItem(BlameGlitchMeteorsBoolField);
             LethalConfigManager.AddConfigItem(AlarmBoolField);
+            LethalConfigManager.AddConfigItem(AlarmHorribleBoolField);
 
             if (MysteryDice.SurfacedPresent)
             {

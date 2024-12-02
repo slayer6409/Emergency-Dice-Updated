@@ -2,6 +2,7 @@
 using System;
 using Unity.Netcode;
 using UnityEngine;
+using DiversityRemastered;
 
 namespace MysteryDice.Effects
 {

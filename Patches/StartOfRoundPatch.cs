@@ -25,7 +25,6 @@ namespace MysteryDice.Patches
         {
             MysteryDice.JumpscareOBJ = GameObject.Instantiate(MysteryDice.JumpscareCanvasPrefab);
             MysteryDice.JumpscareScript = MysteryDice.JumpscareOBJ.GetComponent<Jumpscare>();
-
             if (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer)
             {
                 GameObject go = GameObject.Instantiate(MysteryDice.NetworkerPrefab,Vector3.zero,Quaternion.identity);
@@ -36,6 +35,7 @@ namespace MysteryDice.Patches
         [HarmonyPatch("StartGame")]
         public static void OnStartGame(StartOfRound __instance)
         {
+            GetEnemies.allEnemies = Resources.FindObjectsOfTypeAll<EnemyType>().ToList();
             if (!Networker.Instance.IsServer) return;
 
             Networker.Instance.OnStartRoundClientRPC();
@@ -87,7 +87,7 @@ namespace MysteryDice.Patches
             HyperShake.ShakingData = null;
             EggBoots.eggBootsEnabled = false;
             Martyrdom.doMinesDrop = false;
-            if(StartOfRound.Instance.IsHost)
+            //if(StartOfRound.Instance.IsHost) 
             // foreach (var agent in PlayerControllerBPatch.smartAgentNavigators)
             // {
             //     foreach (GameObject child in agent.transform)
@@ -98,6 +98,8 @@ namespace MysteryDice.Patches
             //     agent.GetComponent<NetworkObject>().Despawn();
             // }
             //PlayerControllerBPatch.smartAgentNavigators = null;
+            
+            
             
             if (LeverShake.IsShaking)
             {

@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Policy;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -31,106 +30,111 @@ namespace MysteryDice.Effects
             Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, UnityEngine.Random.Range(3, 5), item.itemName);
         }
 
-        public static void SameScrap(ulong userID, int amount, string scrapSpawn, bool sneaky=false)
+        public static void SameScrap(ulong userID, int amount, string scrapSpawns, bool sneaky=false)
         {
-            PlayerControllerB player = Misc.GetPlayerByUserID(userID);
-            RoundManager RM = RoundManager.Instance;
+            var scrapToSpawn = scrapSpawns.Split(',');
+            foreach (var scrapSpawn in scrapToSpawn)
+            {
+                PlayerControllerB player = Misc.GetPlayerByUserID(userID);
+                RoundManager RM = RoundManager.Instance;
 
-            List<NetworkObjectReference> netObjs = new List<NetworkObjectReference>();
-            List<int> scrapValues = new List<int>();
-            List<float> scrapWeights = new List<float>();
+                List<NetworkObjectReference> netObjs = new List<NetworkObjectReference>();
+                List<int> scrapValues = new List<int>();
+                List<float> scrapWeights = new List<float>();
 
-            int amountOfScrap = amount;
+                int amountOfScrap = amount;
                 var item = Misc.GetItemByName(scrapSpawn,false);
-            if (scrapSpawn == "takey") item = Misc.GetItemByName("Smol Takey", false);
-            if (item == null)
-            {
-                if(scrapSpawn != "plushies")
+                if (scrapSpawn == "takey") item = Misc.GetItemByName("Smol Takey", false);
+                if (item == null)
                 {
-                    if (scrapSpawn != "takey")
+                    if(scrapSpawn != "plushies")
                     {
-                        MysteryDice.CustomLogger.LogError($"No item found with name {scrapSpawn}");
-                        return;
-                    }
-                }
-            }
-            List<Item> plushies = new List<Item>();
-            if (scrapSpawn == "plushies")
-            {
-                foreach (Item items in StartOfRound.Instance.allItemsList.itemsList)
-                {
-                    if (items.itemName.ToUpper().Contains("PLUSH"))
-                    {
-                        if (items.spawnPrefab != null)
+                        if (scrapSpawn != "takey")
                         {
-                            plushies.Add(items);
+                            MysteryDice.CustomLogger.LogError($"No item found with name {scrapSpawn}");
+                            return;
                         }
                     }
                 }
-            }
-            if (scrapSpawn == "takey")
-            {
-                foreach (Item items in StartOfRound.Instance.allItemsList.itemsList)
+                List<Item> plushies = new List<Item>();
+                if (scrapSpawn == "plushies")
                 {
-                    if (items.itemName.ToUpper().Contains("TAKEY")&& (items.itemName.ToUpper().Contains("PLUSH") || items.itemName.ToUpper().Contains("SMOL") || items.itemName.ToUpper().Contains("GOKU")))
+                    foreach (Item items in StartOfRound.Instance.allItemsList.itemsList)
                     {
-                        if (items.spawnPrefab != null)
+                        if (items.itemName.ToUpper().Contains("PLUSH"))
                         {
-                            plushies.Add(items);
+                            if (items.spawnPrefab != null)
+                            {
+                                plushies.Add(items);
+                            }
                         }
                     }
                 }
-            }
-            if (plushies.Count == 0 && (scrapSpawn == "takey" || scrapSpawn == "plushies")) 
-            {
-                MysteryDice.CustomLogger.LogError($"No Items in the list with {scrapSpawn} as the name");
-                return;
-            }
-            plushies = plushies.OrderBy(x => UnityEngine.Random.value).ToList();
-            for (int i = 0; i < amountOfScrap; i++)
-            {
-                try
+                if (scrapSpawn == "takey")
                 {
-                    if (scrapSpawn == "plushies" || scrapSpawn == "takey")
+                    foreach (Item items in StartOfRound.Instance.allItemsList.itemsList)
                     {
-                        item = plushies[i];
+                        if (items.itemName.ToUpper().Contains("TAKEY")&& (items.itemName.ToUpper().Contains("PLUSH") || items.itemName.ToUpper().Contains("SMOL") || items.itemName.ToUpper().Contains("GOKU")))
+                        {
+                            if (items.spawnPrefab != null)
+                            {
+                                plushies.Add(items);
+                            }
+                        }
                     }
-                    //EnemyVent randomVent = RM.allEnemyVents[UnityEngine.Random.Range(0, RM.allEnemyVents.Length)];
-
-                    Vector3 randomPosition = new Vector3(
-                        UnityEngine.Random.Range(-100, 100),
-                        UnityEngine.Random.Range(-100, 100),
-                        UnityEngine.Random.Range(-100, 100)
-                    );
-                    Ray ray = new Ray(randomPosition, Vector3.down);
-                    RaycastHit hit;
-                    if (Physics.Raycast(ray, out hit))
-                    {
-                        randomPosition = hit.point;
-                    }
-
-                    GameObject obj = UnityEngine.Object.Instantiate(item.spawnPrefab, randomPosition, Quaternion.identity, RM.spawnedScrapContainer);
-                    GrabbableObject component = obj.GetComponent<GrabbableObject>();
-                    component.transform.rotation = Quaternion.Euler(component.itemProperties.restingRotation);
-                    component.fallTime = 0f;
-                    component.scrapValue = (int)(UnityEngine.Random.Range(item.minValue, item.maxValue) * RM.scrapValueMultiplier);
-                    scrapValues.Add(component.scrapValue);
-                    scrapWeights.Add(component.itemProperties.weight);
-
-                    NetworkObject netObj = obj.GetComponent<NetworkObject>();
-                    netObj.Spawn();
-                    component.FallToGround(true);
-                    netObjs.Add(netObj);
-
                 }
-                catch(Exception e)
+                if (plushies.Count == 0 && (scrapSpawn == "takey" || scrapSpawn == "plushies")) 
                 {
-
+                    MysteryDice.CustomLogger.LogError($"No Items in the list with {scrapSpawn} as the name");
+                    return;
                 }
-               
-            }
+                plushies = plushies.OrderBy(x => UnityEngine.Random.value).ToList();
+                for (int i = 0; i < amountOfScrap; i++)
+                {
+                    try
+                    {
+                        if (scrapSpawn == "plushies" || scrapSpawn == "takey")
+                        {
+                            item = plushies[i];
+                        }
+                        //EnemyVent randomVent = RM.allEnemyVents[UnityEngine.Random.Range(0, RM.allEnemyVents.Length)];
 
-            RM.StartCoroutine(DelayedSyncAndTeleport(RM, netObjs.ToArray(), scrapValues.ToArray(), scrapWeights.ToArray(), player));
+                        Vector3 randomPosition = new Vector3(
+                            UnityEngine.Random.Range(-100, 100),
+                            UnityEngine.Random.Range(-100, 100),
+                            UnityEngine.Random.Range(-100, 100)
+                        );
+                        Ray ray = new Ray(randomPosition, Vector3.down);
+                        RaycastHit hit;
+                        if (Physics.Raycast(ray, out hit))
+                        {
+                            randomPosition = hit.point;
+                        }
+
+                        GameObject obj = UnityEngine.Object.Instantiate(item.spawnPrefab, randomPosition, Quaternion.identity, RM.spawnedScrapContainer);
+                        GrabbableObject component = obj.GetComponent<GrabbableObject>();
+                        component.transform.rotation = Quaternion.Euler(component.itemProperties.restingRotation);
+                        component.fallTime = 0f;
+                        component.scrapValue = (int)(UnityEngine.Random.Range(item.minValue, item.maxValue) * RM.scrapValueMultiplier);
+                        scrapValues.Add(component.scrapValue);
+                        scrapWeights.Add(component.itemProperties.weight);
+
+                        NetworkObject netObj = obj.GetComponent<NetworkObject>();
+                        netObj.Spawn();
+                        component.FallToGround(true);
+                        netObjs.Add(netObj);
+
+                    }
+                    catch(Exception e)
+                    {
+
+                    }
+                   
+                }
+
+                RM.StartCoroutine(DelayedSyncAndTeleport(RM, netObjs.ToArray(), scrapValues.ToArray(), scrapWeights.ToArray(), player));
+            }
+            
         }
         
         public static IEnumerator DelayedSyncAndTeleport(RoundManager RM, NetworkObjectReference[] netObjs, int[] scrapValues, float[] scrapWeights, PlayerControllerB player)
@@ -153,7 +157,10 @@ namespace MysteryDice.Effects
                     {
                         continue;
                     }
-                    Vector3 targetPosition = player.transform.position + new Vector3(0, 0.1f, 0);
+
+                    Vector3 PlayerPos = player.transform.position;
+                    if (player.isPlayerDead) PlayerPos=player.gameplayCamera.transform.position;
+                    Vector3 targetPosition = PlayerPos + new Vector3(0, 0.1f, 0);
                     RaycastHit hit;
                     if (Physics.Raycast(targetPosition + Vector3.up, Vector3.down, out hit))
                     {

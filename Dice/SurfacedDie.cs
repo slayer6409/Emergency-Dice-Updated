@@ -15,8 +15,10 @@ namespace MysteryDice.Dice
     {
         public override void Start()
         {
-            base.Start();
-            
+            base.Start(); 
+            DiceModel = gameObject.transform.Find("Model").gameObject;
+            DiceModel.GetComponent<Spinner>().SurfacedDie = true;
+
         }
         public override void SetupRollToEffectMapping()
         {

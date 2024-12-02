@@ -66,13 +66,12 @@ namespace MysteryDice.Patches
         {
             if (!Fly.CanFly) return;
 
-            if (IngamePlayerSettings.Instance.playerInput.actions.FindAction("Sprint").ReadValue<float>() > 0.5f)
+            if (MysteryDice.Keybinds.FlyButton.ReadValue<float>() > 0.5f)
             {
                 __instance.externalForces += Vector3.Lerp(__instance.externalForces, Vector3.ClampMagnitude(__instance.transform.up * 10, 400f), Time.deltaTime * 50f);
                 __instance.fallValue = 0f;
                 __instance.ResetFallGravity();
             }
-
         }
 
         [HarmonyPostfix]

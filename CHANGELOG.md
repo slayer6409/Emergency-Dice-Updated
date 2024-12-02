@@ -1,3 +1,23 @@
+-	**1.7.3**
+    - Changed revive to just be the new better method
+    - Added Dependency for LethalCompany InputUtils to set the Debug Menu Keybind easier
+    - Fixed some events
+    - Fixed some issues with things
+    - New Config option for if Dice Explode
+    - Made the crab on the Surfaced Die actually on top now
+    - You can now add multiple objects to events, such as "Spring,Flowerman" for an enemy event that spawns both of them
+    - - It works for enemies, traps, and items! 
+    - Changed README
+    - New _Friendly_ event
+    - Fixed Emergency Die and Sacrificer sometimes erroring on certain maps
+
+-	**1.7.2**
+	- Reverted back to 1.7.0
+
+-	**1.7.1**
+    - I Apparently broke things
+    - So this is irrelevant
+
 -	**1.7.0**
     - Added a better way to move traps
     - Added more events
@@ -10,7 +30,7 @@
 
 -	**1.6.5**
     - Fixed Same scrap different dice
-- 
+
 -	**1.6.4**
     - Possible fix for unchained
     - Other Fixes with spawning in objects

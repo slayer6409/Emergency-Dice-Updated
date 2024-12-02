@@ -13,31 +13,14 @@ namespace MysteryDice.Effects
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "Reviving everyone";
         public static int lives = 0;
-        public static ConfigEntry<bool> NewRevive;
         public void Use()
         {
-            if (NewRevive.Value)
+            for (var index = 0; index < StartOfRound.Instance.allPlayerScripts.Length; index++)
             {
-	            for (var index = 0; index < StartOfRound.Instance.allPlayerScripts.Length; index++)
-	            {
-		            Networker.Instance.RevivePlayerServerRpc(index,StartOfRound.Instance.middleOfShipNode.transform.position);
-	            }
-            }
-            else
-            {
-	            Networker.Instance.ReviveAllPlayersServerRpc();
+	            Networker.Instance.RevivePlayerServerRpc(index,StartOfRound.Instance.middleOfShipNode.position);
             }
         }
         
-
-        public static void Config()
-        {
-	        NewRevive = MysteryDice.BepInExConfig.Bind<bool>(
-		        "Misc",
-		        "New Revive",
-		        false,
-		        "Use The New Revive Method");
-        }
 
         public static void revivePlayer(int PlayerID, Vector3 SpawnPosition)
         {

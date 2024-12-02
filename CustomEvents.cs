@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BombCollar;
 using Unity.Netcode;
 using UnityEngine;
 using static UnityEngine.EventSystems.EventTrigger;
@@ -37,6 +38,8 @@ namespace MysteryDice
         public EffectType outcome { get; set; }
         public bool IsInside { get; set; }
         public int AmountMax { get; set; }
+        
+        public bool moving { get; set; }
         public string customName { get; set; }
         public string customTooltip { get; set; }
     }
@@ -196,6 +199,12 @@ namespace MysteryDice
                     "Amount Max",
                     5, // Default value
                     $"Maximum number of Traps to spawn for Custom{i}").Value;
+                
+                bool ismoving = configFile.Bind<bool>(
+                    $"CustomTrap{i}",
+                    "Moving",
+                    false, // Default value
+                    $"Do traps of the type: {i} move").Value;
 
                 // Create a new custom enemy config
                 CustomTrapConfig trapConfig = new CustomTrapConfig
@@ -203,6 +212,7 @@ namespace MysteryDice
                     trapName = trapName,
                     outcome = outcome,
                     IsInside = isInside,
+                    moving = ismoving,
                     AmountMax = amountMax,
                     customName = customName,
                     customTooltip = customTooltip
@@ -236,45 +246,50 @@ namespace MysteryDice
         {
             Networker.Instance.CustomMonsterServerRPC(config.monsterName, config.AmountMax, config.IsInside);
         }
-        public static void spawnEnemy(string name, int max, bool inside)
+        public static void spawnEnemy(string names, int max, bool inside)
         {
-            int randomSpawn = 0; 
-            List<SpawnableEnemyWithRarity> allenemies = new List<SpawnableEnemyWithRarity>();
-
-            foreach (var level in StartOfRound.Instance.levels)
+            var enemyNames = names.Split(',');
+            foreach (var name in enemyNames)
             {
-                allenemies = allenemies
-                    .Union(level.Enemies)
-                    .Union(level.OutsideEnemies)
-                    .Union(level.DaytimeEnemies)
-                    .ToList();
-            }
-            allenemies = allenemies
-            .GroupBy(x => x.enemyType.enemyName)
-            .Select(g => g.First())
-            .OrderBy(x => x.enemyType.enemyName)
-            .ToList();
-            enemy = allenemies.FirstOrDefault(x => x.enemyType.enemyName == name);
-            if (enemy == null)
-            { //do original method as backup
-                foreach (SelectableLevel level in StartOfRound.Instance.levels)
+                int randomSpawn = 0; 
+                List<SpawnableEnemyWithRarity> allenemies = new List<SpawnableEnemyWithRarity>();
+
+                foreach (var level in StartOfRound.Instance.levels)
                 {
-
-                    enemy = level.Enemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
-                    if (enemy == null)
-                        enemy = level.DaytimeEnemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
-                    if (enemy == null)
-                        enemy = level.OutsideEnemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
-
-
+                    allenemies = allenemies
+                        .Union(level.Enemies)
+                        .Union(level.OutsideEnemies)
+                        .Union(level.DaytimeEnemies)
+                        .ToList();
                 }
+                allenemies = allenemies
+                    .GroupBy(x => x.enemyType.enemyName)
+                    .Select(g => g.First())
+                    .OrderBy(x => x.enemyType.enemyName)
+                    .ToList();
+                enemy = allenemies.FirstOrDefault(x => x.enemyType.enemyName == name);
+                if (enemy == null)
+                { //do original method as backup
+                    foreach (SelectableLevel level in StartOfRound.Instance.levels)
+                    {
+
+                        enemy = level.Enemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
+                        if (enemy == null)
+                            enemy = level.DaytimeEnemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
+                        if (enemy == null)
+                            enemy = level.OutsideEnemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
+
+
+                    }
+                }
+                if (enemy == null)
+                {
+                    MysteryDice.CustomLogger.LogWarning($"Enemy '{name}' not found. Available enemies: {string.Join(", ", allenemies.Select(e => e.enemyType.enemyName))}"); return;
+                }
+                randomSpawn = UnityEngine.Random.Range(1, max + 1);
+                Misc.SpawnEnemyForced(enemy, randomSpawn, inside);
             }
-            if (enemy == null)
-            {
-                MysteryDice.CustomLogger.LogWarning($"Enemy '{name}' not found. Available enemies: {string.Join(", ", allenemies.Select(e => e.enemyType.enemyName))}"); return;
-            }
-            randomSpawn = UnityEngine.Random.Range(1, max + 1);
-            Misc.SpawnEnemyForced(enemy, randomSpawn, inside);
+           
         }
     }
     internal class DynamicItemEffect : IEffect
@@ -294,7 +309,7 @@ namespace MysteryDice
         public string Tooltip => config.customTooltip;
         public void Use()
         {
-            Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, UnityEngine.Random.Range(2, config.AmountMax+1), config.itemName);
+            Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, UnityEngine.Random.Range(1, config.AmountMax+1), config.itemName);
         }
     }
     internal class DynamicTrapEffect : IEffect
@@ -314,7 +329,7 @@ namespace MysteryDice
         public string Tooltip => config.customTooltip;
         public void Use()
         {
-            Networker.Instance.CustomTrapServerRPC(config.AmountMax,config.trapName, config.IsInside);
+            Networker.Instance.CustomTrapServerRPC(config.AmountMax,config.trapName, config.IsInside, config.moving);
         }
         public static SpawnableMapObject getTrap(string name)
         {
@@ -330,71 +345,82 @@ namespace MysteryDice
             }
             else return GetEnemies.SpawnableLandmine;
         }
-        public static void spawnTrap(int max, string trapName, bool inside, float positionOffsetRadius = 5f)
+        public static void spawnTrap(int max, string trapNames, bool inside, float positionOffsetRadius = 5f, bool moving = false)
         {
-            List<Vector3> allPositions = new List<Vector3>();
-            int spawnedMines = 0;
-            System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed);
+            var traps = trapNames.Split(',');
+            foreach (var trapName in traps)
+            {
+                List<Vector3> allPositions = new List<Vector3>();
+                int spawnedMines = 0;
+                System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed);
 
-            // Get all spawn points
-            List<GameObject> spawnPoints;
-            if (!inside) 
-            {
-                spawnPoints = RoundManager.Instance.outsideAINodes.ToList();
-            }
-            else
-            {
-                spawnPoints = RoundManager.Instance.insideAINodes.ToList();
-            }
-            int totalSpawnPoints = spawnPoints.Count;
-
-            if (totalSpawnPoints == 0)
-            {
-                return;
-            }
-            int maxAttempts = 100;
-
-            int MinesToSpawn = UnityEngine.Random.Range(3, max + 1);
-            while (spawnedMines < MinesToSpawn)
-            {
-                for (int i = 0; i < totalSpawnPoints && spawnedMines < MinesToSpawn; i++)
+                // Get all spawn points
+                List<GameObject> spawnPoints;
+                if (!inside) 
                 {
-                    Vector3 pos = spawnPoints[Random.Range(0,totalSpawnPoints)].transform.position;
-                    bool validPositionFound = false;
-                    for (int attempt = 0; attempt < maxAttempts && !validPositionFound; attempt++)
+                    spawnPoints = RoundManager.Instance.outsideAINodes.ToList();
+                }
+                else
+                {
+                    spawnPoints = RoundManager.Instance.insideAINodes.ToList();
+                }
+                int totalSpawnPoints = spawnPoints.Count;
+
+                if (totalSpawnPoints == 0)
+                {
+                    return;
+                }
+                int maxAttempts = 100;
+
+                var trap = getTrap(trapName);
+                int MinesToSpawn = UnityEngine.Random.Range(3, max + 1);
+                while (spawnedMines < MinesToSpawn)
+                {
+                    for (int i = 0; i < totalSpawnPoints && spawnedMines < MinesToSpawn; i++)
                     {
-                        Vector3 offset = new Vector3(
-                            (float)(random.NextDouble() * 2 - 1) * positionOffsetRadius,
-                            0,
-                            (float)(random.NextDouble() * 2 - 1) * positionOffsetRadius);
-
-                        Vector3 randomPosition = pos + offset;
-                        if (Physics.Raycast(randomPosition + Vector3.up * 10, Vector3.down, out RaycastHit hit, 20f))
+                        Vector3 pos = spawnPoints[Random.Range(0,totalSpawnPoints)].transform.position;
+                        bool validPositionFound = false;
+                        for (int attempt = 0; attempt < maxAttempts && !validPositionFound; attempt++)
                         {
-                            Vector3 groundPosition = hit.point;
-                            if (GetShortestDistanceSqr(groundPosition, allPositions) >= 1)
+                            Vector3 offset = new Vector3(
+                                (float)(random.NextDouble() * 2 - 1) * positionOffsetRadius,
+                                0,
+                                (float)(random.NextDouble() * 2 - 1) * positionOffsetRadius);
+
+                            Vector3 randomPosition = pos + offset;
+                            if (Physics.Raycast(randomPosition + Vector3.up * 10, Vector3.down, out RaycastHit hit, 20f))
                             {
-                                validPositionFound = true;
+                                Vector3 groundPosition = hit.point;
+                                if (GetShortestDistanceSqr(groundPosition, allPositions) >= 1)
+                                {
+                                    validPositionFound = true;
 
-                                GameObject gameObject = UnityEngine.Object.Instantiate(
-                                    getTrap(trapName).prefabToSpawn,
-                                    groundPosition,
-                                    Quaternion.identity,
-                                    RoundManager.Instance.mapPropsContainer.transform);
+                                    GameObject gameObject = UnityEngine.Object.Instantiate(
+                                        trap.prefabToSpawn,
+                                        groundPosition,
+                                        Quaternion.identity,
+                                        RoundManager.Instance.mapPropsContainer.transform);
 
-                                allPositions.Add(groundPosition);
-                                gameObject.transform.eulerAngles = new Vector3(gameObject.transform.eulerAngles.x, UnityEngine.Random.Range(0, 360), gameObject.transform.eulerAngles.z);
-                                gameObject.GetComponent<NetworkObject>().Spawn(destroyWithScene: true);
-                                spawnedMines++;
+                                    allPositions.Add(groundPosition);
+                                    gameObject.transform.eulerAngles = new Vector3(gameObject.transform.eulerAngles.x, UnityEngine.Random.Range(0, 360), gameObject.transform.eulerAngles.z);
+                                    gameObject.GetComponent<NetworkObject>().Spawn(destroyWithScene: true);
+                                    spawnedMines++;
+                                }
                             }
                         }
-                    }
 
-                    if (!validPositionFound)
-                    {
-                        Debug.LogWarning("Could not find a valid position for mine at spawn point: " + pos);
+                        if (!validPositionFound)
+                        {
+                            Debug.LogWarning("Could not find a valid position for mine at spawn point: " + pos);
+                        }
                     }
                 }
+
+                if (spawnedMines > 0 && moving)
+                {
+                    Networker.Instance.AddMovingTrapClientRPC(trap.prefabToSpawn.name);
+                }
+                
             }
         }
         public static float GetShortestDistanceSqr(Vector3 position, List<Vector3> positions)

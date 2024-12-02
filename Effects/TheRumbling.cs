@@ -18,6 +18,7 @@ namespace MysteryDice.Effects
             if (GetEnemies.RedwoodTitan == null)
                 return;
             Misc.SpawnEnemyForced(GetEnemies.RedwoodTitan, titanSpawn, false);
+            Networker.Instance.PlaySoundServerRPC("aot");
         }
     }
 }

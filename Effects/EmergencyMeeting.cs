@@ -82,9 +82,16 @@ namespace MysteryDice.Effects
             if (player == null) return;
 
             var reverbPresets = GameObject.FindObjectOfType<AudioReverbPresets>();
-            if (reverbPresets != null)
+            try
             {
-                reverbPresets.audioPresets[3].ChangeAudioReverbForPlayer(player);
+                if ((bool)GameObject.FindObjectOfType<AudioReverbPresets>())
+                {
+                    GameObject.FindObjectOfType<AudioReverbPresets>().audioPresets[3].ChangeAudioReverbForPlayer(player);
+                }
+            }
+            catch (Exception e)
+            {
+                
             }
 
             player.isInElevator = false;
@@ -94,7 +101,6 @@ namespace MysteryDice.Effects
             player.velocityLastFrame = Vector3.zero;
             player.TeleportPlayer(StartOfRound.Instance.middleOfShipNode.position);
             player.beamOutParticle.Play();
-
             if (player == GameNetworkManager.Instance.localPlayerController)
             {
                 HUDManager.Instance.ShakeCamera(ScreenShakeType.Big);

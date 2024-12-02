@@ -13,7 +13,9 @@ using BepInEx.Configuration;
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Bootstrap;
+using LethalThings;
 using UnityEngine.InputSystem;
+using Utilities = LethalLib.Modules.Utilities;
 
 namespace MysteryDice
 {
@@ -35,13 +37,14 @@ namespace MysteryDice
         public enum chatDebug { HostOnly, Everyone, None};
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.7.0";
+        private const string modVersion = "1.7.3";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
         public static AssetBundle LoadedAssets, LoadedAssets2;
 
         public static InputAction debugMenuAction = null;
+        internal static IngameKeybinds Keybinds = null!;
 
         public static GameObject NetworkerPrefab,
             JumpscareCanvasPrefab,
@@ -100,12 +103,13 @@ namespace MysteryDice
         public static ConfigEntry<int> CustomItemEventCount;
         public static ConfigEntry<int> CustomTrapEventCount;
         public static ConfigEntry<float> BoombaEventSpeed;
-        public static ConfigEntry<string> adminKeybind;
+        //public static ConfigEntry<string> adminKeybind;
         public static ConfigEntry<bool> debugButton;
         public static ConfigEntry<bool> superDebugMode;
         public static ConfigEntry<bool> DebugLogging;
         public static ConfigEntry<bool> BetterDebugMenu;
         public static ConfigEntry<bool> DisableSizeBased;
+        public static ConfigEntry<bool> doDiceExplosion;
         public static ConfigEntry<bool> DieEmergencyAsScrap;
         public static ConfigEntry<DieBehaviour.ShowEffect> DisplayResults;
         
@@ -166,11 +170,11 @@ namespace MysteryDice
                 chatDebug.None,
                 "Shows what effect has been rolled by the dice in the chat. For debug purposes.");
 
-            adminKeybind = BepInExConfig.Bind<string>(
-               "Admin",
-               "Admin Keybind",
-               "<Keyboard>/numpadMinus",
-               "Button which opens the admin menu");
+            // adminKeybind = BepInExConfig.Bind<string>(
+            //    "Admin",
+            //    "Admin Keybind",
+            //    "<Keyboard>/numpadMinus",
+            //    "Button which opens the admin menu");
 
             minHyperShake = BepInExConfig.Bind<float>(
                 "Hypershake",
@@ -201,6 +205,12 @@ namespace MysteryDice
                 "Updated Chronos Time",
                 true,
                 "Makes the Chronos die have better odds in the morning instead of equal odds in the morning.");
+            
+            doDiceExplosion = BepInExConfig.Bind<bool>(
+                "Misc",
+                "Do Dice Explosion",
+                true,
+                "If the dice explode after rolling or not");
 
             useDiceOutside = BepInExConfig.Bind<bool>(
                 "Misc",
@@ -360,11 +370,11 @@ namespace MysteryDice
             SizeDifference.Config();
             BlameGlitch.Config();
             AlarmCurse.Config();
-            Revive.Config();
             if (SurfacedPresent)
             {
                 Flinger.Config();
             }
+            
             customCfg = new CustomConfigs(BepInExConfig);
             customCfg.GenerateConfigs(CustomEnemyEventCount.Value, CustomItemEventCount.Value, CustomTrapEventCount.Value);
             DieBehaviour.Config();
@@ -395,6 +405,7 @@ namespace MysteryDice
             sounds.Add("DoorLeft", LoadedAssets2.LoadAsset<AudioClip>("DoorLeft"));
             sounds.Add("DoorRight", LoadedAssets2.LoadAsset<AudioClip>("DoorRight"));
             sounds.Add("AudioTest", LoadedAssets2.LoadAsset<AudioClip>("AudioTest"));
+            sounds.Add("aot", LoadedAssets2.LoadAsset<AudioClip>("aot"));
 
             WarningBracken = LoadedAssets.LoadAsset<Sprite>("bracken");
             WarningJester = LoadedAssets.LoadAsset<Sprite>("jester");
@@ -428,13 +439,16 @@ namespace MysteryDice
             LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(PathfinderPrefab);
 
             LoadDice();
+            
+            Keybinds  = new IngameKeybinds();
+            Keybinds.DebugMenu.performed += context => DebugMenu();
 
-            debugMenuAction = new InputAction(null, InputActionType.Value, adminKeybind.Value);
-            debugMenuAction.performed += delegate
-            {
-                DebugMenu();
-            };
-            debugMenuAction.Enable();
+            // debugMenuAction = new InputAction(null, InputActionType.Value, adminKeybind.Value);
+            // debugMenuAction.performed += delegate
+            // {
+            //     DebugMenu();
+            // };
+            // debugMenuAction.Enable();
             harmony.PatchAll();
             CustomLogger.LogInfo("The Emergency Dice mod was initialized!");
             //All config edits come before this
@@ -644,19 +658,27 @@ namespace MysteryDice
         }
         private static void NetcodeWeaver()
         {
-            var types = Assembly.GetExecutingAssembly().GetTypes();
-            foreach (var type in types)
+            try
             {
-                var methods = type.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
-                foreach (var method in methods)
+                var types = Assembly.GetExecutingAssembly().GetTypes();
+                foreach (var type in types)
                 {
-                    var attributes = method.GetCustomAttributes(typeof(RuntimeInitializeOnLoadMethodAttribute), false);
-                    if (attributes.Length > 0)
+                    var methods = type.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+                    foreach (var method in methods)
                     {
-                        method.Invoke(null, null);
+                        var attributes = method.GetCustomAttributes(typeof(RuntimeInitializeOnLoadMethodAttribute), false);
+                        if (attributes.Length > 0)
+                        {
+                            method.Invoke(null, null);
+                        }
                     }
                 }
             }
+            catch (Exception e)
+            {
+                
+            }
+          
         }
 
        

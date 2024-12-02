@@ -776,6 +776,26 @@ namespace MysteryDice
         }
         #endregion
 
+        #region FollowerFan
+
+        [ServerRpc(RequireOwnership = false)]
+        public void DoFollowerFanServerRpc(ulong player)
+        {
+            FollowerFan.giveFriend(player);
+        }
+
+        [ClientRpc]
+        public void updateFanClientRpc(ulong netObject)
+        {
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(netObject, out var networkObj))
+            {
+                GameObject obj = networkObj.gameObject;
+                FollowerFan.fixFan(obj);
+            }
+        }
+
+        #endregion
+
         #region TPOverflowOutside
         [ServerRpc(RequireOwnership = false)]
         public void TPOverflowOutsideServerRPC()
@@ -819,15 +839,16 @@ namespace MysteryDice
 
         #region CustomTrap
         [ServerRpc(RequireOwnership = false)]
-        public void CustomTrapServerRPC(int max, string trap, bool inside)
+        public void CustomTrapServerRPC(int max, string trap, bool inside, bool moving = false)
         {
-            DynamicTrapEffect.spawnTrap(max, trap, inside);
+            DynamicTrapEffect.spawnTrap(max, trap, inside, moving:moving);
         }
         [ServerRpc(RequireOwnership =false)]
         public void spawnTrapOnServerRPC(string trap, int num, bool inside, ulong userID)
         {
             PlayerControllerB player = Misc.GetPlayerByUserID(userID);
             Vector3 pos = player.transform.position;
+            if (player.isPlayerDead) pos = player.gameplayCamera.transform.position;
             var trapToSpawn = DynamicTrapEffect.getTrap(trap);
 
             GameObject gameObject = UnityEngine.Object.Instantiate(
@@ -1808,13 +1829,13 @@ namespace MysteryDice
         [ServerRpc(RequireOwnership = false)]
         public void MovingFansServerRPC()
         {
-            CustomTrapServerRPC(6, GetEnemies.Fan.prefabToSpawn.name, false);
+            CustomTrapServerRPC(6, GetEnemies.Fan.prefabToSpawn.name, false, false);
             AddMovingTrapClientRPC(GetEnemies.Fan.prefabToSpawn.name);
         }
         [ClientRpc]
-        public void AddMovingTrapClientRPC(string trapName)
+        public void AddMovingTrapClientRPC(string trapName, bool follower = false, ulong playerFollowing = 0) 
         {
-            StartCoroutine(MovingFans.WaitForTrapInit(trapName));
+            StartCoroutine(MovingFans.WaitForTrapInit(trapName,follower,playerFollowing));
         }
 
         

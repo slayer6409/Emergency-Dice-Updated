@@ -243,7 +243,7 @@ namespace MysteryDice
 
             float distanceToDestination = Vector3.Distance(transform.position, destination);
             if (distanceToDestination <= agent.stoppingDistance ||
-                (agent.velocity.sqrMagnitude <= 0.01f && distanceToDestination <= 10f))
+                (agent.velocity.sqrMagnitude <= 0.07f && distanceToDestination <= 15f))
             {
                 lastUsedEntranceTeleport = entranceTeleportToUse;
                 agent.Warp(destinationAfterTeleport);

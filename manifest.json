@@ -1,11 +1,12 @@
 {
   "name": "Emergency_Dice_Updated",
-  "version_number": "1.7.0",
+  "version_number": "1.7.3",
   "website_url": "https://github.com/slayer6409/Emergency-Dice-Updated",
   "description": "Last ray of hope in a hopeless situation?",
   "dependencies": [
     "BepInEx-BepInExPack-5.4.2100",
     "Evaisa-HookGenPatcher-0.0.5",
+    "Rune580-LethalCompany_InputUtils-0.7.7",
     "Evaisa-LethalLib-0.15.1"
   ]
 }

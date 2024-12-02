@@ -25,7 +25,8 @@ namespace MysteryDice.Patches
 
         public static SpawnableEnemyWithRarity Masked, RedwoodTitan,  HoardingBug, Scary, Ghost, Boomba, Tulip, Centipede, Dog, Jester, Bracken, Stomper, Coilhead, Beehive, Sandworm, Spider, Giant, Maneater, Nutcracker, Shrimp, CrystalRay, Lasso, Barber, BellCrab, Urchin, Horse, Nemo, Bruce, MantisShrimp, Tornado;
         public static SpawnableMapObject SpawnableLandmine, SpawnableTurret, SpawnableTP, SpawnableSpikeTrap, Microwave, Fan, FlashTurret, Seamine, Bertha; 
-        private static readonly string teleporterTrapId = "TeleporterTrap"; 
+        private static readonly string teleporterTrapId = "TeleporterTrap";
+        public static List<EnemyType> allEnemies = new List<EnemyType>();
         [HarmonyPatch("Start")]
         [HarmonyPostfix]
         private static void GetEnemy(Terminal __instance)

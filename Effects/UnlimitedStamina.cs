@@ -8,6 +8,7 @@ namespace MysteryDice.Effects
     {
         public EffectType Outcome => EffectType.Good;
         public bool ShowDefaultTooltip => false;
+        public string Name { get; }
         public string Tooltip => "Unlimited stamina";
         public void Use()
         {

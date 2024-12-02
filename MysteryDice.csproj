@@ -1,362 +1,92 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C247D947-5D1A-411B-8D87-6F0BC33E5234}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MysteryDice</RootNamespace>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>MysteryDice</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <RootNamespace>MysteryDice</RootNamespace>
+    <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
-    <LangVersion>12</LangVersion>
+    <ThunderstorePath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins</ThunderstorePath>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  
+  <PropertyGroup>
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>portable</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <DebugType>embedded</DebugType>
+    <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+  
+  <PropertyGroup>
+    <RestoreAdditionalProjectSources>
+      https://api.nuget.org/v3/index.json;
+      https://nuget.bepinex.dev/v3/index.json
+    </RestoreAdditionalProjectSources>
   </PropertyGroup>
+  
   <ItemGroup>
-    <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\v55\BepInEx\core\0Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
-    </Reference>
-    <Reference Include="BepInEx, Version=5.4.22.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\v55\BepInEx\core\BepInEx.dll</HintPath>
-    </Reference>
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.2" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Core" Version="5.*" />
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
+    <PackageReference Include="Rune580.Mods.LethalCompany.InputUtils" Version="0.7.4" />
+    <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" PrivateAssets="all"/>    
+    <PackageReference Include="LethalCompany.GameLibs.Steam" Version="*-*" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <Reference Include="BombCollar">
-      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\Jordo-BombCollar\BombCollar.dll</HintPath>
-    </Reference>
-    <Reference Include="CodeRebirth">
-      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\XuXiaolan-CodeRebirth\CodeRebirth\CodeRebirth.dll</HintPath>
-    </Reference>
-    <Reference Include="Diversity Remastered">
-      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\IntegrityChaos-Diversity\Diversity Remastered.dll</HintPath>
-    </Reference>
-    <Reference Include="DiversityDungeonGen">
-      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\IntegrityChaos-Diversity\DiversityDungeonGen.dll</HintPath>
-    </Reference>
-    <Reference Include="DiversityLib">
-      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\IntegrityChaos-Diversity\DiversityLib.dll</HintPath>
-    </Reference>
-    <Reference Include="LCTarrotCard">
-      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\Asonyx-LCTarotCard\LCTarrotCard.dll</HintPath>
-    </Reference>
-    <Reference Include="LethalConfig, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\AinaVT-LethalConfig\LethalConfig\LethalConfig.dll</HintPath>
+      <HintPath>$(ThunderstorePath)\Jordo-BombCollar\BombCollar.dll</HintPath>
     </Reference>
     <Reference Include="LethalLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\v55\BepInEx\plugins\Evaisa-LethalLib\LethalLib\LethalLib.dll</HintPath>
+      <HintPath>$(ThunderstorePath)\Evaisa-LethalLib\LethalLib\LethalLib.dll</HintPath>
+    </Reference>
+    <Reference Include="CodeRebirth" Publicize = "true">
+      <HintPath>$(ThunderstorePath)\XuXiaolan-CodeRebirth\CodeRebirth\CodeRebirth.dll</HintPath>
+    </Reference>
+    <Reference Include="Diversity Remastered">
+      <HintPath>$(ThunderstorePath)\IntegrityChaos-Diversity\Diversity Remastered.dll</HintPath>
+    </Reference>
+    <Reference Include="DiversityDungeonGen">
+      <HintPath>$(ThunderstorePath)\IntegrityChaos-Diversity\DiversityDungeonGen.dll</HintPath>
+    </Reference>
+    <Reference Include="DiversityLib">
+      <HintPath>$(ThunderstorePath)\IntegrityChaos-Diversity\DiversityLib.dll</HintPath>
+    </Reference>
+    <Reference Include="LCTarrotCard">
+      <HintPath>$(ThunderstorePath)\Asonyx-LCTarotCard\LCTarrotCard.dll</HintPath>
+    </Reference>
+    <Reference Include="LethalConfig">
+      <HintPath>$(ThunderstorePath)\AinaVT-LethalConfig\LethalConfig\LethalConfig.dll</HintPath>
     </Reference>
     <Reference Include="LethalThings">
-      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\Evaisa-LethalThings\LethalThings\LethalThings.dll</HintPath>
+      <HintPath>$(ThunderstorePath)\Evaisa-LethalThings\LethalThings\LethalThings.dll</HintPath>
     </Reference>
-    <Reference Include="Mimics">
-      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\x753-Mimics\Mimics.dll</HintPath>
-    </Reference>
-    <Reference Include="Surfaced">
-      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\SurfacedTeam-Surfaced\Surfaced.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Unity.InputSystem, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Unity.InputSystem.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.Netcode.Runtime">
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Unity.Netcode.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Unity.TextMeshPro.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.AIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.AIModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.AssetBundleModule">
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.AudioModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.InputLegacyModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.ParticleSystemModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.PhysicsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.UI.dll</HintPath>
+    <Reference Include="Surfaced" Publicize = "true">
+      <HintPath>$(ThunderstorePath)\SurfacedTeam-Surfaced\Surfaced.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ConfigManager.cs" />
-    <Compile Include="Consts.cs" />
-    <Compile Include="CustomEvents.cs" />
-    <Compile Include="Dice\RustyDie.cs" />
-    <Compile Include="Dice\SaintDie.cs" />
-    <Compile Include="Dice\SacrificerDie.cs" />
-    <Compile Include="Dice\DieBehaviour.cs" />
-    <Compile Include="Dice\EmergencyDie.cs" />
-    <Compile Include="Dice\ChronosDie.cs" />
-    <Compile Include="Dice\GamblerDie.cs" />
-    <Compile Include="Dice\SurfacedDie.cs" />
-    <Compile Include="Effects\AnythingGrenade.cs" />
-    <Compile Include="Effects\BerthaLever.cs" />
-    <Compile Include="Effects\Horseshootnt.cs" />
-    <Compile Include="Effects\BIGBertha.cs" />
-    <Compile Include="Effects\BigFling.cs" />
-    <Compile Include="Effects\BigJumpscare.cs" />
-    <Compile Include="Effects\Diversity2.cs" />
-    <Compile Include="Effects\Diversity1.cs" />
-    <Compile Include="Effects\BombCollars.cs" />
-    <Compile Include="Effects\Flashers.cs" />
-    <Compile Include="Effects\Fans.cs" />
-    <Compile Include="Effects\InstantExplodingBerthas.cs" />
-    <Compile Include="Effects\Lovers.cs" />
-    <Compile Include="Effects\Martyrdom.cs" />
-    <Compile Include="Effects\MicrowaveBertha.cs" />
-    <Compile Include="Effects\MovingBeartraps.cs" />
-    <Compile Include="Effects\MovingBerthas.cs" />
-    <Compile Include="Effects\MovingFans.cs" />
-    <Compile Include="Effects\Paparazzi.cs" />
-    <Compile Include="Effects\Scary.cs" />
-    <Compile Include="Effects\Microwaves.cs" />
-    <Compile Include="Effects\SkyFan.cs" />
-    <Compile Include="Effects\SuperFlinger.cs" />
-    <Compile Include="Effects\TheRumbling.cs" />
-    <Compile Include="Effects\WhereDidMyFriendsGo.cs" />
-    <Compile Include="Effects\Flinger.cs" />
-    <Compile Include="Effects\BlameGlitch.cs" />
-    <Compile Include="Effects\DrunkForAll.cs" />
-    <Compile Include="Effects\EggBootsForAll.cs" />
-    <Compile Include="Effects\HappyDay.cs" />
-    <Compile Include="Effects\RerollALL.cs" />
-    <Compile Include="Effects\SpicyNuggies.cs" />
-    <Compile Include="Effects\MineHardPlace.cs" />
-    <Compile Include="Effects\SizeDifferenceSwitcher.cs" />
-    <Compile Include="Effects\SizeDifferenceForAll.cs" />
-    <Compile Include="Effects\BurgerFlippers.cs" />
-    <Compile Include="Effects\TulipTrapeze.cs" />
-    <Compile Include="Effects\EggFountain.cs" />
-    <Compile Include="Effects\Crates.cs" />
-    <Compile Include="Effects\InsideDog.cs" />
-    <Compile Include="Effects\EggBoots.cs" />
-    <Compile Include="Effects\Tornado.cs" />
-    <Compile Include="Effects\BellCrabs.cs" />
-    <Compile Include="Effects\AllSameScrap.cs" />
-    <Compile Include="Effects\TakeySmol.cs" />
-    <Compile Include="Effects\Eggs.cs" />
-    <Compile Include="Effects\MerryChristmas.cs" />
-    <Compile Include="Effects\Ghosts.cs" />
-    <Compile Include="Effects\NutcrackerOutside.cs" />
-    <Compile Include="Effects\TarotCards.cs" />
-    <Compile Include="Effects\SeaminesOutside.cs" />
-    <Compile Include="Effects\BerthaOutside.cs" />
-    <Compile Include="Effects\UrchinIndoors.cs" />
-    <Compile Include="Effects\Bruce.cs" />
-    <Compile Include="Effects\Nemo.cs" />
-    <Compile Include="Effects\MantisShrimps.cs" />
-    <Compile Include="Effects\TerminalLockout.cs" />
-    <Compile Include="Effects\EmergencyMeeting.cs" />
-    <Compile Include="Effects\InvisibleEnemy.cs" />
-    <Compile Include="Effects\BatteryDrain.cs" />
-    <Compile Include="Effects\SizeDifference.cs" />
-    <Compile Include="Effects\Friends.cs" />
-    <Compile Include="Effects\Barbers.cs" />
-    <Compile Include="Effects\Meteors.cs" />
-    <Compile Include="Effects\Lasso.cs" />
-    <Compile Include="Effects\InsideShrimps.cs" />
-    <Compile Include="Effects\Maneaters.cs" />
-    <Compile Include="Effects\Delay.cs" />
-    <Compile Include="Effects\OutsideBugs.cs" />
-    <Compile Include="Effects\InsideGiant.cs" />
-    <Compile Include="Effects\Drunk.cs" />
-    <Compile Include="Effects\EveryoneToSomeone.cs" />
-    <Compile Include="Effects\GoldenTouch.cs" />
-    <Compile Include="Effects\HeavyBurden.cs" />
-    <Compile Include="Effects\ItemDuplicator.cs" />
-    <Compile Include="Effects\ItemSwap.cs" />
-    <Compile Include="Effects\LightBurden.cs" />
-    <Compile Include="Effects\MovingTPTraps.cs" />
-    <Compile Include="Effects\NeckSpin.cs" />
-    <Compile Include="Effects\NeckBreak.cs" />
-    <Compile Include="Effects\RandomGreatStoreItem.cs" />
-    <Compile Include="Effects\RandomStoreItem.cs" />
-    <Compile Include="Effects\GiveAllDice.cs" />
-    <Compile Include="Effects\Reroll.cs" />
-    <Compile Include="Effects\SelectEffect.cs" />
-    <Compile Include="Effects\Fly.cs" />
-    <Compile Include="Effects\LeverShake.cs" />
-    <Compile Include="Effects\InfiniteStaminaAll.cs" />
-    <Compile Include="Effects\InvertDoorLock.cs" />
-    <Compile Include="Effects\AlarmCurse.cs" />
-    <Compile Include="Effects\JumpscareGlitch.cs" />
-    <Compile Include="Effects\Armageddon.cs" />
-    <Compile Include="Effects\HyperShake.cs" />
-    <Compile Include="Effects\MovingLandmines.cs" />
-    <Compile Include="Effects\OutsideCoilhead.cs" />
-    <Compile Include="Effects\Pathfinder.cs" />
-    <Compile Include="Effects\InfiniteStamina.cs" />
-    <Compile Include="Effects\Purge.cs" />
-    <Compile Include="Effects\IncreasedRate.cs" />
-    <Compile Include="Effects\BrightFlashlight.cs" />
-    <Compile Include="Effects\Arachnophobia.cs" />
-    <Compile Include="Effects\LegendaryCatch.cs" />
-    <Compile Include="Effects\CatchEmAll.cs" />
-    <Compile Include="Effects\Shotgun.cs" />
-    <Compile Include="Effects\ShipTurret.cs" />
-    <Compile Include="Effects\DoorMalfunction.cs" />
-    <Compile Include="Effects\SilentTP.cs" />
-    <Compile Include="Effects\SpikeOverflowOutside.cs" />
-    <Compile Include="Effects\TpOverflowOutside.cs" />
-    <Compile Include="Effects\TPTraps.cs" />
-    <Compile Include="Effects\TurretHell.cs" />
-    <Compile Include="Effects\SilentMine.cs" />
-    <Compile Include="Effects\ZombieToShip.cs" />
-    <Compile Include="Effects\Wormageddon.cs" />
-    <Compile Include="Effects\Beepocalypse.cs" />
-    <Compile Include="Effects\RebeliousCoilHeads.cs" />
-    <Compile Include="Effects\ReturnToShipTogether.cs" />
-    <Compile Include="Effects\TurnOffLights.cs" />
-    <Compile Include="Effects\HealAndRestore.cs" />
-    <Compile Include="Effects\ScrapJackpot.cs" />
-    <Compile Include="Effects\Swap.cs" />
-    <Compile Include="Effects\ModifyPitch.cs" />
-    <Compile Include="Effects\MineOverflowOutside.cs" />
-    <Compile Include="Effects\MineOverflow.cs" />
-    <Compile Include="Effects\OutsideBracken.cs" />
-    <Compile Include="Effects\InstaJester.cs" />
-    <Compile Include="Effects\BugPlague.cs" />
-    <Compile Include="Effects\FakeFireExits.cs" />
-    <Compile Include="Effects\FireExitBlock.cs" />
-    <Compile Include="Effects\ReturnToShip.cs" />
-    <Compile Include="Effects\TeleportInside.cs" />
-    <Compile Include="Effects\ZombieApocalypse.cs" />
-    <Compile Include="Effects\Revive.cs" />
-    <Compile Include="Effects\Detonate.cs" />
-    <Compile Include="Effects\IEffect.cs" />
-    <Compile Include="Libraries\WeightedList.cs" />
-    <Compile Include="MysteryDice.cs" />
-    <Compile Include="Networker.cs" />
-    <Compile Include="Patches\ChatPatch.cs" />
-    <Compile Include="Patches\EntranceTeleportPatch.cs" />
-    <Compile Include="Patches\FlashlightPatch.cs" />
-    <Compile Include="Patches\SpiderPatch.cs" />
-    <Compile Include="Patches\GrabbableObjectPatch.cs" />
-    <Compile Include="Patches\TimeOfDayPatch.cs" />
-    <Compile Include="Patches\TerminalPatch.cs" />
-    <Compile Include="Patches\TurretPatch.cs" />
-    <Compile Include="Patches\FireExitPatch.cs" />
-    <Compile Include="Patches\PlayerControllerBPatch.cs" />
-    <Compile Include="Patches\GameNetworkManagerPatch.cs" />
-    <Compile Include="Patches\BrackenPatch.cs" />
-    <Compile Include="Patches\GetEnemies.cs" />
-    <Compile Include="Patches\MaskedPatch.cs" />
-    <Compile Include="Patches\RoundManagerPatch.cs" />
-    <Compile Include="Patches\StartOfRoundPatch.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-    <Compile Include="Misc.cs" />
-    <Compile Include="SmartAgentNavigator.cs" />
-    <Compile Include="Visual\ColorGradient.cs" />
-    <Compile Include="Visual\CycleSigns.cs" />
-    <Compile Include="Visual\Blinking.cs" />
-    <Compile Include="Visual\HaloSpin.cs" />
-    <Compile Include="Visual\Jumpscare.cs" />
-    <Compile Include="Visual\Spinner.cs" />
+  <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="CHANGELOG.md" />
-    <None Include="Emergency Dice.cfg" />
-    <None Include="manifest.json" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <None Include="README.md" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
   <PropertyGroup>
-    <PostBuildEvent>cd C:\Users\andre\Documents\NetcodePatcher
+    <PostBuildEvent>
+      cd C:\Users\andre\Documents\NetcodePatcher
+      NetcodePatcher.dll "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\netstandard2.1" deps
+       
+      copy "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\netstandard2.1\MysteryDice.dll" "C:\Users\andre\Desktop\MysteryDice\Regular"
+      copy "C:\Users\andre\source\repos\Emergency-Dice-main\CHANGELOG.md" "C:\Users\andre\Desktop\MysteryDice\Regular"
+      copy "C:\Users\andre\source\repos\Emergency-Dice-main\README.md" "C:\Users\andre\Desktop\MysteryDice\Regular"
+      copy "C:\Users\andre\source\repos\Emergency-Dice-main\manifest.json" "C:\Users\andre\Desktop\MysteryDice\Regular"
 
-NetcodePatcher.dll $(TargetDir) deps
-
-copy  "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\MysteryDice.dll" "C:\Users\andre\Desktop\MysteryDice\Regular"
-
-copy "C:\Users\andre\source\repos\Emergency-Dice-main\CHANGELOG.md" "C:\Users\andre\Desktop\MysteryDice\Regular"
-
-copy "C:\Users\andre\source\repos\Emergency-Dice-main\README.md" "C:\Users\andre\Desktop\MysteryDice\Regular"
-
-copy "C:\Users\andre\source\repos\Emergency-Dice-main\manifest.json" "C:\Users\andre\Desktop\MysteryDice\Regular"
-
-cd "C:\Users\andre\Desktop\MysteryDice\"
-
-call "C:\Users\andre\Desktop\MysteryDice\Make Zip.bat"</PostBuildEvent>
+      cd "C:\Users\andre\Desktop\MysteryDice\"
+      call "C:\Users\andre\Desktop\MysteryDice\Make Zip.bat"
+    </PostBuildEvent>
   </PropertyGroup>
-  <ItemGroup>
-    <!-- will be automatically skipped for Visual Studio -->
-    <NetcodePatch Include="$(TargetPath)" />
-  </ItemGroup>
-  <PropertyGroup>
-    <!-- silence the warning message that should have led you to this documentation -->
-    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NCP0001</MSBuildWarningsAsMessages>
+  
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugType>portable</DebugType>
   </PropertyGroup>
-  <Target Name="LegacyNetcodePatch" AfterTargets="NetcodePatch" Condition="'$(MSBuildRuntimeType)' != 'Core'">
-    <!-- run the CLI patcher only for MSBuilds that cannot load the dependencies -->
-    <Exec Command="netcode-patch -nv 1.5.2 &quot;$(TargetPath)&quot; @(ReferencePathWithRefAssemblies->'&quot;%(Identity)&quot;', ' ')" />
-  </Target>
+  
 </Project>

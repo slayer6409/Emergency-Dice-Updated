@@ -111,7 +111,7 @@ namespace MysteryDice.Dice
 
             yield return new WaitForSeconds(spinTime);
 
-            Landmine.SpawnExplosion(gameObject.transform.position, true, 0, 0, 0, 0, null, false);
+            if(MysteryDice.doDiceExplosion.Value) Landmine.SpawnExplosion(gameObject.transform.position, true, 0, 0, 0, 0, null, false);
             DestroyObject();
 
             if (GameNetworkManager.Instance.localPlayerController.playerClientId == userID)
@@ -473,6 +473,7 @@ namespace MysteryDice.Dice
                 MysteryDice.MainRegisterNewEffect(new Paparazzi());
                 MysteryDice.MainRegisterNewEffect(new MovingBeartraps());
                 MysteryDice.MainRegisterNewEffect(new TheRumbling());
+                MysteryDice.MainRegisterNewEffect(new FollowerFan());
             }
             if (!MysteryDice.DisableSizeBased.Value)
             {
