@@ -27,10 +27,14 @@
 //             if (StartOfRound.Instance.localPlayerController.playerClientId != userID) return;
 //             foreach (var playerControllerB in StartOfRound.Instance.allPlayerScripts)
 //             {
-//
-//                 if (playerControllerB != null && playerControllerB.actualClientId != StartOfRound.Instance.localPlayerController.actualClientId)
+//                 if (playerControllerB != null && playerControllerB.actualClientId != StartOfRound.Instance.localPlayerController.actualClientId) 
 //                 {
-//                     playerControllerB.gameObject.SetActive(false);
+//                     var renderers = playerControllerB.gameObject.GetComponentsInChildren<Renderer>();
+//                     foreach (var renderer in renderers)
+//                     {
+//                         renderer.enabled = true;
+//                     }
+//                 
 //                 }
 //             }
 //         }

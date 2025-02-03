@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using BepInEx.Configuration;
 using GameNetcodeStuff;
 using Unity.Netcode;
@@ -15,17 +16,23 @@ namespace MysteryDice.Effects
         public static int lives = 0;
         public void Use()
         {
-            for (var index = 0; index < StartOfRound.Instance.allPlayerScripts.Length; index++)
-            {
-	            Networker.Instance.RevivePlayerServerRpc(index,StartOfRound.Instance.middleOfShipNode.position);
-            }
+	        foreach (var player in StartOfRound.Instance.allPlayerScripts)
+	        {
+		        if(player.isPlayerDead) Networker.Instance.RevivePlayerServerRpc(player.actualClientId, StartOfRound.Instance.middleOfShipNode.position);
+	        }
         }
         
 
-        public static void revivePlayer(int PlayerID, Vector3 SpawnPosition)
+        public static void revivePlayer(ulong PlayerClientID, Vector3 SpawnPosition)
         {
 	        int DefaultHealth = 100;
-            PlayerControllerB playerControllerB = RoundManager.Instance.playersManager.allPlayerScripts[PlayerID];
+	        PlayerControllerB playerControllerB = null;
+	        foreach (var players in StartOfRound.Instance.allPlayerScripts)
+	        {
+		         if(players.actualClientId == PlayerClientID) playerControllerB = players;
+	        }
+	        if(playerControllerB == null) return;
+	        //if ( playerControllerB.isPlayerDead)
 			if (!playerControllerB.isPlayerDead) return;
 			playerControllerB.isInsideFactory = false;
 			playerControllerB.isInHangarShipRoom = true;
@@ -91,8 +98,8 @@ namespace MysteryDice.Effects
 				playerControllerB.reverbPreset = StartOfRound.Instance.shipReverb;
 				SoundManager.Instance.earsRingingTimer = 0f;
 				playerControllerB.voiceMuffledByEnemy = false;
-				SoundManager.Instance.playerVoicePitchTargets[PlayerID] = 1f;
-				SoundManager.Instance.SetPlayerPitch(1f, PlayerID);
+				SoundManager.Instance.playerVoicePitchTargets[Misc.getIntPlayerID(PlayerClientID)] = 1f;
+				SoundManager.Instance.SetPlayerPitch(1f, Misc.getIntPlayerID(PlayerClientID));
 				if (playerControllerB.currentVoiceChatIngameSettings == null)
 				{
 					StartOfRound.Instance.RefreshPlayerVoicePlaybackObjects();
@@ -108,6 +115,12 @@ namespace MysteryDice.Effects
 						return;
 					}
 					playerControllerB.currentVoiceChatIngameSettings.voiceAudio.GetComponent<OccludeAudio>().overridingLowPass = false;
+				}
+
+				if (playerControllerB.isPlayerDead)
+				{
+					HUDManager.Instance.UpdateBoxesSpectateUI();
+					HUDManager.Instance.UpdateSpectateBoxSpeakerIcons();
 				}
 			}
 			PlayerControllerB localPlayerController = GameNetworkManager.Instance.localPlayerController;

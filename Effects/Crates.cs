@@ -40,7 +40,7 @@ namespace MysteryDice.Effects
                 for (int i = 0; spawnedMines < MinesToSpawn; i++)
                 {
 
-                    Vector3 position = RoundManager.Instance.outsideAINodes[random.NextInt(0, RoundManager.Instance.outsideAINodes.Length - 1)].transform.position;
+                    Vector3 position = RoundManager.Instance.outsideAINodes[UnityEngine.Random.Range(0, RoundManager.Instance.outsideAINodes.Length - 1)].transform.position;
                     Vector3 vector = RoundManager.Instance.GetRandomNavMeshPositionInBoxPredictable(position, 10f, default, random, -1) + (Vector3.up * 2);
 
                     Physics.Raycast(vector, Vector3.down, out RaycastHit hit, 100, StartOfRound.Instance.collidersAndRoomMaskAndDefault);
@@ -83,7 +83,7 @@ namespace MysteryDice.Effects
                 for (int i = 0; spawnedMines < MinesToSpawn; i++)
                 {
 
-                    Vector3 position = RoundManager.Instance.insideAINodes[random.NextInt(0, RoundManager.Instance.insideAINodes.Length - 1)].transform.position;
+                    Vector3 position = RoundManager.Instance.insideAINodes[UnityEngine.Random.Range(0, RoundManager.Instance.insideAINodes.Length - 1)].transform.position;
                     Vector3 vector = RoundManager.Instance.GetRandomNavMeshPositionInBoxPredictable(position, 10f, default, random, -1) + (Vector3.up * 2);
 
                     Physics.Raycast(vector, Vector3.down, out RaycastHit hit, 100, StartOfRound.Instance.collidersAndRoomMaskAndDefault);

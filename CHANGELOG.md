@@ -1,4 +1,39 @@
--	**1.7.3**
+-	**1.8.3**
+    - Added a few new cool events (at least I think so lol)
+    - Optimized some weird code
+      - Not that much though
+    - Fixed some issues (still don't know why gambler is stupid)
+
+-	**1.8.2**
+    - Fixed Bald not being Bald for clients
+
+-   **1.8.1**
+    - Gambler is gonna remain broken idk
+      - Rebuilding it in unity didn't work so idk what to do lol 
+    - Added a few new events again :D
+    - Fixed some more issues especially with moving things
+
+-	**1.8.0**
+    - Most Likely fixed Gambler and if it works I will do the same for Emergency Die
+    - Added a few new events
+    - Changes to Moving Objects to be better (Thanks Xu)
+    - Changes to Custom Events to actually work now
+    - Possibly fixed a few errors with other events (purge, teleports, and others)
+    - Changes to the Debug menu (Favoriting Changes and Keeping Open on Select (Config option))
+    - No _**Secret**_ thing yet **_Soon tm_**
+    - **_Fixed Sacrificer_** 
+    - Made Glitch Balder Somehow :D
+
+-   **1.7.4**
+    - Changed a few things internally
+    - Changed the debug menu spawning for when you are dead
+    - Few new events
+    - Fixed some bugs
+    - Lovers now properly reset on orbit
+    - Added a temporary option to have 2 random players become lovers on land
+    - - It is temporary while I make the next Major update for this mod
+
+-   **1.7.3**
     - Changed revive to just be the new better method
     - Added Dependency for LethalCompany InputUtils to set the Debug Menu Keybind easier
     - Fixed some events
@@ -9,7 +44,7 @@
     - - It works for enemies, traps, and items! 
     - Changed README
     - New _Friendly_ event
-    - Fixed Emergency Die and Sacrificer sometimes erroring on certain maps
+    - Fixed Emergency Die and Sacrificer sometimes erroring on certain maps****
 
 -	**1.7.2**
 	- Reverted back to 1.7.0

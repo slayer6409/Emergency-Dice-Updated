@@ -12,7 +12,7 @@
   
   <PropertyGroup>
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>embedded</DebugType>
+    <DebugType>portable</DebugType>
     <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
   </PropertyGroup>
   
@@ -29,7 +29,7 @@
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
     <PackageReference Include="Rune580.Mods.LethalCompany.InputUtils" Version="0.7.4" />
-    <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" PrivateAssets="all"/>    
+    <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" PrivateAssets="all" />    
     <PackageReference Include="LethalCompany.GameLibs.Steam" Version="*-*" PrivateAssets="all" />
   </ItemGroup>
   
@@ -41,7 +41,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(ThunderstorePath)\Evaisa-LethalLib\LethalLib\LethalLib.dll</HintPath>
     </Reference>
-    <Reference Include="CodeRebirth" Publicize = "true">
+    <Reference Include="CodeRebirth" Publicize="true">
       <HintPath>$(ThunderstorePath)\XuXiaolan-CodeRebirth\CodeRebirth\CodeRebirth.dll</HintPath>
     </Reference>
     <Reference Include="Diversity Remastered">
@@ -62,7 +62,7 @@
     <Reference Include="LethalThings">
       <HintPath>$(ThunderstorePath)\Evaisa-LethalThings\LethalThings\LethalThings.dll</HintPath>
     </Reference>
-    <Reference Include="Surfaced" Publicize = "true">
+    <Reference Include="Surfaced" Publicize="true">
       <HintPath>$(ThunderstorePath)\SurfacedTeam-Surfaced\Surfaced.dll</HintPath>
     </Reference>
   </ItemGroup>
@@ -85,8 +85,5 @@
     </PostBuildEvent>
   </PropertyGroup>
   
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
   
 </Project>

@@ -28,16 +28,16 @@ namespace MysteryDice.Patches
         [HarmonyPatch("TeleportPlayer")]
         public class TeleportPlayerPatch
         {
-            static void Prefix(PlayerControllerB __instance, Vector3 pos, bool withRotation, float rot, bool allowInteractTrigger, bool enableController)
-            {
-                foreach (SmartAgentNavigator navigator in smartAgentNavigators)
-                {
-                    if (navigator != null)
-                    {
-                        navigator.positionsOfPlayersBeforeTeleport[__instance] = __instance.transform.position;
-                    }
-                }
-            }
+            // static void Prefix(PlayerControllerB __instance, Vector3 pos, bool withRotation, float rot, bool allowInteractTrigger, bool enableController)
+            // {
+            //     foreach (SmartAgentNavigator navigator in smartAgentNavigators)
+            //     {
+            //         if (navigator != null)
+            //         {
+            //             navigator.positionsOfPlayersBeforeTeleport[__instance] = __instance.transform.position;
+            //         }
+            //     }
+            // }
         }
 
         [HarmonyPrefix]

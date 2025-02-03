@@ -8,10 +8,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using CodeRebirth.src.Content.Maps;
-using CodeRebirth.src.MiscScripts;
+using LethalLib.Extras;
+using LethalLib.Modules;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 using static MysteryDice.Effects.MovingLandmines;
 using Random = UnityEngine.Random;
 
@@ -22,11 +23,11 @@ namespace MysteryDice
         public static Networker Instance;
         public static float RebelTimer = 0f;
         public static bool CoilheadIgnoreStares = false;
+        
         public override void OnNetworkSpawn()
         {
             Instance = this;
             base.OnNetworkSpawn();
-
             if (IsServer) return;
 
             DieBehaviour.AllowedEffects.Clear();
@@ -90,6 +91,7 @@ namespace MysteryDice
         {
             Misc.ChatWrite($"Player: {playerName} rolled {effectName}");
         }
+        
         #region Config stuff
         [ServerRpc(RequireOwnership = false)]
         public void RequestEffectConfigServerRPC(ulong playerID)
@@ -100,6 +102,12 @@ namespace MysteryDice
         [ClientRpc]
         public void SendConfigClientRPC(ulong playerID,string effectName)
         {
+            var player = Misc.GetPlayerByUserID(playerID);
+            if (player == null || !Misc.IsPlayerReal(player))
+            {
+                Debug.LogError($"Player with ID {playerID} is either null or not real.");
+                return;
+            }
             if (IsServer) return;
             if(GameNetworkManager.Instance.localPlayerController.playerClientId == playerID)
             {
@@ -228,7 +236,7 @@ namespace MysteryDice
                 return;
             }
             //MysteryDice.CustomLogger.LogWarning($"Trying to move trap to {targetPosition} and inside is {isInside}");
-            agent.DoPathingToDestination(targetPosition, isInside, false, null);
+            agent.DoPathingToDestination(targetPosition, isInside);
         }
 
 
@@ -323,6 +331,7 @@ namespace MysteryDice
                 {
                     Renderer renderer2 = child.GetComponent<Renderer>();
                     if(renderer2 !=null) renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    if(renderer2 !=null) renderer.receiveShadows = false;
                 }
             }
         }
@@ -365,7 +374,7 @@ namespace MysteryDice
         #endregion
 
         #region Delay
-        [ServerRpc]
+        [ServerRpc(RequireOwnership = false)]
         public void DelayedReactionServerRPC(ulong userID)
         {
             StartCoroutine(delayed(userID));
@@ -516,14 +525,60 @@ namespace MysteryDice
 
         }
         [ServerRpc(RequireOwnership = false)]
-        public void RevivePlayerServerRpc(int ID, Vector3 SpawnPosition)
+        public void RevivePlayerServerRpc(ulong ID, Vector3 SpawnPosition)
         {
             RevivePlayerClientRpc(ID, SpawnPosition);
         }
         [ClientRpc]
-        public void RevivePlayerClientRpc(int ID, Vector3 SpawnPosition)
+        public void RevivePlayerClientRpc(ulong ID, Vector3 SpawnPosition)
         {
             Revive.revivePlayer(ID, SpawnPosition);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void AddLifeAllServerRPC()
+        {
+            foreach (var player in StartOfRound.Instance.allPlayerScripts)
+            {
+                AddLifeClientRPC(player.actualClientId);
+            }
+            AddLifeHostServerRPC();
+        }
+        [ServerRpc(RequireOwnership = false)]
+        public void AddLifeHostServerRPC()
+        {
+            var player = StartOfRound.Instance.localPlayerController;
+            if (!player.IsHost)return;
+            if (player.GetComponent<playerLifeController>() != null)
+            {
+                var plc = player.GetComponent<playerLifeController>();
+                plc.addLife();
+            }
+            else
+            {
+                var plc = player.gameObject.AddComponent<playerLifeController>();
+                plc.player = player;
+                plc.addLife();
+            }
+        }
+
+        [ClientRpc]
+        public void AddLifeClientRPC(ulong clientID)
+        {
+            if(StartOfRound.Instance.localPlayerController.IsHost) return;
+            var player = StartOfRound.Instance.localPlayerController;
+            if (player.actualClientId != clientID) return;
+            if (player.GetComponent<playerLifeController>() != null)
+            {
+                var plc = player.GetComponent<playerLifeController>();
+                plc.addLife();
+            }
+            else
+            {
+                var plc = player.gameObject.AddComponent<playerLifeController>();
+                plc.player = player;
+                plc.addLife();
+            }
         }
 
         #endregion
@@ -844,11 +899,11 @@ namespace MysteryDice
             DynamicTrapEffect.spawnTrap(max, trap, inside, moving:moving);
         }
         [ServerRpc(RequireOwnership =false)]
-        public void spawnTrapOnServerRPC(string trap, int num, bool inside, ulong userID)
+        public void spawnTrapOnServerRPC(string trap, int num, bool inside, ulong userID, bool usePos = false, Vector3 position = default(Vector3))
         {
             PlayerControllerB player = Misc.GetPlayerByUserID(userID);
             Vector3 pos = player.transform.position;
-            if (player.isPlayerDead) pos = player.gameplayCamera.transform.position;
+            if (usePos) pos = position;
             var trapToSpawn = DynamicTrapEffect.getTrap(trap);
 
             GameObject gameObject = UnityEngine.Object.Instantiate(
@@ -887,6 +942,100 @@ namespace MysteryDice
             SeaminesOutside.SpawnSeaminesOutside(MinesToSpawn);
         }
         #endregion
+
+        #region Misc
+        [ServerRpc(RequireOwnership = false)]
+        public void BruiserServerRpc()
+        {
+            Bruiser.BruceInCruiser();
+        }
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void HorseSeatServerRpc()
+        {
+            HorseshootSeat.HorseSeat();
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void DespawnObjectTimedServerRpc(ulong objectID)
+        {
+            StartCoroutine(Bruiser.despawnObjectTimed(objectID));
+        }
+        
+        [ClientRpc]
+        public void DespawnObjectClientRpc(ulong objectID)
+        {
+            
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(objectID, out var networkObj))
+            {
+                GameObject obj = networkObj.gameObject;
+                networkObj.Despawn(true);
+            }
+        }
+        [ClientRpc]
+        public void FixBruceClientRpc(ulong objectID)
+        {
+            
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(objectID, out var networkObj))
+            {
+                GameObject obj = networkObj.gameObject;
+                Transform pushTrigger = obj.transform.Find("PushTrigger_RedirectToRootNetworkObject");
+                if (pushTrigger != null)
+                {
+                    pushTrigger.gameObject.SetActive(false);
+                }
+                else
+                {
+                    Debug.LogWarning("PushTrigger_RedirectToRootNetworkObject not found!");
+                }
+            }
+        }
+
+        // [ServerRpc(RequireOwnership = false)]
+        // public void TeleportObjectTimedServerRpc(ulong objectID, bool inside)
+        // {
+        //     StartCoroutine(Bruiser.TeleportObjectTimed(objectID, inside));
+        // }
+        // [ClientRpc]
+        // public void TeleportObjectClientRpc(ulong objectID, bool inside)
+        // {
+        //     Vector3 pos = Vector3.zero;
+        //     if(RoundManager.Instance.outsideAINodes.Length==0 || 
+        //        RoundManager.Instance.insideAINodes.Length==0) return;
+        //     if (inside)
+        //     {
+        //         pos = RoundManager.Instance.insideAINodes[Random.Range(0, RoundManager.Instance.insideAINodes.Length)].transform.position;
+        //     }
+        //     else
+        //     {
+        //         pos = RoundManager.Instance.outsideAINodes[Random.Range(0, RoundManager.Instance.outsideAINodes.Length)].transform.position;
+        //     }
+        //     if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(objectID, out var networkObj))
+        //     {
+        //         GameObject obj = networkObj.gameObject;
+        //         networkObj.gameObject.transform.position = pos;
+        //     }
+        // }
+        #endregion
+
+        #region Bald
+
+        [ServerRpc(RequireOwnership = false)]
+        public void BaldServerRpc(ulong player)
+        {
+            Bald.SpawnBald(player);
+        }
+
+        [ClientRpc]
+        public void FixBaldClientRpc(ulong player, ulong baldObject)
+        {
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(baldObject, out var networkObj))
+            {
+                GameObject obj = networkObj.gameObject;
+                Bald.FixBald(player,obj);
+            }
+        }
+        #endregion
         
         #region BerthaOutside
         [ServerRpc(RequireOwnership = false)]
@@ -898,6 +1047,11 @@ namespace MysteryDice
         public void BIGBerthaServerRPC()
         {
             BIGBertha.SpawnBIGBertha(1);
+        }
+        [ServerRpc(RequireOwnership = false)]
+        public void BIGSpikeServerRPC()
+        {
+            BIGSpike.SpawnBIGSpike(Random.Range(1,4));
         }
         [ServerRpc(RequireOwnership = false)]
         public void InstantExplodeBerthaServerRPC()
@@ -936,42 +1090,6 @@ namespace MysteryDice
         #endregion
 
         #region Paparazzi
-
-        [ServerRpc(RequireOwnership = false)]
-        public void setParentServerRPC(ulong objectId, ulong objectParentId, string renameParent="", bool hostOnly = false)
-        {
-            setParentClientRPC(objectId, objectParentId, renameParent, hostOnly);
-        }
-        
-        [ClientRpc]
-        public void setParentClientRPC(ulong objectId, ulong objectParentId,string renameParent = "", bool hostOnly = false)
-        {
-            try
-            {  
-                if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(objectId, out var networkObj))
-                {
-                    if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(objectParentId, out var networkObj2))
-                    {
-                        if (hostOnly)
-                        {
-                            if(!IsHost) return;
-                        }
-                        GameObject obj = networkObj.gameObject;
-                        GameObject obj2 = networkObj2.gameObject;
-                        obj.transform.SetParent(obj2.transform);
-                        if (renameParent != "")
-                        {
-                            obj2.name = renameParent;
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                
-            }
-          
-        }
 
         [ServerRpc(RequireOwnership = false)]
         public void doPaparazziServerRPC()
@@ -1165,20 +1283,20 @@ namespace MysteryDice
 
         #region SameScrap
         [ServerRpc(RequireOwnership = false)]
-        public void SameScrapServerRPC(ulong userID, int amount, string scrap, bool sneaky = false)
+        public void SameScrapServerRPC(ulong userID, int amount, string scrap, bool usePos = false, Vector3 pos = default(Vector3))
         {
-            AllSameScrap.SameScrap(userID, amount, scrap, sneaky);
+            AllSameScrap.SameScrap(userID, amount, scrap, usePos, pos);
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void AllOfOneTPServerRPC(NetworkObjectReference[] netObjs, ulong playerID)
+        public void AllOfOneTPServerRPC(NetworkObjectReference[] netObjs, ulong playerID, bool usePos, Vector3 pos)
         {
-            AllOfOneTPClientRPC(netObjs, playerID);
+            AllOfOneTPClientRPC(netObjs, playerID, usePos, pos);
         }
         [ClientRpc]
-        public void AllOfOneTPClientRPC(NetworkObjectReference[] netObjs, ulong playerID)
+        public void AllOfOneTPClientRPC(NetworkObjectReference[] netObjs, ulong playerID, bool usePos, Vector3 pos)
         {
-            AllSameScrap.teleport(netObjs, playerID);
+            AllSameScrap.teleport(netObjs, playerID, usePos, pos);
         }
         [ServerRpc(RequireOwnership = false)]
         public void TeleportEggServerRPC(NetworkObjectReference netObjs, ulong playerID,Vector3 pos)
@@ -1203,19 +1321,68 @@ namespace MysteryDice
 
         #region spawnStoreItem
         [ServerRpc(RequireOwnership =false)]
-        public void spawnStoreItemServerRPC(ulong playerID, string itemName)
+        public void spawnStoreItemServerRPC(ulong playerID, string itemName, Vector3 position)
         {
-            RandomStoreItem.SpawnItemNamed(playerID, itemName);
+            RandomStoreItem.SpawnItemNamed(playerID, itemName, position);
         }
 
         #endregion
 
         #region SpawnEnemyDynamic
         [ServerRpc(RequireOwnership = false)]
-        public void CustomMonsterServerRPC(string monsterName, int AmountMax, bool IsInside)
+        public void CustomMonsterServerRPC(string monsterName,int AmountMin, int AmountMax, bool IsInside)
         {
-            DynamicEffect.spawnEnemy(monsterName, AmountMax, IsInside);
+            DynamicEffect.spawnEnemy(monsterName, AmountMin, AmountMax, IsInside);
+            
         }
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void SpawnEnemyAtPosServerRPC(string name, Vector3 pos)
+        {
+            
+            List<SpawnableEnemyWithRarity> allenemies = new List<SpawnableEnemyWithRarity>();
+
+            foreach (var level in StartOfRound.Instance.levels)
+            {
+                allenemies = allenemies
+                    .Union(level.Enemies)
+                    .Union(level.OutsideEnemies)
+                    .Union(level.DaytimeEnemies)
+                    .ToList();
+            }
+
+            allenemies = allenemies
+                .GroupBy(x => x.enemyType.enemyName)
+                .Select(g => g.First())
+                .OrderBy(x => x.enemyType.enemyName)
+                .ToList();
+            var enemy = allenemies.FirstOrDefault(x => x.enemyType.enemyName == name);
+            if (enemy == null)
+            {
+                //do original method as backup
+                foreach (SelectableLevel level in StartOfRound.Instance.levels)
+                {
+
+                    enemy = level.Enemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
+                    if (enemy == null)
+                        enemy = level.DaytimeEnemies.FirstOrDefault(x =>
+                            x.enemyType.enemyName.ToLower() == name.ToLower());
+                    if (enemy == null)
+                        enemy = level.OutsideEnemies.FirstOrDefault(x =>
+                            x.enemyType.enemyName.ToLower() == name.ToLower());
+                }
+            }
+            if (enemy == null)
+            {
+                MysteryDice.CustomLogger.LogWarning(
+                    $"Enemy '{name}' not found. Available enemies: {string.Join(", ", allenemies.Select(e => e.enemyType.enemyName))}");
+                return;
+            }
+            var enemyObject =  GameObject.Instantiate(enemy.enemyType.enemyPrefab, pos, Quaternion.identity);
+            enemyObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
+            RoundManager.Instance.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
+        }
+
         #endregion
 
         #region EggFountain
@@ -1657,6 +1824,70 @@ namespace MysteryDice
         }
         #endregion
 
+        #region Credits
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void AddMoneyServerRPC(int money)
+        {
+            var moneyToBe = 0;
+            Terminal terminal = GameObject.FindObjectOfType<Terminal>();
+            if (terminal.IsHost || terminal.IsServer)
+            {
+                moneyToBe = terminal.groupCredits+money;
+                if(moneyToBe<0)moneyToBe = 0; 
+                terminal.SyncGroupCreditsClientRpc(moneyToBe,terminal.numberOfItemsInDropship);
+            }
+        }
+        #endregion 
+        
+        #region TimeScale
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void TimeScaleServerRPC()
+        {
+            TimeScaleClientRPC();
+        }
+        
+        [ClientRpc]
+        public void TimeScaleClientRPC()
+        {
+            Time.timeScale = 3;
+            StartOfRound.Instance.StartCoroutine(fixTime());
+        }
+
+        IEnumerator fixTime()
+        {
+            yield return new WaitForSecondsRealtime(10f);
+            Time.timeScale = 1;
+        }
+        
+        #endregion  
+
+        #region Big Delivery
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void BigDeliveryServerRPC()
+        {
+            if (RoundManager.Instance.IsServer)
+            {
+                Terminal terminal = GameObject.FindObjectOfType<Terminal>();
+
+                var Amount = Random.Range(3,7);
+                List<int> validItems = new List<int>();
+                for (int i = 0; i < terminal.buyableItemsList.Length; i++)
+                {
+                    if (terminal.buyableItemsList[i].creditsWorth >= 10 && terminal.buyableItemsList[i].creditsWorth <= 1000) validItems.Add(i);
+                }
+
+                for (int i = 0; i < Amount; i++)
+                {
+                    int item = validItems[UnityEngine.Random.Range(0, validItems.Count)];
+                    terminal.orderedItemsFromTerminal.Add(item);
+                }
+            }
+        }
+        #endregion
+        
         #region Increased Rate
 
         [ServerRpc(RequireOwnership = false)]
@@ -1779,11 +2010,6 @@ namespace MysteryDice
         {
             StartCoroutine(MovingFans.WaitForTrapInit("Beartrap"));
         }
-        [ServerRpc(RequireOwnership = false)]
-        public void SuperFlingerServerRPC(ulong playerID)
-        {
-            Horseshootnt.spawnFlinger(playerID);
-        }
 
         // IEnumerator WaitForMineInit()
         // {
@@ -1824,6 +2050,23 @@ namespace MysteryDice
         // }
         #endregion
         
+        #region SuperFlinger
+        [ServerRpc(RequireOwnership = false)]
+        public void SuperFlingerServerRPC(ulong playerID)
+        {
+            Horseshootnt.spawnFlinger(playerID);
+        }
+        
+        #endregion
+        
+        #region CleaningCrew
+        [ServerRpc(RequireOwnership = false)]
+        public void CleaningCrewServerRPC(ulong playerID)
+        {
+            CleaningCrew.spawnCrew(playerID);
+        }
+        #endregion
+        
         #region MovingFans
 
         [ServerRpc(RequireOwnership = false)]
@@ -1857,140 +2100,18 @@ namespace MysteryDice
             StartCoroutine(MovingFans.WaitForTrapInit("Bertha"));
             StartCoroutine(MovingFans.WaitForTrapInit("Seamine"));
         }
-
-       
-
-        /// <summary>
-        /// this is inefficient, but stays for now
-        /// </summary>
-        /// <param name="mineID"></param>
-        /// <param name="speed"></param>
-        /// <param name="currentPosition"></param>
-        /// <param name="syncedPaths"></param>
-        /// <param name="blockedid"></param>
-        // [ClientRpc]
-        // public void SyncSeaTrapDataClientRPC(ulong mineID, float speed, Vector3 currentPosition, Vector3 targetPosition, int blockedid)
-        // {
-        //     if (IsServer) return;
-        //
-        //     foreach (MovingSeaTraps.BerthaMovement mine in GameObject.FindObjectsOfType<MovingSeaTraps.BerthaMovement>())
-        //     {
-        //         if (mine.bigbertha.NetworkObjectId != mineID) continue;
-        //
-        //         mine.transform.position = currentPosition;
-        //         mine.TargetPosition = targetPosition;
-        //         mine.MoveSpeed = speed;
-        //         mine.BlockedID = blockedid;
-        //         mine.CalculateNewPath();
-        //     }
-        //     foreach (MovingSeaTraps.SeamineMovement mine in GameObject.FindObjectsOfType<MovingSeaTraps.SeamineMovement>())
-        //     {
-        //         if (mine.seamine.NetworkObjectId != mineID) continue;
-        //
-        //         mine.transform.position = currentPosition;
-        //         mine.TargetPosition = targetPosition;
-        //         mine.MoveSpeed = speed;
-        //         mine.BlockedID = blockedid;
-        //         mine.CalculateNewPath();
-        //     }
-        //
-        // } 
-        // [ClientRpc]
-        // public void SyncTrapClientRPC(ulong mineID, float speed, Vector3 currentPosition, Vector3 targetPosition, int blockedid)
-        // {
-        //     if (IsServer) return;
-        //
-        //     foreach (MovingLandmines.TrapMovement mine in GameObject.FindObjectsOfType<MovingLandmines.TrapMovement>())
-        //     {
-        //         if (mine.mapObject.GetComponent<NetworkObject>().NetworkObjectId != mineID) continue;
-        //
-        //         mine.transform.position = currentPosition;
-        //         mine.TargetPosition = targetPosition;
-        //         mine.MoveSpeed = speed;
-        //         mine.BlockedID = blockedid;
-        //         mine.CalculateNewPath();
-        //     }
-        // }
+        
         #endregion
 
         #region Moving traps
 
-                //
-                [ServerRpc(RequireOwnership = false)]
-                    public void MovingTrapsInitServerRPC()
-                    {
-                        TPTraps.SpawnTeleporterTraps(5);
-                        AddMovingTrapClientRPC(GetEnemies.SpawnableTP.prefabToSpawn.name);
-                    }
-                
-                // [ClientRpc]
-                // public void AddMovingTrapsClientRPC()
-                // {
-                //     StartCoroutine(WaitForTrapInit());
-                // }
-                //
-                // IEnumerator WaitForTrapInit()
-                // {
-                //     yield return new WaitForSeconds(5f);
-                //
-                //     foreach (var trap in GameObject.FindObjectsOfType<UnityEngine.Component>().Where(c => c.GetType().Name == "TeleporterTrap"))
-                //     {
-                //         if (trap == null)
-                //         {
-                //             MysteryDice.CustomLogger.LogWarning("Trap is null.");
-                //             continue;
-                //         }
-                //
-                //         var targetObject = trap.transform.parent?.gameObject ?? trap.gameObject;
-                //
-                //         if (targetObject.GetComponent<MovingTPTraps.TeleporterTrapMovement>() == null)
-                //         {
-                //             var movementComponent = targetObject.AddComponent<MovingTPTraps.TeleporterTrapMovement>(); 
-                //             movementComponent.TeleporterTrapScr = trap;
-                //
-                //             if (movementComponent.TeleporterTrapScr == null)
-                //             {
-                //                 MysteryDice.CustomLogger.LogWarning("Failed to set TeleporterTrapScr for trap: " + trap.name);
-                //             }
-                //             else
-                //             {
-                //                 MysteryDice.CustomLogger.LogInfo("Successfully set TeleporterTrapScr for trap: " + trap.name);
-                //             }
-                //         }
-                //         else
-                //         {
-                //             MysteryDice.CustomLogger.LogInfo("Movement component already exists for trap: " + trap.name);
-                //         }
-                //     }
-                // }
-                //
-                // /// <summary>
-                // /// this is inefficient, but stays for now
-                // /// </summary>
-                // /// <param name="trapID"></param>
-                // /// <param name="speed"></param>
-                // /// <param name="currentPosition"></param>
-                // /// <param name="syncedPaths"></param>
-                // /// <param name="blockedid"></param>
-                // [ClientRpc]
-                // public void SyncDataTPClientRPC(ulong trapID, float speed, Vector3 currentPosition, Vector3 targetPosition, int blockedid)
-                // {
-                //     if (IsServer) return;
-                //
-                //     foreach (var trap in GameObject.FindObjectsOfType<MovingTPTraps.TeleporterTrapMovement>())
-                //     {
-                //         var networkObjectIdProp = trap.TeleporterTrapScr.GetType().GetProperty("NetworkObjectId", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                //         if (networkObjectIdProp != null && (ulong)networkObjectIdProp.GetValue(trap.TeleporterTrapScr) != trapID) continue;
-                //
-                //         trap.transform.position = currentPosition;
-                //         trap.TargetPosition = targetPosition;
-                //         trap.MoveSpeed = speed;
-                //         trap.BlockedID = blockedid;
-                //         trap.CalculateNewPath();
-                //     }
-                // }
-
-            #endregion
+        [ServerRpc(RequireOwnership = false)]
+        public void MovingTrapsInitServerRPC()
+        {
+            TPTraps.SpawnTeleporterTraps(5);
+            AddMovingTrapClientRPC(GetEnemies.SpawnableTP.prefabToSpawn.name);
+        }
+        #endregion
 
         #region HyperShake
 
@@ -2064,7 +2185,7 @@ namespace MysteryDice
             }
         }
         #endregion
-
+        
         #region Neck Spin
         [ServerRpc(RequireOwnership = false)]
         public void NeckSpinRandomPlayerServerRpc(ulong player)

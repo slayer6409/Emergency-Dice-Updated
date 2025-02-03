@@ -20,6 +20,7 @@ namespace MysteryDice
         public string monsterName {  get; set; }
         public EffectType outcome { get; set; }
         public bool IsInside { get; set; }
+        public int AmountMin { get; set; }
         public int AmountMax { get; set; }
         public string customName { get; set; }
         public string customTooltip { get; set; }
@@ -90,6 +91,11 @@ namespace MysteryDice
                     EffectType.Bad,
                     $"Sets the Outcome for Custom{i}").Value;
 
+                int amountMin = configFile.Bind<int>(
+                    $"CustomEnemy{i}",
+                    "Amount Min",
+                    1, // Default value
+                    $"Minimum number of enemies to spawn for Custom{i}").Value;
                 int amountMax = configFile.Bind<int>(
                     $"CustomEnemy{i}",
                     "Amount Max",
@@ -103,6 +109,7 @@ namespace MysteryDice
                     monsterName = monsterName,
                     outcome = outcome,
                     IsInside = isInside,
+                    AmountMin = amountMin,
                     AmountMax = amountMax,
                     customName = customName,
                     customTooltip = customTooltip
@@ -221,7 +228,7 @@ namespace MysteryDice
                 TrapConfigs.Add(trapConfig);
 
                 // Register the effect using the dynamic effect class
-                DieBehaviour.AllEffects.Add(new DynamicTrapEffect($"{customName}", trapConfig));
+                MysteryDice.MainRegisterNewEffect(new DynamicTrapEffect($"{customName}", trapConfig),false,false);
             }
         }
     }
@@ -244,9 +251,9 @@ namespace MysteryDice
         public static SpawnableEnemyWithRarity enemy = null;
         public void Use()
         {
-            Networker.Instance.CustomMonsterServerRPC(config.monsterName, config.AmountMax, config.IsInside);
+            Networker.Instance.CustomMonsterServerRPC(config.monsterName, config.AmountMin, config.AmountMax, config.IsInside);
         }
-        public static void spawnEnemy(string names, int max, bool inside)
+        public static void spawnEnemy(string names, int min, int max, bool inside)
         {
             var enemyNames = names.Split(',');
             foreach (var name in enemyNames)
@@ -286,7 +293,7 @@ namespace MysteryDice
                 {
                     MysteryDice.CustomLogger.LogWarning($"Enemy '{name}' not found. Available enemies: {string.Join(", ", allenemies.Select(e => e.enemyType.enemyName))}"); return;
                 }
-                randomSpawn = UnityEngine.Random.Range(1, max + 1);
+                randomSpawn = UnityEngine.Random.Range(min, max + 1);
                 Misc.SpawnEnemyForced(enemy, randomSpawn, inside);
             }
            

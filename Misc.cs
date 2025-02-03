@@ -74,7 +74,17 @@ namespace MysteryDice
                     SpawnOutsideEnemy(enemy);
                 }
             }
-        } 
+        }
+
+        public static int playerCount()
+        {
+            int players = 0;
+            foreach (var player in StartOfRound.Instance.allPlayerScripts)
+            {
+                if(IsPlayerAliveAndControlled(player)) players++;
+            }
+            return players;
+        }
         public static void SetObjectInvisible(GameObject obj)
         {
             var renderers = obj.GetComponentsInChildren<Renderer>();
@@ -129,6 +139,7 @@ namespace MysteryDice
             }
             return index;
         }
+        
         public static void SpawnOutsideEnemy(SpawnableEnemyWithRarity enemy)
         {
             RoundManager RM = RoundManager.Instance;
@@ -337,8 +348,8 @@ namespace MysteryDice
         }
         public static bool IsPlayerReal(PlayerControllerB player)
         {
-            return player.isActiveAndEnabled &&
-                   player.isPlayerControlled;
+            return player.isActiveAndEnabled ||
+                   player.isPlayerDead;
         }
 
         public static SpawnableEnemyWithRarity getEnemyByName(string name)

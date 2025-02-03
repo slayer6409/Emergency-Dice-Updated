@@ -16,7 +16,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.SpawnSurroundedTrapServerRPC(GetEnemies.Bertha.prefabToSpawn.name,8,7,true,new Vector3(1.25f,.75f,1.25f));
+            Networker.Instance.SpawnSurroundedTrapServerRPC(GetEnemies.Bertha.prefabToSpawn.name,8,7,true,new Vector3(1.25f,2f,1.25f));
         }
         
     }

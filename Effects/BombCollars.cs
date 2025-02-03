@@ -68,8 +68,8 @@ namespace MysteryDice.Effects
                             if (bcp != null)
                                 if (Misc.IsPlayerAliveAndControlled(glitch)) 
                                 {
-                                    bcp.AttachToPlayerServerRpc(Misc.getIntPlayerID(glitch.playerClientId));
-                                    Networker.Instance.TeleportToPlayerServerRPC(glitch.playerClientId, player.playerClientId);
+                                    bcp.AttachToPlayerServerRpc(Misc.getIntPlayerID(glitch.actualClientId));
+                                    Networker.Instance.TeleportToPlayerServerRPC(glitch.actualClientId, player.playerClientId);
                                 } 
                         }
                         else if (stuck)

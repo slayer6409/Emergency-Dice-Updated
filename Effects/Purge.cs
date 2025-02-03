@@ -19,16 +19,22 @@ namespace MysteryDice.Effects
         {
             foreach(var enemy in RoundManager.Instance.SpawnedEnemies)
             {
-                Landmine.SpawnExplosion(enemy.transform.position, true, 2, 5, 50, 0,null,false);
-                enemy.KillEnemy(true);
                 try
                 {
-                    //if it doesn't kill the enemy effectively
-                    enemy.enabled = false;
+                    Landmine.SpawnExplosion(enemy.transform.position, true, 2, 5, 50, 0,null,false);
+                    enemy.KillEnemy(true);
+                    try
+                    {
+                        if(!enemy.isEnemyDead) enemy.GetComponent<NetworkObject>().Despawn();
+                    }
+                    catch (Exception ex) 
+                    {
+                        //error
+                    }
                 }
-                catch (Exception ex) 
+                catch (Exception ex2)
                 {
-                    //error
+                    // hmmm
                 }
             }
         }

@@ -1,33 +1,32 @@
-﻿using System;
-using System.Collections;
+﻿using MysteryDice.Patches;
+using System;
 using System.Collections.Generic;
-using DunGen;
 using System.Linq;
-using MysteryDice.Patches;
-using TMPro;
+using System.Text;
+using System.Threading.Tasks;
+using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
 namespace MysteryDice.Effects
 {
-    internal class Paparazzi : IEffect
+    internal class BIGSpike : IEffect
     {
-        public string Name => "Paparazzi";
-        public static int MinMinesToSpawn = 3;
-        public static int MaxMinesToSpawn = 6;
+        public string Name => "BS";
+        public static int MinMinesToSpawn = 1;
+        public static int MaxMinesToSpawn = 1;
 
         private static List<Vector3> allPositions = new List<Vector3>();
         public EffectType Outcome => EffectType.Awful;
         public bool ShowDefaultTooltip => false;
-        public string Tooltip => "Papa-paparazzi";
-
+        public string Tooltip => "Ooga Booga";
         public void Use()
         {
-            Networker.Instance.doPaparazziServerRPC();
+            Networker.Instance.BIGSpikeServerRPC();
         }
-        public static void SpawnPaparazzi(int MinesToSpawn, float positionOffsetRadius = 5f)
+
+        public static void SpawnBIGSpike(int MinesToSpawn, float positionOffsetRadius = 5f)
         {
             int spawnedMines = 0;
             System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed);
@@ -63,35 +62,41 @@ namespace MysteryDice.Effects
                                 validPositionFound = true;
 
                                 GameObject gameObject = UnityEngine.Object.Instantiate(
-                                    GetEnemies.Fan.prefabToSpawn,
+                                    GetEnemies.SpawnableSpikeTrap.prefabToSpawn,
                                     groundPosition,
-                                    Quaternion.identity,
-                                    RoundManager.Instance.mapPropsContainer.transform);
-                                GameObject gameObject2 = UnityEngine.Object.Instantiate(
-                                    GetEnemies.FlashTurret.prefabToSpawn,
-                                    gameObject.transform.position,
                                     Quaternion.identity,
                                     RoundManager.Instance.mapPropsContainer.transform);
 
                                 allPositions.Add(groundPosition);
+                                gameObject.transform.eulerAngles = new Vector3(gameObject.transform.eulerAngles.x, UnityEngine.Random.Range(0, 360), gameObject.transform.eulerAngles.z);
                                 var netobj = gameObject.GetComponent<NetworkObject>();
-                                var netobj2 = gameObject2.GetComponent<NetworkObject>();
                                 netobj.Spawn(destroyWithScene: true);
-                                netobj2.Spawn(destroyWithScene: true);
-                                gameObject.transform.SetParent(gameObject2.transform);
                                 spawnedMines++;
 
+                                var e = Random.Range(0, 10);
+                                if (e < 5)
+                                {
+                                    Networker.Instance.setSizeClientRPC(netobj.NetworkObjectId,new Vector3(Random.Range(4,8),Random.Range(1,4),Random.Range(4,8)), quaternion.Euler(Random.value * 360, Random.value * 360, Random.value * 360));
+                                }
+                                else
+                                {
+                                    Networker.Instance.setSizeClientRPC(netobj.NetworkObjectId,new Vector3(Random.Range(1,4),Random.Range(4,8),Random.Range(1,4)), quaternion.Euler(Random.value * 360, Random.value * 360, Random.value * 360));
+                                }
+                                
+                              
                             }
                         }
                     }
+
                     if (!validPositionFound)
                     {
                         Debug.LogWarning("Could not find a valid position for mine at spawn point: " + pos);
                     }
                 }
-                Networker.Instance.PlaySoundServerRPC("Paparazzi");
             }
-        }public static float GetShortestDistanceSqr(Vector3 position, List<Vector3> positions)
+        }
+
+        public static float GetShortestDistanceSqr(Vector3 position, List<Vector3> positions)
         {
             float shortestLength = float.MaxValue;
             foreach (Vector3 pos in positions)
@@ -103,4 +108,5 @@ namespace MysteryDice.Effects
             return shortestLength;
         }
     }
+    
 }

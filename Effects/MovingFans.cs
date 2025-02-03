@@ -12,6 +12,7 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 namespace MysteryDice.Effects
@@ -34,7 +35,19 @@ namespace MysteryDice.Effects
             
             foreach (var trap in GameObject.FindObjectsOfType<GameObject>().Where(c => c.name.ToUpper().Contains(trapName.ToUpper())))
             {
-                if(trap.name.Contains("Gal")) continue;
+                var no = trap.GetComponent<NetworkObject>();
+                if (no == null) continue;
+                
+                if(no.gameObject.name.ToUpper().Contains("GAL")||no.gameObject.name.ToUpper().Contains("CHARGER")) continue;
+                // // Nuclear Option
+                // foreach (Transform child in no.gameObject.transform)
+                // {
+                //     if (child.name.ToUpper().Contains("GAL")||child.name.ToUpper().Contains("CHARGER"))
+                //     {
+                //         continue;
+                //     }
+                // }
+                Debug.LogError($"Trap {trap.name}");
                 if (!trap)
                 {
                     MysteryDice.CustomLogger.LogWarning("Trap is null.");
@@ -56,11 +69,12 @@ namespace MysteryDice.Effects
                     var mm = targetObject.AddComponent<MakeMove>();
                     if (follower) mm.follows = Misc.GetPlayerByUserID(followerID);
                     agent.GetComponent<NetworkObject>().Spawn(destroyWithScene:true);
-                    Networker.Instance.setParentServerRPC(trap.GetComponent<NetworkObject>().NetworkObjectId, agent.GetComponent<NetworkObject>().NetworkObjectId);
+                    trap.transform.SetParent(agent.transform);
                     targetObject.transform.localPosition = Vector3.zero;
                     targetObject.transform.localRotation = Quaternion.identity;
                     mm.Initialize(smartAgentNavigator);
                     mm.enabled = true;
+                    SceneManager.MoveGameObjectToScene(agent, RoundManager.Instance.mapPropsContainer.scene);
                 }
             }
         }
@@ -112,9 +126,9 @@ namespace MysteryDice.Effects
             // {
             //     if(StartOfRound.Instance.IsHost) if(gameObject.transform.parent.GetComponent<NetworkObject>() != null) gameObject.transform.parent.GetComponent<NetworkObject>().Despawn();
             // }
-            try
-            {
-                
+            // try
+            // {
+            //     
                 if (Networker.Instance.IsServer)
                 {
                     if (follows!=null && agent != null)
@@ -124,17 +138,17 @@ namespace MysteryDice.Effects
                     }
                     _pathTimer -= Time.fixedDeltaTime;
                 
-                    if (agent == null)
-                    {
-                        //Debug.LogError($"SmartAgentNavigator is null on {gameObject.name}. Ensure it is properly initialized.");
-                        Destroy(this);
-                        return;
-                    }
+                    // if (agent == null)
+                    // {
+                    //     //Debug.LogError($"SmartAgentNavigator is null on {gameObject.name}. Ensure it is properly initialized.");
+                    //     Destroy(this);
+                    //     return;
+                    // }
                     if (_pathTimer <= 0f)
                     {
                         if (follows != null)
                         {
-                            agent.DoPathingToDestination(follows.transform.position, follows.isInsideFactory, true, follows);
+                            agent.DoPathingToDestination(follows.transform.position, follows.isInsideFactory);
                         }
                         else
                         {  
@@ -166,36 +180,36 @@ namespace MysteryDice.Effects
                       
                     }
                 }
-            }
-            catch (NullReferenceException e)
-            {
-                //This is a very stupid way to do it, but it works
-                //don't look at this code
-                foreach (Transform child in transform)
-                {
-                    //MysteryDice.CustomLogger.LogWarning("Deleting child: " + child.name + "");
-                    var neto = child.gameObject.GetComponent<NetworkObject>();
-                    if (neto!=null)neto.Despawn();
-                    if (child != null)
-                    {
-                        Destroy(child.gameObject);
-                    }
-                }
-                //MysteryDice.CustomLogger.LogWarning("Deleting parent: " + transform.parent.name + "");
-                transform.parent.GetComponent<NetworkObject>().Despawn();
-                if (transform.parent.name.StartsWith("Agent"))
-                {
-                    try
-                    {
-                        Destroy(transform.parent.gameObject);
-                    }
-                    catch
-                    {
-                        
-                    }
-                }
-                Destroy(this.gameObject);
-            }
+            // }
+            // catch (NullReferenceException e)
+            // {
+            //     //This is a very stupid way to do it, but it works
+            //     //don't look at this code
+            //     foreach (Transform child in transform)
+            //     {
+            //         //MysteryDice.CustomLogger.LogWarning("Deleting child: " + child.name + "");
+            //         var neto = child.gameObject.GetComponent<NetworkObject>();
+            //         if (neto!=null)neto.Despawn();
+            //         if (child != null)
+            //         {
+            //             Destroy(child.gameObject);
+            //         }
+            //     }
+            //     //MysteryDice.CustomLogger.LogWarning("Deleting parent: " + transform.parent.name + "");
+            //     transform.parent.GetComponent<NetworkObject>().Despawn();
+            //     if (transform.parent.name.StartsWith("Agent"))
+            //     {
+            //         try
+            //         {
+            //             Destroy(transform.parent.gameObject);
+            //         }
+            //         catch
+            //         {
+            //             
+            //         }
+            //     }
+            //     Destroy(this.gameObject);
+            // }
         }
     }
 }

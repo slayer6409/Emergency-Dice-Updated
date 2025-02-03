@@ -23,14 +23,25 @@ namespace MysteryDice.Patches
     public class GetEnemies
     {
 
-        public static SpawnableEnemyWithRarity Masked, RedwoodTitan,  HoardingBug, Scary, Ghost, Boomba, Tulip, Centipede, Dog, Jester, Bracken, Stomper, Coilhead, Beehive, Sandworm, Spider, Giant, Maneater, Nutcracker, Shrimp, CrystalRay, Lasso, Barber, BellCrab, Urchin, Horse, Nemo, Bruce, MantisShrimp, Tornado;
-        public static SpawnableMapObject SpawnableLandmine, SpawnableTurret, SpawnableTP, SpawnableSpikeTrap, Microwave, Fan, FlashTurret, Seamine, Bertha; 
+        public static SpawnableEnemyWithRarity Masked, RedwoodTitan , Jimothy, Janitor,  HoardingBug, Scary, Ghost, Boomba, Tulip, Centipede, Dog, Jester, Bracken, Stomper, Coilhead, Beehive, Sandworm, Spider, Giant, Maneater, Nutcracker, Shrimp, CrystalRay, Lasso, Barber, BellCrab, Urchin, Horse, Nemo, Bruce, MantisShrimp, Tornado;
+        public static SpawnableMapObject SpawnableLandmine, SpawnableTurret, SpawnableTP, SpawnableSpikeTrap, Microwave, Fan, FlashTurret, Seamine, Bertha;
+        public static List<SpawnableOutsideObjectWithRarity> trees = new List<SpawnableOutsideObjectWithRarity>();
         private static readonly string teleporterTrapId = "TeleporterTrap";
         public static List<EnemyType> allEnemies = new List<EnemyType>();
         [HarmonyPatch("Start")]
         [HarmonyPostfix]
         private static void GetEnemy(Terminal __instance)
         {
+            if(allEnemies.Count==0) allEnemies = Resources.FindObjectsOfTypeAll<EnemyType>().ToList();
+            if (MysteryDice.DebugLogging.Value)
+            {
+                MysteryDice.CustomLogger.LogInfo("AllEnemies: " + allEnemies.Count);
+                foreach (var enemy in allEnemies)
+                {
+                    MysteryDice.CustomLogger.LogInfo("Enemy Found: " + enemy.enemyName);
+                }
+            }
+            
             foreach (SelectableLevel level in __instance.moonsCatalogueList)
             {
                 foreach (SpawnableEnemyWithRarity enemy in level.Enemies)
@@ -74,6 +85,10 @@ namespace MysteryDice.Patches
                         Boomba = enemy;
                     if (enemy.enemyType.enemyName == "Scary")
                         Scary = enemy;
+                    if (enemy.enemyType.enemyName == "Transporter")
+                        Jimothy = enemy;
+                    if (enemy.enemyType.enemyName == "Janitor")
+                        Janitor = enemy;
                 }
 
                 foreach (SpawnableEnemyWithRarity enemy in level.DaytimeEnemies)
@@ -137,6 +152,13 @@ namespace MysteryDice.Patches
 
                     if (item.prefabToSpawn.name == "FlashTurretUpdated" && FlashTurret == null)
                         FlashTurret = item;
+
+                }
+                foreach (var item in level.spawnableOutsideObjects)
+                {
+                    if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogInfo("Spawnable Outside Object Found: " + item.spawnableObject.prefabToSpawn.name);
+                    if (item.spawnableObject.prefabToSpawn.name.ToUpper().Contains("TREE") && !trees.Contains(item))
+                        trees.Add(item);
 
                 }
                 

@@ -1,13 +1,4 @@
-﻿using KaimiraGames;
-using MysteryDice.Effects;
-using MysteryDice.Visual;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using MysteryDice.Effects;
 
 namespace MysteryDice.Dice
 {
@@ -22,12 +13,12 @@ namespace MysteryDice.Dice
         }
         public override void SetupRollToEffectMapping()
         {
-            RollToEffect.Add(1, new EffectType[] { EffectType.Awful, EffectType.Bad});
-            RollToEffect.Add(2, new EffectType[] { EffectType.Bad, EffectType.Awful });
-            RollToEffect.Add(3, new EffectType[] { EffectType.Mixed, EffectType.Bad });
-            RollToEffect.Add(4, new EffectType[] { EffectType.Good, EffectType.Mixed });
-            RollToEffect.Add(5, new EffectType[] { EffectType.Good, EffectType.Great });
-            RollToEffect.Add(6, new EffectType[] { EffectType.Great, EffectType.Good });
+            RollToEffect.Add(1, [EffectType.Awful, EffectType.Bad,EffectType.Mixed]);
+            RollToEffect.Add(2, [EffectType.Bad, EffectType.Awful,EffectType.Mixed]);
+            RollToEffect.Add(3, [EffectType.Mixed, EffectType.Bad, EffectType.Good]);
+            RollToEffect.Add(4, [EffectType.Good, EffectType.Mixed, EffectType.Bad]);
+            RollToEffect.Add(5, [EffectType.Good, EffectType.Great,EffectType.Mixed]);
+            RollToEffect.Add(6, [EffectType.Great, EffectType.Good,EffectType.Mixed]);
         }
 
         // ReSharper disable Unity.PerformanceAnalysis

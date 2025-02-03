@@ -1,13 +1,5 @@
-﻿using KaimiraGames;
-using MysteryDice.Effects;
-using MysteryDice.Visual;
-using System;
-using System.Collections;
+﻿using MysteryDice.Effects;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
 
 namespace MysteryDice.Dice
 {

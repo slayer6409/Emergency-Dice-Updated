@@ -27,6 +27,7 @@ public class CycleSigns : MonoBehaviour
     private bool Stop = false;
 
     private SpriteRenderer SignSpriteRenderer;
+    private SpriteRenderer SignSpriteRenderer2;
     private Renderer DiceRenderer;
 
     List<DiceVisuals> Visuals = new List<DiceVisuals>();
@@ -38,8 +39,10 @@ public class CycleSigns : MonoBehaviour
         Visuals.Add(new DiceVisuals(MysteryDice.MysteryDice.WarningLuck, Color.green, Color.green,300f));
 
         SignSpriteRenderer = transform.Find("Emergency Sign").gameObject.GetComponent<SpriteRenderer>();
+        SignSpriteRenderer2 = transform.Find("Emergency Sign2").gameObject.GetComponent<SpriteRenderer>();
         DiceRenderer = gameObject.GetComponent<Renderer>();
     }
+    
     void Update()
     {
         if (Stop) return;
@@ -58,6 +61,7 @@ public class CycleSigns : MonoBehaviour
             CurrentSprite = 0;
 
         SignSpriteRenderer.sprite = Visuals[CurrentSprite].Sprite;
+        SignSpriteRenderer2.sprite = Visuals[CurrentSprite].Sprite;
         DiceRenderer.material.SetColor("_BaseColor", Visuals[CurrentSprite].ModelColor);
         DiceRenderer.material.SetColor("_EmissiveColor", Visuals[CurrentSprite].EmissionColor * Visuals[CurrentSprite].Emission);
     }
@@ -65,6 +69,7 @@ public class CycleSigns : MonoBehaviour
     public void HideSigns()
     {
         Stop = true;
-        SignSpriteRenderer.gameObject.SetActive(false);
+        SignSpriteRenderer.GetComponent<SpriteRenderer>().enabled = false;
+        SignSpriteRenderer2.GetComponent<SpriteRenderer>().enabled = false;
     }
 }

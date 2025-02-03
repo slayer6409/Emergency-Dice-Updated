@@ -30,7 +30,7 @@ namespace MysteryDice.Effects
             Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, UnityEngine.Random.Range(3, 5), item.itemName);
         }
 
-        public static void SameScrap(ulong userID, int amount, string scrapSpawns, bool sneaky=false)
+        public static void SameScrap(ulong userID, int amount, string scrapSpawns, bool usePos = true, Vector3 spawnPos = default)
         {
             var scrapToSpawn = scrapSpawns.Split(',');
             foreach (var scrapSpawn in scrapToSpawn)
@@ -132,20 +132,20 @@ namespace MysteryDice.Effects
                    
                 }
 
-                RM.StartCoroutine(DelayedSyncAndTeleport(RM, netObjs.ToArray(), scrapValues.ToArray(), scrapWeights.ToArray(), player));
+                RM.StartCoroutine(DelayedSyncAndTeleport(RM, netObjs.ToArray(), scrapValues.ToArray(), scrapWeights.ToArray(), player, usePos, spawnPos));
             }
             
         }
         
-        public static IEnumerator DelayedSyncAndTeleport(RoundManager RM, NetworkObjectReference[] netObjs, int[] scrapValues, float[] scrapWeights, PlayerControllerB player)
+        public static IEnumerator DelayedSyncAndTeleport(RoundManager RM, NetworkObjectReference[] netObjs, int[] scrapValues, float[] scrapWeights, PlayerControllerB player, bool usePos, Vector3 spawnPos)
         {
             yield return new WaitForSeconds(1f);
-            Networker.Instance.AllOfOneTPServerRPC(netObjs, player.playerClientId);
+            Networker.Instance.AllOfOneTPServerRPC(netObjs, player.playerClientId, usePos, spawnPos);
             yield return new WaitForSeconds(2f);
             RM.SyncScrapValuesClientRpc(netObjs, scrapValues);
             Networker.Instance.SyncItemWeightsClientRPC(netObjs, scrapWeights);
         }
-        public static void teleport(NetworkObjectReference[] netObjs, ulong userID)
+        public static void teleport(NetworkObjectReference[] netObjs, ulong userID, bool usePos, Vector3 pos)
         {
             PlayerControllerB player = Misc.GetPlayerByUserID(userID);
             foreach (var netObjRef in netObjs)
@@ -158,8 +158,10 @@ namespace MysteryDice.Effects
                         continue;
                     }
 
+                    
                     Vector3 PlayerPos = player.transform.position;
                     if (player.isPlayerDead) PlayerPos=player.gameplayCamera.transform.position;
+                    if (usePos) PlayerPos = pos;
                     Vector3 targetPosition = PlayerPos + new Vector3(0, 0.1f, 0);
                     RaycastHit hit;
                     if (Physics.Raycast(targetPosition + Vector3.up, Vector3.down, out hit))

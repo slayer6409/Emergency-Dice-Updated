@@ -1,6 +1,5 @@
 ﻿using MysteryDice.Effects;
 using System.Collections;
-using UnityEngine;
 
 namespace MysteryDice.Dice
 {
@@ -10,7 +9,6 @@ namespace MysteryDice.Dice
         {
             base.Start();
             DiceModel.AddComponent<CycleSigns>(); 
-            this.itemProperties.verticalOffset = 0;
         }
        
         public override void SetupRollToEffectMapping()

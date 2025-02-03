@@ -38,6 +38,7 @@ namespace MysteryDice.Patches
             GetEnemies.allEnemies = Resources.FindObjectsOfTypeAll<EnemyType>().ToList();
             if (!Networker.Instance.IsServer) return;
 
+            if(MysteryDice.LoversOnStart.Value && StartOfRound.Instance.IsHost) new Lovers().Use();
             Networker.Instance.OnStartRoundClientRPC();
             ResetSettingsShared();
         }
@@ -54,6 +55,7 @@ namespace MysteryDice.Patches
         public static void OnEndGameClient(StartOfRound __instance)
         {
             ResetSettingsShared();
+            Lovers.removeLovers();
         }
 
         [HarmonyPostfix]
@@ -87,17 +89,7 @@ namespace MysteryDice.Patches
             HyperShake.ShakingData = null;
             EggBoots.eggBootsEnabled = false;
             Martyrdom.doMinesDrop = false;
-            //if(StartOfRound.Instance.IsHost) 
-            // foreach (var agent in PlayerControllerBPatch.smartAgentNavigators)
-            // {
-            //     foreach (GameObject child in agent.transform)
-            //     {
-            //         var NO = child.GetComponent<NetworkObject>();
-            //         if (NO != null) NO.Despawn();
-            //     }
-            //     agent.GetComponent<NetworkObject>().Despawn();
-            // }
-            //PlayerControllerBPatch.smartAgentNavigators = null;
+            
             
             
             
@@ -106,14 +98,20 @@ namespace MysteryDice.Patches
                 LeverShake.ShipLeverTrigger.transform.localPosition = LeverShake.InitialLevelTriggerLocalPosition;
                 LeverShake.ShipLever.transform.localPosition = LeverShake.InitialLevelTriggerLocalPosition;
             }
-            //
+            
             // foreach (var playerControllerB in StartOfRound.Instance.allPlayerScripts)
             // {
             //     if (playerControllerB != null && playerControllerB.actualClientId != StartOfRound.Instance.localPlayerController.actualClientId) 
             //     {
-            //         playerControllerB.gameObject.SetActive(true);
+            //         var renderers = playerControllerB.gameObject.GetComponentsInChildren<Renderer>();
+            //         foreach (var renderer in renderers)
+            //         {
+            //             renderer.enabled = true;
+            //         }
+            //     
             //     }
             // }
+            
             LeverShake.IsShaking = false;
             LeverShake.ShipLeverTrigger = null;
 
@@ -122,24 +120,24 @@ namespace MysteryDice.Patches
             SelectEffect.CloseSelectMenu();
 
             NeckBreak.FixNeck();
-            if (!MysteryDice.DisableSizeBased.Value)
-            {
-                if (SizeDifferenceSwitcher.canSwitch)
-                {
-                    Networker.Instance.fixSizeServerRPC(StartOfRound.Instance.localPlayerController.playerClientId);
-                    SizeDifferenceSwitcher.canSwitch = false;
-                }
-            }
+            // if (!MysteryDice.DisableSizeBased.Value)
+            // {
+            //     if (SizeDifferenceSwitcher.canSwitch)
+            //     {
+            //         Networker.Instance.fixSizeServerRPC(StartOfRound.Instance.localPlayerController.playerClientId);
+            //         SizeDifferenceSwitcher.canSwitch = false;
+            //     }
+            // }
             
             NeckSpin.FixNeck();
             TimeOfDay.Instance.overrideMeteorChance = -1;
             TimeOfDay.Instance.meteorShowerAtTime = -1;
             Meteors.isRunning = false;
 
-            if (!MysteryDice.DisableSizeBased.Value)
-            {
-                if (SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.after || SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.bothAgainAfter) Networker.Instance.fixSizeServerRPC(StartOfRound.Instance.localPlayerController.playerClientId);
-            }
+            // if (!MysteryDice.DisableSizeBased.Value)
+            // {
+            //     if (SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.after || SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.bothAgainAfter) Networker.Instance.fixSizeServerRPC(StartOfRound.Instance.localPlayerController.playerClientId);
+            // }
             Networker.Instance.StopAllCoroutines();
 
             if (Networker.Instance.IsServer)

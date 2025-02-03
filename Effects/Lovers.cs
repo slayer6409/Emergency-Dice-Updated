@@ -19,7 +19,8 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            if (StartOfRound.Instance.allPlayerScripts.Length == 1)
+            
+            if (Misc.playerCount()==1)
             {
                 DieBehaviour.AllowedEffects[Random.Range(0, DieBehaviour.AllowedEffects.Count)].Use();
                 return;
@@ -45,6 +46,17 @@ namespace MysteryDice.Effects
                 Misc.SafeTipMessage("Lovers!",$"You are now in love with {lover.playerUsername}");
             }
         }
+
+        public static void removeLovers()
+        {
+            var localPlayer = StartOfRound.Instance.localPlayerController;
+            var ls = localPlayer.GetComponent<loverScript>();
+            if (ls != null)
+            {
+                Misc.SafeTipMessage("Lovers",$"You are no longer in love with {ls.lover.playerUsername}");
+                ls.removeLover();
+            }
+        }
     }
 
     public class loverScript : MonoBehaviour
@@ -59,6 +71,11 @@ namespace MysteryDice.Effects
                 Destroy(this);
             }
             if(me.isPlayerDead)Destroy(this);
+        }
+
+        public void removeLover()
+        {
+            Destroy(this);
         }
     }
 }

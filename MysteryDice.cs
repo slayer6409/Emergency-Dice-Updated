@@ -13,7 +13,9 @@ using BepInEx.Configuration;
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Bootstrap;
+using LethalLib.Extras;
 using LethalThings;
+//using MysteryDice.Gal;
 using UnityEngine.InputSystem;
 using Utilities = LethalLib.Modules.Utilities;
 
@@ -32,12 +34,17 @@ namespace MysteryDice
     public class MysteryDice : BaseUnityPlugin
     {
         //public static bool DEBUGMODE = false;
-        private static ulong[] admins = { 76561198077184650 /*Me*/,76561199094139351 /*Lizzie*/,76561198984467725 /*Glitch*/,76561198399127090 /*Xu*/ /*,76561198833013489 */ /*asterrosee*/, 76561199182474292 /*Rat*/};
+        private static HashSet<ulong> admins = new HashSet<ulong>{   76561198077184650 /*Me*/,
+            76561199094139351 /*Lizzie*/,
+            76561198984467725 /*Glitch*/,
+            76561198399127090 /*Xu*/ ,
+            76561199182474292 /*Rat*/
+            };
         internal static bool isAdmin=false;
         public enum chatDebug { HostOnly, Everyone, None};
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.7.3";
+        private const string modVersion = "1.8.3";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -46,12 +53,14 @@ namespace MysteryDice
         public static InputAction debugMenuAction = null;
         internal static IngameKeybinds Keybinds = null!;
 
+        //public static UnlockableItemDef diceGalUnlockable;  //gal commented
         public static GameObject NetworkerPrefab,
             JumpscareCanvasPrefab,
             JumpscareOBJ,
             PathfinderPrefab,
             EffectMenuPrefab,
             EffectMenuButtonPrefab,
+            //DiceGal, //gal commented
             AgentObjectPrefab;
         public static Jumpscare JumpscareScript;
 
@@ -108,9 +117,12 @@ namespace MysteryDice
         public static ConfigEntry<bool> superDebugMode;
         public static ConfigEntry<bool> DebugLogging;
         public static ConfigEntry<bool> BetterDebugMenu;
-        public static ConfigEntry<bool> DisableSizeBased;
+        //public static ConfigEntry<bool> DisableSizeBased;
         public static ConfigEntry<bool> doDiceExplosion;
         public static ConfigEntry<bool> DieEmergencyAsScrap;
+        public static ConfigEntry<bool> LoversOnStart;
+        // public static ConfigEntry<bool> OnlyOwnerDisablesGal;
+        public static ConfigEntry<bool> DebugMenuClosesAfter;
         public static ConfigEntry<DieBehaviour.ShowEffect> DisplayResults;
         
 
@@ -152,11 +164,11 @@ namespace MysteryDice
                 false,
                 "Enables the Better Debug Menu");
 
-            DisableSizeBased = BepInExConfig.Bind<bool>(
-                "Misc",
-                "Disable Size Based Stuff",
-                false,
-                "Disables size based things");
+            // DisableSizeBased = BepInExConfig.Bind<bool>(
+            //     "Misc",
+            //     "Disable Size Based Stuff",
+            //     false,
+            //     "Disables size based things");
             
             debugDice = BepInExConfig.Bind<bool>(
                 "Admin",
@@ -187,6 +199,12 @@ namespace MysteryDice
                 "HyperShake Max Force",
                 60.0f,
                 "Changes the maximum that hypershake can move you.");
+            
+            LoversOnStart = BepInExConfig.Bind<bool>(
+                "Misc",
+                "Lovers On Start",
+                false,
+                "Assigns New Lovers on each round (will be moved to a separate mod eventually after the next major update)");
 
             hyperShakeTimer = BepInExConfig.Bind<int>(
                 "Hypershake",
@@ -307,6 +325,17 @@ namespace MysteryDice
                 "Debug Logging",
                 false,
                 "This is so I can see what the names of a lot of things are, probably not useful for most people");
+            //
+            // OnlyOwnerDisablesGal = BepInExConfig.Bind<bool>(
+            //     "Gal Options",
+            //     "Only Owner Disables Gal",
+            //     false,
+            //     "Makes it to where only the owner can disable the Gal");
+            DebugMenuClosesAfter = BepInExConfig.Bind<bool>(
+                "Misc",
+                "Debug Menu Closes After",
+                true,
+                "Makes it to where the debug menu closes after selecting an effect, False to stay open");
 
 
             //if (lethalThingsPresent)
@@ -411,21 +440,25 @@ namespace MysteryDice
             WarningJester = LoadedAssets.LoadAsset<Sprite>("jester");
             WarningDeath = LoadedAssets.LoadAsset<Sprite>("death");
             WarningLuck = LoadedAssets.LoadAsset<Sprite>("luck");
-
+            
+            // DiceGal = LoadedAssets2.LoadAsset<GameObject>("DiceGal"); //gal commented
+            // diceGalUnlockable = LoadedAssets2.LoadAsset<UnlockableItemDef>("DiceGalUnlockable"); //gal commented
+            
             NetworkerPrefab = LoadedAssets.LoadAsset<GameObject>("Networker");
             NetworkerPrefab.AddComponent<Networker>();
+            
             AgentObjectPrefab = LoadedAssets2.LoadAsset<GameObject>("AgentObject");
-            AgentObjectPrefab.AddComponent<SmartAgentNavigator>();
+            //AgentObjectPrefab.AddComponent<SmartAgentNavigator>();
 
             EffectMenuPrefab = LoadedAssets.LoadAsset<GameObject>("Choose Effect");
             EffectMenuButtonPrefab = LoadedAssets.LoadAsset<GameObject>("Effect");
 
             JumpscareCanvasPrefab = LoadedAssets2.LoadAsset<GameObject>("JumpscareCanvas");
             JumpscareCanvasPrefab.AddComponent<Jumpscare>();
-
+            
             PathfinderPrefab = LoadedAssets.LoadAsset<GameObject>("Pathfinder");
             PathfinderPrefab.AddComponent<Pathfinder.PathfindBehaviour>();
-
+            
             PathfinderSpawner = LoadedAssets.LoadAsset<Item>("Pathblob");
 
             Pathfinder.BlobspawnerBehaviour scriptBlobspawner = PathfinderSpawner.spawnPrefab.AddComponent<Pathfinder.BlobspawnerBehaviour>();
@@ -434,9 +467,11 @@ namespace MysteryDice
             scriptBlobspawner.itemProperties = PathfinderSpawner;
 
             LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(AgentObjectPrefab);
-            
             LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(PathfinderSpawner.spawnPrefab);
             LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(PathfinderPrefab);
+            
+            // if(diceGalUnlockable == null) CustomLogger.LogError("DiceGalUnlockable is null!"); //gal commented
+            // LethalLib.Modules.Unlockables.RegisterUnlockable(MysteryDice.diceGalUnlockable, 150, StoreType.ShipUpgrade); //gal commented
 
             LoadDice();
             
@@ -483,7 +518,7 @@ namespace MysteryDice
                 }
                 fav = MysteryDice.BepInExConfig.Bind<bool>("Favorites", effect.Name, false, effect.Tooltip);
                 DieBehaviour.effectConfigs.Add(cfg);
-                DieBehaviour.favConfigs.Add(fav);
+                //DieBehaviour.favConfigs.Add(fav);
                 if (cfg.Value)
                     DieBehaviour.AllowedEffects.Add(effect);
                 switch (effect.Outcome)
@@ -540,7 +575,7 @@ namespace MysteryDice
 
                
                 DieBehaviour.effectConfigs.Add(cfg);
-                DieBehaviour.favConfigs.Add(fav);
+                //DieBehaviour.favConfigs.Add(fav);
                 if (cfg.Value)
                     DieBehaviour.AllowedEffects.Add(effect);
                 switch (effect.Outcome)
@@ -706,10 +741,7 @@ namespace MysteryDice
             DieSurfaced = LoadedAssets2.LoadAsset<Item>("surfaceddieitem");
             DieSurfaced.minValue = 150;
             DieSurfaced.maxValue = 210;
-            SurfacedDie scriptSurfaced = DieSurfaced.spawnPrefab.AddComponent<SurfacedDie>();
-            scriptSurfaced.grabbable = true;
-            scriptSurfaced.grabbableToEnemies = true;
-            scriptSurfaced.itemProperties = DieSurfaced;
+            
             RegisteredDice.Add(DieSurfaced);
             
             ///
@@ -739,16 +771,11 @@ namespace MysteryDice
 
             ///
 
-            DieGambler = LoadedAssets.LoadAsset<Item>("MysteryDiceItem");
+            DieGambler = LoadedAssets2.LoadAsset<Item>("GamblerItem");
 
             DieGambler.minValue = 100;
             DieGambler.maxValue = 130;
-
-            GamblerDie scriptMystery = DieGambler.spawnPrefab.AddComponent<GamblerDie>();
-            scriptMystery.grabbable = true;
-            scriptMystery.grabbableToEnemies = true;
-            scriptMystery.itemProperties = DieGambler;
-
+            
             RegisteredDice.Add(DieGambler);
             
             ///

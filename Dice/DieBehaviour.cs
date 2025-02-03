@@ -21,7 +21,7 @@ namespace MysteryDice.Dice
             MixedEffects = new List<IEffect>(), 
             BadEffects = new List<IEffect>();
         public static List<ConfigEntry<bool>> effectConfigs = new List<ConfigEntry<bool>>();
-        public static List<ConfigEntry<bool>> favConfigs = new List<ConfigEntry<bool>>();
+        //public static List<ConfigEntry<bool>> favConfigs = new List<ConfigEntry<bool>>();
         protected GameObject DiceModel;
         public List<IEffect> Effects = new List<IEffect>();
         private static List<string> surfacedNames = new List<string>();
@@ -45,12 +45,11 @@ namespace MysteryDice.Dice
         {
             RollToEffect.Add(1, new EffectType[] { EffectType.Awful });
             RollToEffect.Add(2, new EffectType[] { EffectType.Bad });
-            RollToEffect.Add(3, new EffectType[] { EffectType.Bad });
-            RollToEffect.Add(4, new EffectType[] { EffectType.Good });
+            RollToEffect.Add(3, new EffectType[] { EffectType.Mixed });
+            RollToEffect.Add(4, new EffectType[] { EffectType.Mixed });
             RollToEffect.Add(5, new EffectType[] { EffectType.Good });
             RollToEffect.Add(6, new EffectType[] { EffectType.Great });
         }
-
         public override void Start()
         {
             base.Start();
@@ -382,7 +381,16 @@ namespace MysteryDice.Dice
             MysteryDice.MainRegisterNewEffect(new SpicyNuggies());
             MysteryDice.MainRegisterNewEffect(new Martyrdom());
             MysteryDice.MainRegisterNewEffect(new Lovers());
-            //MysteryDice.MainRegisterNewEffect(new WhereDidMyFriendsGo());
+            MysteryDice.MainRegisterNewEffect(new BIGSpike(), true);
+            MysteryDice.MainRegisterNewEffect(new SpeedUp(),true, true);
+            MysteryDice.MainRegisterNewEffect(new GiveCredits());
+            MysteryDice.MainRegisterNewEffect(new RemoveCredits());
+            MysteryDice.MainRegisterNewEffect(new BigDelivery());
+            MysteryDice.MainRegisterNewEffect(new DorjesDream());
+            MysteryDice.MainRegisterNewEffect(new MoreLives());
+            //Bald
+            //Duolingo
+            // MysteryDice.MainRegisterNewEffect(new WhereDidMyFriendsGo());
             if (MysteryDice.lethalThingsPresent)
             {
                 MysteryDice.MainRegisterNewEffect(new TPTraps());
@@ -441,10 +449,12 @@ namespace MysteryDice.Dice
                 MysteryDice.MainRegisterNewEffect(new SuperFlinger());
                 surfacedNames.Add(new Horseshootnt().Name);
                 MysteryDice.MainRegisterNewEffect(new Horseshootnt());
+                surfacedNames.Add(new Bruiser().Name);
+                MysteryDice.MainRegisterNewEffect(new Bruiser());
+                MysteryDice.MainRegisterNewEffect(new HorseshootSeat());
+                surfacedNames.Add(new Rigo().Name);
+                MysteryDice.MainRegisterNewEffect(new Rigo());
 
-                
-                // Bertha 0.19
-                // Seamine 0.4573873
                 if (MysteryDice.CodeRebirthPresent)
                 {
                     //     surfacedNames.Add(new MicrowaveBertha().Name);
@@ -474,13 +484,15 @@ namespace MysteryDice.Dice
                 MysteryDice.MainRegisterNewEffect(new MovingBeartraps());
                 MysteryDice.MainRegisterNewEffect(new TheRumbling());
                 MysteryDice.MainRegisterNewEffect(new FollowerFan());
+                MysteryDice.MainRegisterNewEffect(new CleaningCrew());
+                MysteryDice.MainRegisterNewEffect(new Bald());
             }
-            if (!MysteryDice.DisableSizeBased.Value)
-            {
-                MysteryDice.MainRegisterNewEffect(new SizeDifference());
-                MysteryDice.MainRegisterNewEffect(new SizeDifferenceForAll(),false,true);
-                MysteryDice.MainRegisterNewEffect(new SizeDifferenceSwitcher());
-            }
+            // if (!MysteryDice.DisableSizeBased.Value)
+            // {
+            //     MysteryDice.MainRegisterNewEffect(new SizeDifference());
+            //     MysteryDice.MainRegisterNewEffect(new SizeDifferenceForAll(),false,true);
+            //     MysteryDice.MainRegisterNewEffect(new SizeDifferenceSwitcher());
+            // }
             if (MysteryDice.DiversityPresent)
             {
                 if (DiversityEffect1.checkConfigs()) MysteryDice.MainRegisterNewEffect(new DiversityEffect1());
