@@ -25,29 +25,40 @@ namespace MysteryDice.Effects
     {
         public int livesRemaining = 0;
         public PlayerControllerB player;
+        public bool currentlyRunning = false;
 
         public void addLife()
         {
             livesRemaining++;
-            Misc.SafeTipMessage("Extra Life!", "You got an extra life! You now have " + livesRemaining + " lives remaining.");
+            Networker.Instance.SendMessageServerRPC(player.actualClientId,"Extra Life!", "You got an extra life! You now have " + livesRemaining + " lives remaining.");
         }
         private void FixedUpdate()
         {
-            if (player.isPlayerDead)
+            if (player.isPlayerDead && !currentlyRunning)
             {
                 if (livesRemaining > 0)
                 {
-                    StartCoroutine(wait());
+                    currentlyRunning = true;
+                    StartCoroutine(wait()); 
                 }
             }   
         }
+        
 
         public IEnumerator wait()
         {
-            yield return new WaitForSeconds(0.25f);
             livesRemaining--;
+            yield return new WaitForSeconds(0.25f);
             Networker.Instance.RevivePlayerServerRpc(player.actualClientId, StartOfRound.Instance.middleOfShipNode.position);
-            Misc.SafeTipMessage("Revived!", "You used an extra life! You now have " + livesRemaining + " lives remaining.");
+            Networker.Instance.SendMessageServerRPC(player.actualClientId,"Revived!", "You used an extra life! You now have " + livesRemaining + " lives remaining.");
+            StartCoroutine(wait2());
+            
+        }
+        public IEnumerator wait2()
+        {
+            yield return new WaitForSeconds(0.25f);
+            currentlyRunning = false;
+            
         }
     }
 }

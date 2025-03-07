@@ -6,6 +6,7 @@ using MysteryDice.Dice;
 using MysteryDice.Effects;
 using MysteryDice.Visual;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Windows;
+using Random = UnityEngine.Random;
 
 namespace MysteryDice.Patches
 {
@@ -41,6 +43,31 @@ namespace MysteryDice.Patches
             if(MysteryDice.LoversOnStart.Value && StartOfRound.Instance.IsHost) new Lovers().Use();
             Networker.Instance.OnStartRoundClientRPC();
             ResetSettingsShared();
+        }
+        [HarmonyPostfix]
+        [HarmonyPatch("StartGame")]
+        public static void BrutalStart(StartOfRound __instance)
+        {
+            if (!Networker.Instance.IsServer) return;
+            if (!MysteryDice.BrutalMode.Value) return;
+            int EventsToBe = Networker.Instance.CheckScaling();
+            for (int i = 0; i < EventsToBe; i++)
+            {
+                if (MysteryDice.SuperBrutalMode.Value)
+                {
+                    StartOfRound.Instance.StartCoroutine(waitForBrutal());
+                }
+                else
+                {
+                    Networker.Instance.QueueRandomDiceEffectServerRPC("Brutal");
+                }
+            }
+        }
+
+        public static IEnumerator waitForBrutal()
+        {
+            yield return new WaitForSeconds(Random.Range(30f, 600f));
+            Networker.Instance.QueueRandomDiceEffectServerRPC("Brutal");
         }
 
         public static void StartGameOnClient()
@@ -98,20 +125,7 @@ namespace MysteryDice.Patches
                 LeverShake.ShipLeverTrigger.transform.localPosition = LeverShake.InitialLevelTriggerLocalPosition;
                 LeverShake.ShipLever.transform.localPosition = LeverShake.InitialLevelTriggerLocalPosition;
             }
-            
-            // foreach (var playerControllerB in StartOfRound.Instance.allPlayerScripts)
-            // {
-            //     if (playerControllerB != null && playerControllerB.actualClientId != StartOfRound.Instance.localPlayerController.actualClientId) 
-            //     {
-            //         var renderers = playerControllerB.gameObject.GetComponentsInChildren<Renderer>();
-            //         foreach (var renderer in renderers)
-            //         {
-            //             renderer.enabled = true;
-            //         }
-            //     
-            //     }
-            // }
-            
+          
             LeverShake.IsShaking = false;
             LeverShake.ShipLeverTrigger = null;
 
@@ -120,11 +134,12 @@ namespace MysteryDice.Patches
             SelectEffect.CloseSelectMenu();
 
             NeckBreak.FixNeck();
+            
             // if (!MysteryDice.DisableSizeBased.Value)
             // {
             //     if (SizeDifferenceSwitcher.canSwitch)
             //     {
-            //         Networker.Instance.fixSizeServerRPC(StartOfRound.Instance.localPlayerController.playerClientId);
+            //         Networker.Instance.fixSizeServerRPC(StartOfRound.Instance.localPlayerController.actualClientId);
             //         SizeDifferenceSwitcher.canSwitch = false;
             //     }
             // }
@@ -136,13 +151,12 @@ namespace MysteryDice.Patches
 
             // if (!MysteryDice.DisableSizeBased.Value)
             // {
-            //     if (SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.after || SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.bothAgainAfter) Networker.Instance.fixSizeServerRPC(StartOfRound.Instance.localPlayerController.playerClientId);
+            //     if (SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.after || SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.bothAgainAfter) Networker.Instance.fixSizeServerRPC(StartOfRound.Instance.localPlayerController.actualClientId);
             // }
             Networker.Instance.StopAllCoroutines();
 
             if (Networker.Instance.IsServer)
                 Networker.Instance.SyncRateClientRPC(StartOfRound.Instance.companyBuyingRate);
         }
-
     }
 }

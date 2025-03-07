@@ -18,7 +18,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.SuperFlingerServerRPC(Misc.GetRandomAlivePlayer().playerClientId);
+            Networker.Instance.SuperFlingerServerRPC(Misc.GetRandomAlivePlayer().actualClientId);
         }
 
         public static void spawnFlinger(ulong playerId)

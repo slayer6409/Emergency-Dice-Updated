@@ -20,7 +20,7 @@ namespace MysteryDice.Effects
         {
             if (GetEnemies.Horse == null)
                 return;
-            Networker.Instance.spawnFlingerServerRPC(StartOfRound.Instance.localPlayerController.playerClientId);
+            Networker.Instance.spawnFlingerServerRPC(StartOfRound.Instance.localPlayerController.actualClientId);
         }
         public static void spawnHorseshoe(ulong userID)
         {

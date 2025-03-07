@@ -19,7 +19,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.GiveAllDiceServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, UnityEngine.Random.Range(0, MysteryDice.RegisteredDice.Count()));
+            Networker.Instance.GiveAllDiceServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, UnityEngine.Random.Range(0, MysteryDice.RegisteredDice.Count()));
         }
         public static void DiceScrap(ulong userID)
         {
@@ -47,6 +47,7 @@ namespace MysteryDice.Effects
                 scrapWeights.Add(component.itemProperties.weight);
                 NetworkObject netObj = obj.GetComponent<NetworkObject>();
                 netObj.Spawn();
+                obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
                 component.FallToGround(true);
                 netObjs.Add(netObj);
             }

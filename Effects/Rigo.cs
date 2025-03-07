@@ -14,7 +14,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, UnityEngine.Random.Range(1, 5), "Rodriguez");
+            Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, UnityEngine.Random.Range(1, 5), "Rodriguez");
         }
     }
 }

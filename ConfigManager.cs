@@ -57,8 +57,36 @@ namespace MysteryDice
                 Min = 0, 
                 Max = 100
             });
+            var DebugButtonAlphaSlider = new IntSliderConfigItem(MysteryDice.DebugButtonAlpha, new IntSliderOptions
+            {
+                Min = 0, 
+                Max = 100
+            });
+            var DebugMenuAccentAlphaSlider = new IntSliderConfigItem(MysteryDice.DebugMenuAccentAlpha, new IntSliderOptions
+            {
+                Min = 0, 
+                Max = 100
+            });
+            var DebugMenuBackgroundAlphaSlider = new IntSliderConfigItem(MysteryDice.DebugMenuBackgroundAlpha, new IntSliderOptions
+            {
+                Min = 0, 
+                Max = 100
+            });
+            var DebugMenuTextAlphaSlider = new IntSliderConfigItem(MysteryDice.DebugMenuTextAlpha, new IntSliderOptions
+            {
+                Min = 0, 
+                Max = 100
+            });
+            var DebugMenuFavoriteTextAlphaSlider = new IntSliderConfigItem(MysteryDice.DebugMenuFavoriteTextAlpha, new IntSliderOptions
+            {
+                Min = 0, 
+                Max = 100
+            });
             
             var EmergencyDiePriceSlider = new IntInputFieldConfigItem(MysteryDice.EmergencyDiePrice, true);
+            var BrutalMinSlider = new IntInputFieldConfigItem(MysteryDice.brutalStartingScale, false);
+            var BrutalMaxSlider = new IntInputFieldConfigItem(MysteryDice.brutalMaxScale, false);
+            var BrutalModeSlider = new IntInputFieldConfigItem(MysteryDice.brutalScaleType, false);
             var EmergencyDieScrapBoolField = new BoolCheckBoxConfigItem(MysteryDice.DieEmergencyAsScrap, true);
 
             var BlameGlitchMinIntField = new IntInputFieldConfigItem(BlameGlitch.minNum, false);
@@ -67,9 +95,9 @@ namespace MysteryDice
             var neckRotationsIntField = new IntInputFieldConfigItem(MysteryDice.neckRotations, false);
             //var rotationSpeedModifierFloatField = new FloatInputFieldConfigItem(MysteryDice.rotationSpeedModifier, false);
             
-            var DisplayResultsEnumField = new EnumDropDownConfigItem<DieBehaviour.ShowEffect>(MysteryDice.DisplayResults);
-            var DebugChatEnumField = new EnumDropDownConfigItem<MysteryDice.chatDebug>(MysteryDice.debugChat);
-            var SizeDifferenceEnumField = new EnumDropDownConfigItem<SizeDifference.sizeRevert>(SizeDifference.sizeOption);
+            var DisplayResultsEnumField = new TextInputFieldConfigItem(MysteryDice.DisplayResults);
+            var DebugChatEnumField = new TextInputFieldConfigItem(MysteryDice.debugChat);
+            // var SizeDifferenceEnumField = new EnumDropDownConfigItem<SizeDifference.sizeRevert>(SizeDifference.sizeOption);
             
             var BlameGlitchInsideBoolField = new BoolCheckBoxConfigItem(BlameGlitch.isInside, false);
             var BlameGlitchbothInsideOutsideBoolField = new BoolCheckBoxConfigItem(BlameGlitch.bothInsideOutside, false);
@@ -85,31 +113,58 @@ namespace MysteryDice
             var DebugButtonBoolField = new BoolCheckBoxConfigItem(MysteryDice.debugButton, true);
             //var DisableSizeBasedBoolField = new BoolCheckBoxConfigItem(MysteryDice.DisableSizeBased, true);
             var BetterDebugMenuBoolField = new BoolCheckBoxConfigItem(MysteryDice.BetterDebugMenu, false);
+            var NewDebugMenuBoolField = new BoolCheckBoxConfigItem(MysteryDice.NewDebugMenu, false);
+            var BaldBoolField = new BoolCheckBoxConfigItem(MysteryDice.Bald, false);
             var BlameGlitchMeteorsBoolField = new BoolCheckBoxConfigItem(BlameGlitch.GlitchedMeteorShower, false);
             var AlarmBoolField = new BoolCheckBoxConfigItem(AlarmCurse.fireAlarm, false);
             var AlarmHorribleBoolField = new BoolCheckBoxConfigItem(AlarmCurse.HorribleVersion, false);
             var doDiceExplosionBoolField = new BoolCheckBoxConfigItem(MysteryDice.doDiceExplosion, false);
             var LoversStartBoolField = new BoolCheckBoxConfigItem(MysteryDice.LoversOnStart, false);
             var DebugMenuClosesAfterBoolField = new BoolCheckBoxConfigItem(MysteryDice.DebugMenuClosesAfter, false);
+            var BrutalBoolField = new BoolCheckBoxConfigItem(MysteryDice.BrutalMode, false);
+            var SuperBrutalBoolField = new BoolCheckBoxConfigItem(MysteryDice.SuperBrutalMode, false);
+            var yippeeUseBoolField = new BoolCheckBoxConfigItem(MysteryDice.yippeeUse, false);
+            
+            var textColorHexField = new HexColorInputFieldConfigItem(MysteryDice.DebugMenuTextColor, false);
+            var favtextColorHexField = new HexColorInputFieldConfigItem(MysteryDice.DebugMenuFavoriteTextColor, false);
+            var bgColorHexField = new HexColorInputFieldConfigItem(MysteryDice.DebugMenuBackgroundColor, false);
+            var accColorHexField = new HexColorInputFieldConfigItem(MysteryDice.DebugMenuAccentColor, false);
+            var buttonColorHexField = new HexColorInputFieldConfigItem(MysteryDice.DebugButtonColor, false);
 
             //var adminKeybindStringField = new TextInputFieldConfigItem(MysteryDice.adminKeybind, false);
 
-
             LethalConfigManager.AddConfigItem(debugDiceBoolField);
+            LethalConfigManager.AddConfigItem(NewDebugMenuBoolField);
             //LethalConfigManager.AddConfigItem(adminKeybindStringField);
             LethalConfigManager.AddConfigItem(useDiceOutsideBoolField);
+            LethalConfigManager.AddConfigItem(BrutalBoolField);
+            LethalConfigManager.AddConfigItem(SuperBrutalBoolField);
+            LethalConfigManager.AddConfigItem(BrutalMinSlider);
+            LethalConfigManager.AddConfigItem(BrutalMaxSlider);
+            LethalConfigManager.AddConfigItem(BrutalModeSlider);
+            LethalConfigManager.AddConfigItem(textColorHexField);
+            LethalConfigManager.AddConfigItem(DebugMenuTextAlphaSlider);
+            LethalConfigManager.AddConfigItem(favtextColorHexField);
+            LethalConfigManager.AddConfigItem(DebugMenuFavoriteTextAlphaSlider);
+            LethalConfigManager.AddConfigItem(bgColorHexField);
+            LethalConfigManager.AddConfigItem(DebugMenuBackgroundAlphaSlider);
+            LethalConfigManager.AddConfigItem(accColorHexField);
+            LethalConfigManager.AddConfigItem(DebugMenuAccentAlphaSlider);
+            LethalConfigManager.AddConfigItem(buttonColorHexField);
+            LethalConfigManager.AddConfigItem(DebugButtonAlphaSlider);
             LethalConfigManager.AddConfigItem(BetterDebugMenuBoolField);
             LethalConfigManager.AddConfigItem(chronosUpdatedTimeOfDayBoolField);
             LethalConfigManager.AddConfigItem(randomSpinTimeBoolField);
             LethalConfigManager.AddConfigItem(pussyModeBoolField);
             LethalConfigManager.AddConfigItem(useNeckBreakTimerBoolField);
-            LethalConfigManager.AddConfigItem(SizeDifferenceEnumField);
+            // LethalConfigManager.AddConfigItem(SizeDifferenceEnumField);
             LethalConfigManager.AddConfigItem(DisplayResultsEnumField);
             LethalConfigManager.AddConfigItem(minHyperSlider);
             LethalConfigManager.AddConfigItem(maxHyperSlider);
             LethalConfigManager.AddConfigItem(hypershakeIntField);
             LethalConfigManager.AddConfigItem(eggExplodeTimeSlider);
             LethalConfigManager.AddConfigItem(DebugMenuClosesAfterBoolField);
+            LethalConfigManager.AddConfigItem(yippeeUseBoolField);
             LethalConfigManager.AddConfigItem(minNeckSpinSlider);
             LethalConfigManager.AddConfigItem(maxNeckSpinSlider);
             LethalConfigManager.AddConfigItem(rotationSpeedModifierSlider);
@@ -125,6 +180,7 @@ namespace MysteryDice
             LethalConfigManager.AddConfigItem(DebugButtonBoolField);
             LethalConfigManager.AddConfigItem(DebugChatEnumField);
             LethalConfigManager.AddConfigItem(GrabDebugBoolField);
+            LethalConfigManager.AddConfigItem(BaldBoolField);
             LethalConfigManager.AddConfigItem(EmergencyDiePriceSlider);
             LethalConfigManager.AddConfigItem(LoversStartBoolField);
             LethalConfigManager.AddConfigItem(EmergencyDieScrapBoolField);

@@ -19,7 +19,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.RerollServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            Networker.Instance.RerollServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
         public static void DiceScrap(ulong userID)
         {

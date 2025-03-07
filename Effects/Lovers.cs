@@ -6,6 +6,7 @@ using GameNetcodeStuff;
 using MysteryDice.Dice;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 namespace MysteryDice.Effects
@@ -29,19 +30,19 @@ namespace MysteryDice.Effects
             var playerScripts = new List<PlayerControllerB>(StartOfRound.Instance.allPlayerScripts);
             playerScripts = playerScripts.Where(x => !x.isPlayerDead && x.isActiveAndEnabled && x.isPlayerControlled).OrderBy(x => Random.value).ToList();
 
-            ulong p1 = playerScripts[0].playerClientId;
-            ulong p2 = playerScripts[1].playerClientId;
+            ulong p1 = playerScripts[0].actualClientId;
+            ulong p2 = playerScripts[1].actualClientId;
 
             Networker.Instance.makeLoverServerRPC(p1,p2);
         }
         public static void makeLovers(ulong p1, ulong p2)
         {
             var localPlayer = StartOfRound.Instance.localPlayerController;
-            if (localPlayer.playerClientId == p1 || localPlayer.playerClientId == p2)
+            if (localPlayer.actualClientId == p1 || localPlayer.actualClientId == p2)
             {
                 loverScript ls = localPlayer.gameObject.AddComponent<loverScript>();
                 ls.me = localPlayer;
-                var lover = localPlayer.playerClientId == p1 ? Misc.GetPlayerByUserID(p2) : Misc.GetPlayerByUserID(p1);
+                var lover = localPlayer.actualClientId == p1 ? Misc.GetPlayerByUserID(p2) : Misc.GetPlayerByUserID(p1);
                 ls.lover = lover;
                 Misc.SafeTipMessage("Lovers!",$"You are now in love with {lover.playerUsername}");
             }
@@ -51,10 +52,16 @@ namespace MysteryDice.Effects
         {
             var localPlayer = StartOfRound.Instance.localPlayerController;
             var ls = localPlayer.GetComponent<loverScript>();
+            var bl = localPlayer.GetComponent<badLoverScripta>();
             if (ls != null)
             {
                 Misc.SafeTipMessage("Lovers",$"You are no longer in love with {ls.lover.playerUsername}");
                 ls.removeLover();
+            }
+            if (bl != null)
+            {
+                Misc.SafeTipMessage("Lovers", "You are no longer in love with an Enemy");
+                bl.removeLover();
             }
         }
     }
@@ -77,5 +84,6 @@ namespace MysteryDice.Effects
         {
             Destroy(this);
         }
-    }
+    } 
+   
 }

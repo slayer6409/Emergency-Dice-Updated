@@ -36,8 +36,9 @@ namespace MysteryDice.Dice
 
             PlaySoundBasedOnEffect(randomEffect.Outcome);
             randomEffect.Use();
-            Networker.Instance.LogEffectsToOwnerServerRPC(PlayerUser.playerUsername, randomEffect.Name);
-
+            
+            var who = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";
+            Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
             if (isOutside && !MysteryDice.useDiceOutside.Value)
             {
                 Misc.SafeTipMessage($"Penalty", "Next time roll it inside :)");

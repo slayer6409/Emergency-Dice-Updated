@@ -1,4 +1,5 @@
-﻿using GameNetcodeStuff;
+﻿using System;
+using GameNetcodeStuff;
 using MysteryDice.Dice;
 using System.Collections.Generic;
 using System.IO;
@@ -6,16 +7,19 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using BepInEx;
 using Newtonsoft.Json;
+using Steamworks.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static UnityEngine.InputSystem.OnScreen.OnScreenStick;
+using Color = UnityEngine.Color;
 
 namespace MysteryDice.Effects
 {
     internal class SelectEffect : IEffect
     {
+        public static bool ReviveOpen = false;
         public string Name => "Select Effect";
         public EffectType Outcome => EffectType.Great;
         public bool ShowDefaultTooltip => false;
@@ -23,9 +27,17 @@ namespace MysteryDice.Effects
 
         public static GameObject EffectMenu = null;
 
+        public static bool isSpecial()
+        {
+            return StartOfRound.Instance.localPlayerController.playerSteamId == MysteryDice.slayerSteamID ||
+                   StartOfRound.Instance.localPlayerController.playerSteamId == 76561199094139351 ||
+                   StartOfRound.Instance.localPlayerController.playerSteamId == 76561198086086035;
+        }
+
         public void Use()
         {
-            ShowSelectMenu(false,false,fromSaint:true);
+            if(MysteryDice.NewDebugMenu.Value) DebugMenuStuff.ShowSelectEffectMenu();
+            else ShowSelectMenu(false,false,fromSaint:true);
         }
         public static void showDebugMenu(bool full, bool complete, bool su = false)
         {
@@ -61,85 +73,45 @@ namespace MysteryDice.Effects
             });
 
 
-            GameObject effectObj2 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
-            TMP_Text buttonText2 = effectObj2.transform.GetChild(0).GetComponent<TMP_Text>();
-            buttonText2.text = $"Spawn Enemy";
-
-            Button button2 = effectObj2.GetComponent<Button>();
-            button2.onClick.AddListener(() =>
-            {
-                CloseSelectMenu();
-                spawnEnemy(full, complete,su);
-            });
-            GameObject effectObj3 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
-            TMP_Text buttonText3 = effectObj3.transform.GetChild(0).GetComponent<TMP_Text>();
-            buttonText3.text = $"Spawn Scrap";
-
-            Button button3 = effectObj3.GetComponent<Button>();
-            button3.onClick.AddListener(() =>
-            {
-                CloseSelectMenu();
-                spawnScrap(full, complete,su);
-            });
-
-            GameObject effectObj5 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
-            TMP_Text buttonText5 = effectObj5.transform.GetChild(0).GetComponent<TMP_Text>();
-            buttonText5.text = $"Spawn Shop Items";
-
-            Button button5 = effectObj5.GetComponent<Button>();
-            button5.onClick.AddListener(() =>
-            {
-                CloseSelectMenu();
-                spawnShopItems(full, complete,su);
-            });
-
-            GameObject effectObj4 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
-            TMP_Text buttonText4 = effectObj4.transform.GetChild(0).GetComponent<TMP_Text>();
-            buttonText4.text = $"Spawn Trap";
-
-            Button button4 = effectObj4.GetComponent<Button>();
-            button4.onClick.AddListener(() =>
-            {
-                CloseSelectMenu();
-                spawnTrap(full, complete,su);
-            });
-            if (StartOfRound.Instance.localPlayerController.playerSteamId == 76561198077184650 || StartOfRound.Instance.localPlayerController.playerSteamId == 76561199094139351)
-            {
-                GameObject effectObj8 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
-                TMP_Text buttonText8 = effectObj8.transform.GetChild(0).GetComponent<TMP_Text>();
-                buttonText8.text = $"Play Sound";
-
-                Button button8 = effectObj8.GetComponent<Button>();
-                button8.onClick.AddListener(() =>
-                {
-                    CloseSelectMenu(); 
-                    ShowSoundMenu(full, complete,su);
-                });
-            }
            
 
-            // GameObject effectObj6 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
-            // TMP_Text buttonText6 = effectObj6.transform.GetChild(0).GetComponent<TMP_Text>();
-            // buttonText6.text = $"Spawn Outside Objects";
-            //
-            // Button button6 = effectObj6.GetComponent<Button>();
-            // button6.onClick.AddListener(() =>
-            // {
-            //     CloseSelectMenu();
-            //     spawnWorldObject(full, complete, su);
-            // });
+            GameObject effectObj6 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            TMP_Text buttonText6 = effectObj6.transform.GetChild(0).GetComponent<TMP_Text>();
+            buttonText6.text = $"Spawn Stuff";
+            Button button6 = effectObj6.GetComponent<Button>();
+            button6.onClick.AddListener(() =>
+            {
+                CloseSelectMenu();
+                spawnFunctions(full, complete, su);
+            });
+
             
             GameObject effectObj7 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
             TMP_Text buttonText7 = effectObj7.transform.GetChild(0).GetComponent<TMP_Text>();
-            buttonText7.text = $"Revive Player";
+            buttonText7.text = $"Player Functions";
 
             Button button7 = effectObj7.GetComponent<Button>();
             button7.onClick.AddListener(() =>
             {
                 CloseSelectMenu();
-                RevivePlayer(full, complete, su);
+                playerFunctions(full, complete, su);
             });
             
+                       
+            if (isSpecial())
+            {
+                
+                GameObject effectObj9 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                TMP_Text buttonText9 = effectObj9.transform.GetChild(0).GetComponent<TMP_Text>();
+                buttonText9.text = $"Special Functions";
+
+                Button button9 = effectObj9.GetComponent<Button>();
+                button9.onClick.AddListener(() =>
+                {
+                    CloseSelectMenu();
+                    specialFunctions(full, complete,su);
+                });
+            }
             if (su)
             {
                 GameObject effectObj8 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
@@ -153,40 +125,32 @@ namespace MysteryDice.Effects
                     grantAdmin(full, complete, su);
                 });
             }
+
            
         }
         public static List<IEffect> getOrdered(bool full, bool complete = false)
         {
-            List<IEffect> effects = new List<IEffect>();
-            List<IEffect> allEffects = new List<IEffect>(complete ? DieBehaviour.CompleteEffects : (full ? DieBehaviour.AllEffects : DieBehaviour.AllowedEffects));
             
-            if (StartOfRound.Instance.localPlayerController.playerSteamId == 76561198077184650 ||
+            List<IEffect> effects = new List<IEffect>(complete
+                ? DieBehaviour.CompleteEffects
+                : (full ? DieBehaviour.AllEffects : DieBehaviour.AllowedEffects));
+
+            if (StartOfRound.Instance.localPlayerController.playerSteamId == MysteryDice.slayerSteamID ||
                 StartOfRound.Instance.localPlayerController.playerSteamId == 76561199094139351 ||
                 StartOfRound.Instance.localPlayerController.playerSteamId == 76561198984467725)
             {
-                allEffects.Add(new ForceTakeoff());
+                effects.Add(new ForceTakeoff());
             }
-            // Load favorites correctly
+
             FavoriteEffectManager.FavoriteData favoritesData = FavoriteEffectManager.LoadFavorites();
-            List<string> favoriteEffectNames = favoritesData.Favorites; // Accessing the correct list
+            List<string> favoriteEffectNames = favoritesData.Favorites;
 
+            List<IEffect> sortedEffects = effects
+                .OrderByDescending(effect => favoriteEffectNames.Contains(effect.Name))  // Favorites first
+                .ThenBy(effect => effect.Name, StringComparer.OrdinalIgnoreCase)         // Sort alphabetically
+                .ToList();
 
-            // First, add favorites
-            foreach (var effect in allEffects)
-            {
-                if (favoriteEffectNames.Contains(effect.Name))
-                {
-                    effects.Add(effect);
-                }
-            }
-
-            // Retain all other effects that are not in the favorite list
-            foreach (var effect in allEffects.Where(e => !favoriteEffectNames.Contains(e.Name)))
-            {
-                effects.Add(effect);
-            }
-
-            return effects;
+            return sortedEffects;
         }
         public static void spawnEnemy(bool full, bool complete, bool su = false)
         {
@@ -206,7 +170,7 @@ namespace MysteryDice.Effects
             exitText.text = "Back";
             exitButton.onClick.AddListener(() =>
             {
-                showDebugMenu(full, complete, su);
+                spawnFunctions(full, complete, su);
             });
 
             Cursor.visible = true;
@@ -261,6 +225,79 @@ namespace MysteryDice.Effects
                 rightClickHandler.complete = complete;
             }
         }
+        public static void spawnMiniEnemy(bool full, bool complete, bool su = false)
+        {
+            if (EffectMenu != null)
+            {
+                GameObject.Destroy(EffectMenu);
+                EffectMenu = null;
+            }
+
+            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+
+            TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
+            Panel.text = "Spawn an Mini Enemy";
+            Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
+            Button exitButton = EffectMenu.transform.Find("Panel/Exit").GetComponent<Button>();
+            TMP_Text exitText = EffectMenu.transform.Find("Panel/Exit/Text (TMP)").GetComponent<TMP_Text>();
+            exitText.text = "Back";
+            exitButton.onClick.AddListener(() =>
+            {
+                specialFunctions(full, complete, su);
+            });
+
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+
+            // Load favorites
+            FavoriteEffectManager.FavoriteData favoritesData = FavoriteEffectManager.LoadFavorites();
+            List<string> favoriteEnemyNames = favoritesData.FavoriteEnemies;
+
+            List<SpawnableEnemyWithRarity> allEnemies = StartOfRound.Instance.levels
+                .SelectMany(level => level.Enemies.Union(level.OutsideEnemies).Union(level.DaytimeEnemies))
+                .GroupBy(x => x.enemyType.enemyName)
+                .Select(g => g.First())
+                .ToList();
+
+            allEnemies = allEnemies.OrderBy(e => favoriteEnemyNames.Contains(e.enemyType.enemyName) ? 0 : 1)
+                                   .ThenBy(e => e.enemyType.enemyName)
+                                   .ToList();
+
+            foreach (var enemy in allEnemies)
+            {
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
+
+                bool isFavorite = favoriteEnemyNames.Contains(enemy.enemyType.enemyName);
+                string favoriteMarker = isFavorite ? "*" : "";
+                buttonText.text = $"{favoriteMarker} {enemy.enemyType.enemyName}";
+                buttonText.color = isFavorite ? Color.gray : Color.black;
+
+                Button button = effectObj.GetComponent<Button>();
+                button.onClick.AddListener(() =>
+                {
+                    if (MysteryDice.DebugMenuClosesAfter.Value) CloseSelectMenu();
+
+                    if (StartOfRound.Instance.localPlayerController.isPlayerDead) 
+                    {
+                        Networker.Instance.SpawnEnemyAtPosServerRPC(enemy.enemyType.enemyName, StartOfRound.Instance.spectateCamera.transform.position,true, new Vector3(0.25f,0.25f,0.25f));
+                    }
+                    else
+                    {
+                        Networker.Instance.SpawnEnemyAtPosServerRPC(enemy.enemyType.enemyName, StartOfRound.Instance.localPlayerController.transform.position,true, new Vector3(0.25f,0.25f,0.25f));
+                    }
+                    string outsideInside = StartOfRound.Instance.localPlayerController.isInsideFactory ? "Inside" : "Outside";
+                    string txtToSay = $"Spawned {enemy.enemyType.enemyName} {outsideInside}";
+                    Misc.SafeTipMessage($"Spawned {enemy.enemyType.enemyName}", txtToSay);
+                });
+
+                RightClickHandler rightClickHandler = effectObj.AddComponent<RightClickHandler>();
+                rightClickHandler.effectName = enemy.enemyType.enemyName;
+                rightClickHandler.category = "FavoriteEnemies";
+                rightClickHandler.full = full;
+                rightClickHandler.complete = complete;
+            }
+        }
 
         public static void spawnTrap(bool full, bool complete, bool su = false)
         {
@@ -280,7 +317,7 @@ namespace MysteryDice.Effects
             exitText.text = "Back";
             exitButton.onClick.AddListener(() =>
             {
-                showDebugMenu(full, complete, su);
+                spawnFunctions(full, complete, su);
             });
 
             Cursor.visible = true;
@@ -328,7 +365,7 @@ namespace MysteryDice.Effects
 
                     Networker.Instance.spawnTrapOnServerRPC(trap.prefabToSpawn.name, 1, 
                         StartOfRound.Instance.localPlayerController.isInsideFactory,
-                        StartOfRound.Instance.localPlayerController.playerClientId,
+                        StartOfRound.Instance.localPlayerController.actualClientId,
                         StartOfRound.Instance.localPlayerController.isPlayerDead,
                         spawnPosition);
                     Misc.SafeTipMessage($"Spawned {trap.prefabToSpawn.name}", $"Spawned at {spawnPosition}");
@@ -359,7 +396,7 @@ namespace MysteryDice.Effects
             exitText.text = "Back";
             exitButton.onClick.AddListener(() =>
             {
-                showDebugMenu(full, complete, su);
+                spawnFunctions(full, complete, su);
             });
 
             Cursor.visible = true;
@@ -405,7 +442,7 @@ namespace MysteryDice.Effects
                         spawnPosition = StartOfRound.Instance.localPlayerController.transform.position; // ✅ Normal Player Spawn
                     }
 
-                    Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, 
+                    Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, 
                         1, scrap.spawnableItem.itemName, StartOfRound.Instance.localPlayerController.isPlayerDead, 
                         spawnPosition);
                     Misc.SafeTipMessage($"Spawned {scrap.spawnableItem.name}", $"Spawned at {spawnPosition}");
@@ -466,7 +503,7 @@ namespace MysteryDice.Effects
                 button.onClick.AddListener(() =>
                 {
                     if(MysteryDice.DebugMenuClosesAfter.Value) CloseSelectMenu();
-                    Networker.Instance.SpawnObjectServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, 1, scrap.spawnableObject.name);
+                    Networker.Instance.SpawnObjectServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, 1, scrap.spawnableObject.name);
                     string txtToSay = "";
                     txtToSay = $"Spawned {scrap.spawnableObject.name}";
                     Misc.SafeTipMessage($"Object Spawned", txtToSay);
@@ -490,7 +527,7 @@ namespace MysteryDice.Effects
             exitText.text = "Back";
             exitButton.onClick.AddListener(() =>
             {
-                showDebugMenu(full, complete, su);
+                spawnFunctions(full, complete, su);
             });
 
             Cursor.visible = true;
@@ -529,14 +566,14 @@ namespace MysteryDice.Effects
                     Vector3 spawnPosition;
                     if (StartOfRound.Instance.localPlayerController.isPlayerDead)
                     {
-                        spawnPosition = StartOfRound.Instance.spectateCamera.transform.position; // ✅ Spectator Fix
+                        spawnPosition = StartOfRound.Instance.spectateCamera.transform.position; 
                     }
                     else
                     {
-                        spawnPosition = StartOfRound.Instance.localPlayerController.transform.position; // ✅ Normal Player Spawn
+                        spawnPosition = StartOfRound.Instance.localPlayerController.transform.position; 
                     }
 
-                    Networker.Instance.spawnStoreItemServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, 
+                    Networker.Instance.spawnStoreItemServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, 
                         item.itemName,spawnPosition);
                 });
 
@@ -589,18 +626,414 @@ namespace MysteryDice.Effects
                 button.onClick.AddListener(() =>
                 {
                     CloseSelectMenu();
-                    Networker.Instance.becomeAdminServerRPC(player.playerClientId);
+                    Networker.Instance.becomeAdminServerRPC(player.actualClientId, false, false);
                     string txtToSay = "";
                     txtToSay = $"Made {player.playerUsername} an admin"; 
                     Networker.Instance.MessageToHostServerRPC($"Admin", txtToSay);
                 });
             }
-        } 
-        public static void RevivePlayer(bool full, bool complete, bool su = false)
+        }  
+        public static void spawnFunctions(bool full, bool complete, bool su = false)
         {
             if (EffectMenu != null)
             {
                 GameObject.Destroy(EffectMenu);
+                EffectMenu = null;
+            }
+
+            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
+            Panel.text = "Spawn Functions";
+
+            Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
+            Button exitButton = EffectMenu.transform.Find("Panel/Exit").GetComponent<Button>();
+            TMP_Text exitText = EffectMenu.transform.Find("Panel/Exit/Text (TMP)").GetComponent<TMP_Text>();
+            exitText.text = "Back";
+            exitButton.onClick.AddListener(() =>
+            {
+                showDebugMenu(full, complete, su);
+            });
+
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None; 
+            GameObject effectObj2 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            TMP_Text buttonText2 = effectObj2.transform.GetChild(0).GetComponent<TMP_Text>();
+            buttonText2.text = $"Spawn Enemy";
+
+            Button button2 = effectObj2.GetComponent<Button>();
+            button2.onClick.AddListener(() =>
+            {
+                CloseSelectMenu();
+                spawnEnemy(full, complete,su);
+            });
+            GameObject effectObj3 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            TMP_Text buttonText3 = effectObj3.transform.GetChild(0).GetComponent<TMP_Text>();
+            buttonText3.text = $"Spawn Scrap";
+
+            Button button3 = effectObj3.GetComponent<Button>();
+            button3.onClick.AddListener(() =>
+            {
+                CloseSelectMenu();
+                spawnScrap(full, complete,su);
+            });
+
+            GameObject effectObj5 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            TMP_Text buttonText5 = effectObj5.transform.GetChild(0).GetComponent<TMP_Text>();
+            buttonText5.text = $"Spawn Shop Items";
+
+            Button button5 = effectObj5.GetComponent<Button>();
+            button5.onClick.AddListener(() =>
+            {
+                CloseSelectMenu();
+                spawnShopItems(full, complete,su);
+            });
+
+            GameObject effectObj4 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            TMP_Text buttonText4 = effectObj4.transform.GetChild(0).GetComponent<TMP_Text>();
+            buttonText4.text = $"Spawn Trap";
+
+            Button button4 = effectObj4.GetComponent<Button>();
+            button4.onClick.AddListener(() =>
+            {
+                CloseSelectMenu();
+                spawnTrap(full, complete,su);
+            });
+          
+            if(isSpecial() || StartOfRound.Instance.localPlayerController.IsHost)
+            {
+                GameObject effectObj6 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                TMP_Text buttonText6 = effectObj6.transform.GetChild(0).GetComponent<TMP_Text>();
+                buttonText6.text = $"Spawn Outside Objects";
+
+                Button button6 = effectObj6.GetComponent<Button>();
+                button6.onClick.AddListener(() =>
+                {
+                    CloseSelectMenu();
+                    spawnWorldObject(full, complete, su);
+                });
+            }
+        }
+        public static void specialFunctions(bool full, bool complete, bool su = false)
+        {
+            if (EffectMenu != null)
+            {
+                GameObject.Destroy(EffectMenu);
+                EffectMenu = null;
+            }
+
+            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
+            Panel.text = "Special Functions";
+
+            Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
+            Button exitButton = EffectMenu.transform.Find("Panel/Exit").GetComponent<Button>();
+            TMP_Text exitText = EffectMenu.transform.Find("Panel/Exit/Text (TMP)").GetComponent<TMP_Text>();
+            exitText.text = "Back";
+            exitButton.onClick.AddListener(() =>
+            {
+                showDebugMenu(full, complete, su);
+            });
+
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None; 
+            
+            GameObject effectObj8 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            TMP_Text buttonText8 = effectObj8.transform.GetChild(0).GetComponent<TMP_Text>();
+            buttonText8.text = $"Play Sound";
+
+            Button button8 = effectObj8.GetComponent<Button>();
+            button8.onClick.AddListener(() =>
+            {
+                CloseSelectMenu(); 
+                ShowSoundMenu(full, complete,su);
+            });
+            
+            GameObject effectObj9 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            TMP_Text buttonText9 = effectObj9.transform.GetChild(0).GetComponent<TMP_Text>();
+            buttonText9.text = $"Spawn miniture Enemy";
+
+            Button button9 = effectObj9.GetComponent<Button>();
+            button9.onClick.AddListener(() =>
+            {
+                CloseSelectMenu();
+                spawnMiniEnemy(full, complete,su);
+            });
+        }
+        public static void playerFunctions(bool full, bool complete, bool su = false)
+        {
+            if (EffectMenu != null)
+            {
+                GameObject.Destroy(EffectMenu);
+                EffectMenu = null;
+            }
+
+            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
+            Panel.text = "Player Functions";
+
+            Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
+            Button exitButton = EffectMenu.transform.Find("Panel/Exit").GetComponent<Button>();
+            TMP_Text exitText = EffectMenu.transform.Find("Panel/Exit/Text (TMP)").GetComponent<TMP_Text>();
+            exitText.text = "Back";
+            exitButton.onClick.AddListener(() =>
+            {
+                showDebugMenu(full, complete, su);
+            });
+
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None; 
+            
+            GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
+            buttonText.text = $"Revive Player";
+
+            Button button = effectObj.GetComponent<Button>();
+            button.onClick.AddListener(() =>
+            {
+                CloseSelectMenu();
+                RevivePlayer(full, complete, su);
+            });
+            GameObject effectObj2 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            TMP_Text buttonText2 = effectObj2.transform.GetChild(0).GetComponent<TMP_Text>();
+            buttonText2.text = $"Teleport to Player";
+
+            Button button2 = effectObj2.GetComponent<Button>();
+            button2.onClick.AddListener(() =>
+            {
+                CloseSelectMenu();
+                TeleportPlayer(full, complete, su);
+            });
+            
+            GameObject effectObj3 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            TMP_Text buttonText3 = effectObj3.transform.GetChild(0).GetComponent<TMP_Text>();
+            buttonText3.text = $"Bring Player";
+
+            Button button3 = effectObj3.GetComponent<Button>();
+            button3.onClick.AddListener(() =>
+            {
+                CloseSelectMenu();
+                TeleportPlayer(full, complete, su, bring:true);
+            });
+
+            if (isSpecial())
+            {
+                GameObject effectObj4 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                TMP_Text buttonText4 = effectObj4.transform.GetChild(0).GetComponent<TMP_Text>();
+                buttonText4.text = $"Force Suit";
+
+                Button button4 = effectObj4.GetComponent<Button>();
+                button4.onClick.AddListener(() =>
+                {
+                    CloseSelectMenu();
+                    ForceSuitPlayerSelector(full, complete, su);
+                });
+            }
+        }
+        public static void TeleportPlayer(bool full, bool complete, bool su = false, bool bring = false)
+        {
+            if (EffectMenu != null)
+            {
+                GameObject.Destroy(EffectMenu);
+                EffectMenu = null;
+            }
+
+            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
+            Panel.text = "Teleport Player";
+
+            Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
+            Button exitButton = EffectMenu.transform.Find("Panel/Exit").GetComponent<Button>();
+            TMP_Text exitText = EffectMenu.transform.Find("Panel/Exit/Text (TMP)").GetComponent<TMP_Text>();
+            exitText.text = "Back";
+            exitButton.onClick.AddListener(() =>
+            {
+                playerFunctions(full, complete, su);
+            });
+
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None; 
+
+            List<PlayerControllerB> allPlayers = StartOfRound.Instance.allPlayerScripts.ToList();
+            
+            allPlayers = allPlayers
+            .GroupBy(x => x.playerUsername)
+            .Select(g => g.First())
+            .OrderBy(x => x.playerUsername)
+            .ToList();
+
+            
+            foreach (var player in allPlayers)
+            {
+                if(!player.isPlayerControlled)continue;
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
+                buttonText.text = $"{player.playerUsername}";
+
+                Button button = effectObj.GetComponent<Button>();
+                button.onClick.AddListener(() =>
+                {
+                    if (MysteryDice.DebugMenuClosesAfter.Value) CloseSelectMenu();
+                    var player2 = StartOfRound.Instance.localPlayerController;
+                    if (player2.isPlayerDead && bring)
+                    {
+                        Networker.Instance.TeleportOrBringPlayerToPosServerRPC(StartOfRound.Instance.spectateCamera.transform.position, player.playerSteamId, player.actualClientId);
+                    }
+                    else
+                    {
+                        Networker.Instance.TeleportOrBringPlayerServerRPC(StartOfRound.Instance.localPlayerController.playerSteamId, player.playerSteamId, bring);
+                    }
+                    
+                    string txtToSay = "";
+                    if (bring)
+                    {
+                        txtToSay = $"Brought {player.playerUsername} to you!";
+                    }
+                    else
+                    {
+                        txtToSay = $"Teleported to {player.playerUsername}"; 
+                    }
+                    Misc.SafeTipMessage($"Teleport", txtToSay);
+                });
+                
+            }
+        } 
+        public static void ForceSuitPlayerSelector(bool full, bool complete, bool su = false)
+        {
+            if (EffectMenu != null)
+            {
+                GameObject.Destroy(EffectMenu);
+                EffectMenu = null;
+            }
+
+            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
+            Panel.text = "Force Suit";
+
+            Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
+            Button exitButton = EffectMenu.transform.Find("Panel/Exit").GetComponent<Button>();
+            TMP_Text exitText = EffectMenu.transform.Find("Panel/Exit/Text (TMP)").GetComponent<TMP_Text>();
+            exitText.text = "Back";
+            exitButton.onClick.AddListener(() =>
+            {
+                playerFunctions(full, complete, su);
+            });
+
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None; 
+
+            List<PlayerControllerB> allPlayers = StartOfRound.Instance.allPlayerScripts.ToList();
+            
+            allPlayers = allPlayers
+            .GroupBy(x => x.playerUsername)
+            .Select(g => g.First())
+            .OrderBy(x => x.playerUsername)
+            .ToList();
+
+            
+            foreach (var player in allPlayers)
+            {
+                if(!player.isPlayerControlled)continue;
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
+                buttonText.text = $"{player.playerUsername}";
+
+                Button button = effectObj.GetComponent<Button>();
+                button.onClick.AddListener(() =>
+                {
+                    ForceSuitSuitSelector(full, complete, player, su);
+                });
+            }
+        } 
+        public static void ForceSuitSuitSelector(bool full, bool complete,PlayerControllerB players, bool su = false )
+        {
+            if (EffectMenu != null)
+            {
+                GameObject.Destroy(EffectMenu);
+                EffectMenu = null;
+            }
+
+            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
+            Panel.text = "Force Suit";
+
+            Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
+            Button exitButton = EffectMenu.transform.Find("Panel/Exit").GetComponent<Button>();
+            TMP_Text exitText = EffectMenu.transform.Find("Panel/Exit/Text (TMP)").GetComponent<TMP_Text>();
+            exitText.text = "Back";
+            exitButton.onClick.AddListener(() =>
+            {
+                playerFunctions(full, complete, su);
+            });
+
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None; 
+
+            List<PlayerControllerB> allPlayers = StartOfRound.Instance.allPlayerScripts.ToList();
+            
+            allPlayers = allPlayers
+            .GroupBy(x => x.playerUsername)
+            .Select(g => g.First())
+            .OrderBy(x => x.playerUsername)
+            .ToList();
+
+            
+            
+            List<UnlockableItem> items = StartOfRound.Instance.unlockablesList.unlockables;
+
+            foreach (var suit in Networker.orderedSuits)
+            {
+                string SuitName = items[suit.syncedSuitID.Value].unlockableName;
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
+                
+                buttonText.text = $"{SuitName}";
+
+                Button button = effectObj.GetComponent<Button>();
+                button.onClick.AddListener(() =>
+                {
+                    Networker.Instance.suitStuffServerRPC(players.actualClientId, suit.syncedSuitID.Value);
+                });
+            }
+            GameObject effectObj2 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            TMP_Text buttonText2 = effectObj2.transform.GetChild(0).GetComponent<TMP_Text>();
+            
+            buttonText2.text = $"Refresh Suits";
+            buttonText2.color = Color.red;
+            
+            Button button2 = effectObj2.GetComponent<Button>();
+            button2.onClick.AddListener(() =>
+            {
+                Networker.orderedSuits = UnityEngine.Object.FindObjectsOfType<UnlockableSuit>()
+                    .OrderBy(suit => 
+                        suit.syncedSuitID.Value >= 0 &&
+                        suit.syncedSuitID.Value < StartOfRound.Instance.unlockablesList.unlockables.Count
+                            ? StartOfRound.Instance.unlockablesList.unlockables[suit.syncedSuitID.Value].unlockableName
+                            : string.Empty) // Default case to prevent errors
+                    .ToList();
+                CloseSelectMenu();
+                ForceSuitSuitSelector(full, complete, players, su);
+            });
+        }
+
+        public static Dictionary<string,bool> currentStuff = new Dictionary<string, bool>();
+        public static void RefreshRevives()
+        {
+            currentStuff.TryGetValue("full", out var full);
+            currentStuff.TryGetValue("complete", out var complete);
+            currentStuff.TryGetValue("su", out var su);
+            RevivePlayer(full, complete, su);
+        }
+        public static void RevivePlayer(bool full, bool complete, bool su = false)
+        {
+            ReviveOpen = true;
+            currentStuff = new Dictionary<string, bool>();
+            currentStuff.Add("full",full);
+            currentStuff.Add("complete",complete);
+            currentStuff.Add("su",su);
+            if (EffectMenu != null)
+            {
+                GameObject.Destroy(EffectMenu);
+                ReviveOpen = false;
                 EffectMenu = null;
             }
 
@@ -614,7 +1047,7 @@ namespace MysteryDice.Effects
             exitText.text = "Back";
             exitButton.onClick.AddListener(() =>
             {
-                showDebugMenu(full, complete, su);
+                playerFunctions(full, complete, su);
             });
 
             Cursor.visible = true;
@@ -641,7 +1074,15 @@ namespace MysteryDice.Effects
                 Button button = effectObj.GetComponent<Button>();
                 button.onClick.AddListener(() =>
                 {
-                    CloseSelectMenu();
+                    if (MysteryDice.DebugMenuClosesAfter.Value)
+                    {
+                        CloseSelectMenu();
+                    }
+                    else
+                    {
+                        CloseSelectMenu();
+                        RevivePlayer(full, complete, su);
+                    }
                     Networker.Instance.RevivePlayerServerRpc(player.actualClientId, StartOfRound.Instance.middleOfShipNode.position);
                     string txtToSay = "";
                     txtToSay = $"Revived {player.playerUsername}"; 
@@ -751,7 +1192,7 @@ namespace MysteryDice.Effects
             exitText.text = "Back";
             exitButton.onClick.AddListener(() =>
             {
-                showDebugMenu(full, complete ,su);
+                specialFunctions(full, complete ,su);
             });
 
             Cursor.visible = true;
@@ -808,6 +1249,8 @@ namespace MysteryDice.Effects
                 Cursor.visible = false;
                 Cursor.lockState = CursorLockMode.Locked;
                 GameObject.Destroy(EffectMenu);
+                currentStuff = new Dictionary<string, bool>();
+                ReviveOpen = false;
             }
                 
         }
@@ -815,7 +1258,7 @@ namespace MysteryDice.Effects
     
     
     public class RightClickHandler : MonoBehaviour, IPointerClickHandler
-{
+    {
     public string effectName;
     public string category;
     public bool full;
@@ -941,6 +1384,7 @@ namespace MysteryDice.Effects
             public List<string> FavoriteTraps { get; set; } = new List<string>();
             public List<string> FavoriteScraps { get; set; } = new List<string>();
             public List<string> FavoriteShopItems { get; set; } = new List<string>();
+            public List<string> FavoriteItems { get; set; } = new List<string>();
         }
     }
 }

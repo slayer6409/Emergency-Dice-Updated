@@ -16,7 +16,7 @@ namespace MysteryDice.Effects
         public string Tooltip => "Sending Everyone to Someone!";
         public void Use()
         {
-            TeleportEveryoneToSomeone(StartOfRound.Instance.localPlayerController.playerClientId);
+            TeleportEveryoneToSomeone(StartOfRound.Instance.localPlayerController.actualClientId);
         }
 
         public static void TeleportEveryoneToSomeone(ulong callerID)
@@ -27,7 +27,7 @@ namespace MysteryDice.Effects
                 PlayerControllerB player = playerPrefab.GetComponent<PlayerControllerB>();
                 if (Misc.IsPlayerAliveAndControlled(player))
                 {
-                    playersToTeleport.Add(player.playerClientId);
+                    playersToTeleport.Add(player.actualClientId);
                 }
             }
 
@@ -36,7 +36,7 @@ namespace MysteryDice.Effects
             PlayerControllerB randomPlayer = Misc.GetRandomAlivePlayer();
             if (randomPlayer == null) return;
 
-            ulong toTpTo = randomPlayer.playerClientId;
+            ulong toTpTo = randomPlayer.actualClientId;
 
             foreach (var ply in playersToTeleport)
             {
@@ -57,11 +57,11 @@ namespace MysteryDice.Effects
                 PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
                 if (playerComp == null) continue;
 
-                if (playerComp.playerClientId == who)
+                if (playerComp.actualClientId == who)
                 {
                     player = playerComp;
                 }
-                else if (playerComp.playerClientId == toWhom)
+                else if (playerComp.actualClientId == toWhom)
                 {
                     player2 = playerComp;
                 }

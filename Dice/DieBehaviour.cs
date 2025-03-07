@@ -1,4 +1,5 @@
-﻿using BepInEx.Configuration;
+﻿using System;
+using BepInEx.Configuration;
 using MysteryDice.Effects;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,6 +7,8 @@ using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using GameNetcodeStuff;
+using MysteryDice.Patches;
+using Random = UnityEngine.Random;
 
 namespace MysteryDice.Dice
 {
@@ -21,14 +24,15 @@ namespace MysteryDice.Dice
             MixedEffects = new List<IEffect>(), 
             BadEffects = new List<IEffect>();
         public static List<ConfigEntry<bool>> effectConfigs = new List<ConfigEntry<bool>>();
-        //public static List<ConfigEntry<bool>> favConfigs = new List<ConfigEntry<bool>>();
         protected GameObject DiceModel;
         public List<IEffect> Effects = new List<IEffect>();
         private static List<string> surfacedNames = new List<string>();
         public List<IEffect> SurfacedEffects = new List<IEffect>();
         public Dictionary<int, EffectType[]> RollToEffect = new Dictionary<int, EffectType[]>();
+        public bool wasEnemy = false;
 
         public PlayerControllerB PlayerUser = null;
+        public EnemyAI EnemyUser = null;
         public enum ShowEffect
         {
             ALL,
@@ -61,7 +65,6 @@ namespace MysteryDice.Dice
         
         public override void PocketItem()
         {
-
             if (DiceModel.GetComponent<Renderer>())
             {
                 DiceModel.GetComponent<Renderer>().enabled = true;
@@ -94,10 +97,10 @@ namespace MysteryDice.Dice
             {
                 if (StartOfRound.Instance == null) return;
                 if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
-                if (playerHeldBy == null) return;
+                if(playerHeldBy == null) return;
                 PlayerUser = playerHeldBy;
 
-                ulong dropperID = playerHeldBy.playerClientId;
+                ulong dropperID = playerHeldBy.actualClientId;
                 GameNetworkManager.Instance.localPlayerController.DiscardHeldObject(true, null, GetItemFloorPosition(DiceModel.transform.parent.position), false);
                 SyncDropServerRPC(dropperID, UnityEngine.Random.Range(0, 10));
             }
@@ -111,24 +114,33 @@ namespace MysteryDice.Dice
             yield return new WaitForSeconds(spinTime);
 
             if(MysteryDice.doDiceExplosion.Value) Landmine.SpawnExplosion(gameObject.transform.position, true, 0, 0, 0, 0, null, false);
-            DestroyObject();
-
-            if (GameNetworkManager.Instance.localPlayerController.playerClientId == userID)
+            
+            if (userID == 6409046)
             {
-                if (StartOfRound.Instance is null) yield break;
-                if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) yield break;
-
-                if (StartOfRound.Instance.currentLevel.PlanetName == "71 Gordion")
-                {
-                    Misc.SafeTipMessage($"Company penalty", "Do not try this again.");
-                    doPenalty();
-                    yield break;
-                }
-
+                wasEnemy = true;
                 Roll();
             }
-        }
+            else
+            {
+                if (GameNetworkManager.Instance.localPlayerController.actualClientId == userID)
+                {
+                    if (StartOfRound.Instance is null) yield break;
+                    if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) yield break;
 
+                    if (StartOfRound.Instance.currentLevel.PlanetName == "71 Gordion" || StartOfRound.Instance.currentLevel.PlanetName == "98 Galetry" )
+                    {
+                        Misc.SafeTipMessage($"Company penalty", "Do not try this again.");
+                        doPenalty();
+                        yield break;
+                    }
+                    Roll();
+                }
+            }
+            yield return new WaitForSeconds(0.4f);
+            DestroyObject();
+        }
+        
+        
         [ServerRpc(RequireOwnership = false)]
         public virtual void SyncDropServerRPC(ulong userID, int Timer)
         {
@@ -140,15 +152,16 @@ namespace MysteryDice.Dice
         public virtual void SyncDropClientRPC(ulong userID, int Timer)
         {
             DropAndBlock(userID, Timer);
-        }
+        } 
 
         public virtual void DropAndBlock(ulong userID, int Timer)
         {
+            if(userID==6409046) wasEnemy = true;
             grabbable = false;
             grabbableToEnemies = false;
             DiceModel.SetActive(true);
             StartCoroutine(UseTimer(userID, Timer));
-        }
+        } 
         public virtual void DestroyObject()
         {
             grabbable = false;
@@ -168,6 +181,7 @@ namespace MysteryDice.Dice
             {
                 GameObject.Destroy(componentsInChildren2[j]);
             }
+            if(IsHost) NetworkObject.Despawn();
         }
         public virtual void Roll()
         {
@@ -180,10 +194,12 @@ namespace MysteryDice.Dice
             PlaySoundBasedOnEffect(randomEffect.Outcome);
             randomEffect.Use();
 
-            Networker.Instance.LogEffectsToOwnerServerRPC(PlayerUser.playerUsername, randomEffect.Name);
-
+            
+            var who = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";
+            Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
             ShowDefaultTooltip(randomEffect, diceRoll);
         }
+        
         public IEffect GetRandomEffect(int diceRoll, List<IEffect> effects)
         {
             List<IEffect> rolledEffects = new List<IEffect>();
@@ -246,17 +262,20 @@ namespace MysteryDice.Dice
                     break;
             }
 
-            if (MysteryDice.DisplayResults.Value == ShowEffect.ALL)
+            var parsedEffect = DieBehaviour.ShowEffect.NONE;
+            Enum.TryParse<DieBehaviour.ShowEffect>(MysteryDice.DisplayResults.Value, out parsedEffect);
+
+            if (parsedEffect == ShowEffect.ALL)
             {
                 normalMessage = true;
                 message = effect.Tooltip;
             }
-            else if (MysteryDice.DisplayResults.Value == ShowEffect.NONE)
+            else if (parsedEffect == ShowEffect.NONE)
             {
                 message = effectTypeMessage;
 
             }
-            else if (MysteryDice.DisplayResults.Value == ShowEffect.RANDOM)
+            else if (parsedEffect == ShowEffect.RANDOM)
             {
                 int randint = UnityEngine.Random.Range(0, 101);
                 if (randint <= 45)
@@ -264,7 +283,7 @@ namespace MysteryDice.Dice
                 else
                     message = effectTypeMessage;
             }
-            else if (MysteryDice.DisplayResults.Value == ShowEffect.DEFAULT)
+            else if (parsedEffect == ShowEffect.DEFAULT)
             {
                 if (effect.ShowDefaultTooltip)
                     message = effectTypeMessage;
@@ -388,9 +407,25 @@ namespace MysteryDice.Dice
             MysteryDice.MainRegisterNewEffect(new BigDelivery());
             MysteryDice.MainRegisterNewEffect(new DorjesDream());
             MysteryDice.MainRegisterNewEffect(new MoreLives());
-            //Bald
-            //Duolingo
-            // MysteryDice.MainRegisterNewEffect(new WhereDidMyFriendsGo());
+            MysteryDice.MainRegisterNewEffect(new LizzieDog());
+            MysteryDice.MainRegisterNewEffect(new WhereDidMyFriendsGo());
+            MysteryDice.MainRegisterNewEffect(new Confusion());
+            MysteryDice.MainRegisterNewEffect(new StupidConfusion(), true);
+            MysteryDice.MainRegisterNewEffect(new NutsBaby());
+            MysteryDice.MainRegisterNewEffect(new Papercut(), true);
+            MysteryDice.MainRegisterNewEffect(new BadLovers());
+            MysteryDice.MainRegisterNewEffect(new OopsAllBlank());
+            MysteryDice.MainRegisterNewEffect(new AllAtOnce(), true, true);
+            MysteryDice.MainRegisterNewEffect(new Unkillable());
+            MysteryDice.MainRegisterNewEffect(new FreebirdEnemy(), true);
+            
+            if (MysteryDice.weatherRegistryPresent)
+            {
+                MysteryDice.MainRegisterNewEffect(new ClearWeather());
+                MysteryDice.MainRegisterNewEffect(new AddWeather());
+                MysteryDice.MainRegisterNewEffect(new RandomWeather());
+            }
+            
             if (MysteryDice.lethalThingsPresent)
             {
                 MysteryDice.MainRegisterNewEffect(new TPTraps());
@@ -451,9 +486,14 @@ namespace MysteryDice.Dice
                 MysteryDice.MainRegisterNewEffect(new Horseshootnt());
                 surfacedNames.Add(new Bruiser().Name);
                 MysteryDice.MainRegisterNewEffect(new Bruiser());
+                surfacedNames.Add(new HorseshootSeat().Name);
                 MysteryDice.MainRegisterNewEffect(new HorseshootSeat());
                 surfacedNames.Add(new Rigo().Name);
                 MysteryDice.MainRegisterNewEffect(new Rigo());
+                surfacedNames.Add(new Nemosplosion().Name);
+                MysteryDice.MainRegisterNewEffect(new Nemosplosion());
+                surfacedNames.Add(new LongBertha().Name);
+                MysteryDice.MainRegisterNewEffect(new LongBertha());
 
                 if (MysteryDice.CodeRebirthPresent)
                 {
@@ -472,20 +512,23 @@ namespace MysteryDice.Dice
             
             if (MysteryDice.CodeRebirthPresent) 
             {
-                MysteryDice.MainRegisterNewEffect(new Tornado());
-                MysteryDice.MainRegisterNewEffect(new CratesOutside());
-                MysteryDice.MainRegisterNewEffect(new CratesInside());
-                MysteryDice.MainRegisterNewEffect(new Fans());
-                MysteryDice.MainRegisterNewEffect(new Flashers());
-                MysteryDice.MainRegisterNewEffect(new Microwave());
-                MysteryDice.MainRegisterNewEffect(new MovingFans());
-                MysteryDice.MainRegisterNewEffect(new SkyFan(),true); //Need to turn shadows off
-                MysteryDice.MainRegisterNewEffect(new Paparazzi());
-                MysteryDice.MainRegisterNewEffect(new MovingBeartraps());
+                if(CodeRebirthCheckConfigs.checkTornadoConfig()) MysteryDice.MainRegisterNewEffect(new Tornado());
+                if(CodeRebirthCheckConfigs.checkCrateConfig()) MysteryDice.MainRegisterNewEffect(new CratesOutside());
+                if(CodeRebirthCheckConfigs.checkCrateConfig()) MysteryDice.MainRegisterNewEffect(new CratesInside());
+                if(CodeRebirthCheckConfigs.checkFanConfig()) MysteryDice.MainRegisterNewEffect(new Fans());
+                if(CodeRebirthCheckConfigs.checkFlashConfig()) MysteryDice.MainRegisterNewEffect(new Flashers());
+                if(CodeRebirthCheckConfigs.checkMicrowaveConfig()) MysteryDice.MainRegisterNewEffect(new Microwave());
+                if(CodeRebirthCheckConfigs.checkFanConfig()) MysteryDice.MainRegisterNewEffect(new MovingFans());
+                if(CodeRebirthCheckConfigs.checkFanConfig()) MysteryDice.MainRegisterNewEffect(new SkyFan(),true); //Need to turn shadows off
+                if(CodeRebirthCheckConfigs.checkFanConfig() && CodeRebirthCheckConfigs.checkFlashConfig()) MysteryDice.MainRegisterNewEffect(new Paparazzi());
+                if(CodeRebirthCheckConfigs.checkBearTrapConfig()) MysteryDice.MainRegisterNewEffect(new MovingBeartraps());
                 MysteryDice.MainRegisterNewEffect(new TheRumbling());
-                MysteryDice.MainRegisterNewEffect(new FollowerFan());
-                MysteryDice.MainRegisterNewEffect(new CleaningCrew());
-                MysteryDice.MainRegisterNewEffect(new Bald());
+                if(CodeRebirthCheckConfigs.checkFanConfig()) MysteryDice.MainRegisterNewEffect(new FollowerFan());
+                if(CodeRebirthCheckConfigs.checkJanitorConfig()&&CodeRebirthCheckConfigs.checkTransporterConfig()) MysteryDice.MainRegisterNewEffect(new CleaningCrew());
+                if(CodeRebirthCheckConfigs.checkTransporterConfig()) MysteryDice.MainRegisterNewEffect(new FreebirdJimothy());
+                if(CodeRebirthCheckConfigs.checkFlashConfig()) MysteryDice.MainRegisterNewEffect(new Bald());
+                if(CodeRebirthCheckConfigs.checkZortConfig()) MysteryDice.MainRegisterNewEffect(new Zortin());
+                if(CodeRebirthCheckConfigs.checkZortConfig()) MysteryDice.MainRegisterNewEffect(new ZortinTwo());
             }
             // if (!MysteryDice.DisableSizeBased.Value)
             // {
@@ -508,55 +551,6 @@ namespace MysteryDice.Dice
             CompleteEffects.AddRange(AllEffects);
             CompleteEffects = CompleteEffects.OrderBy(o => o.Name).ToList();
             AllEffects = sortedList;
-            //
-            // foreach (var effect in AllEffects)
-            // {
-            //     ConfigEntry<bool> cfg;
-            //     ConfigEntry<bool> fav;
-            //     if (effect.Name == new SpikeOverflowOutside().Name || effect.Name == new BlameGlitch().Name) //Default off 
-            //     {
-            //         cfg = MysteryDice.BepInExConfig.Bind<bool>("Allowed Effects",
-            //         effect.Name,
-            //         false,
-            //         effect.Tooltip);
-            //     }
-            //     else  //Rest of them Default on
-            //     {
-            //         cfg = MysteryDice.BepInExConfig.Bind<bool>("Allowed Effects",
-            //         effect.Name,
-            //         true,
-            //         effect.Tooltip);
-            //     }
-            //     fav = MysteryDice.BepInExConfig.Bind<bool>("Favorites", effect.Name, false, effect.Tooltip);
-            //
-            //    
-            //     effectConfigs.Add(cfg);
-            //     favConfigs.Add(fav);
-            //     if (cfg.Value)
-            //         AllowedEffects.Add(effect);
-            // }
-            //
-            // foreach (var effect in AllowedEffects)
-            // {
-            //     switch (effect.Outcome)
-            //     {
-            //         case EffectType.Awful:
-            //             AwfulEffects.Add(effect);
-            //             break;
-            //         case EffectType.Bad:
-            //             BadEffects.Add(effect);
-            //             break;
-            //         case EffectType.Mixed:
-            //             MixedEffects.Add(effect);
-            //             break;
-            //         case EffectType.Good:
-            //             GoodEffects.Add(effect);
-            //             break;
-            //         case EffectType.Great:
-            //             GreatEffects.Add(effect);
-            //             break;
-            //     }
-            // }
         }
     }
    

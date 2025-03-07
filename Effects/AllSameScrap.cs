@@ -27,7 +27,7 @@ namespace MysteryDice.Effects
             }
             int[] weights = weightList.ToArray();
             var item = RM.currentLevel.spawnableScrap[RM.GetRandomWeightedIndex(weights)].spawnableItem;
-            Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, UnityEngine.Random.Range(3, 5), item.itemName);
+            Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, UnityEngine.Random.Range(3, 5), item.itemName);
         }
 
         public static void SameScrap(ulong userID, int amount, string scrapSpawns, bool usePos = true, Vector3 spawnPos = default)
@@ -121,6 +121,7 @@ namespace MysteryDice.Effects
 
                         NetworkObject netObj = obj.GetComponent<NetworkObject>();
                         netObj.Spawn();
+                        obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
                         component.FallToGround(true);
                         netObjs.Add(netObj);
 
@@ -140,7 +141,7 @@ namespace MysteryDice.Effects
         public static IEnumerator DelayedSyncAndTeleport(RoundManager RM, NetworkObjectReference[] netObjs, int[] scrapValues, float[] scrapWeights, PlayerControllerB player, bool usePos, Vector3 spawnPos)
         {
             yield return new WaitForSeconds(1f);
-            Networker.Instance.AllOfOneTPServerRPC(netObjs, player.playerClientId, usePos, spawnPos);
+            Networker.Instance.AllOfOneTPServerRPC(netObjs, player.actualClientId, usePos, spawnPos);
             yield return new WaitForSeconds(2f);
             RM.SyncScrapValuesClientRpc(netObjs, scrapValues);
             Networker.Instance.SyncItemWeightsClientRPC(netObjs, scrapWeights);

@@ -14,7 +14,7 @@ namespace MysteryDice.Effects
         public string Tooltip => "Spawning a shotgun!";
         public void Use()
         {
-            Networker.Instance.ShotgunServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            Networker.Instance.ShotgunServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
 
         public static void SpawnShotgun(ulong playerID)
@@ -72,6 +72,7 @@ namespace MysteryDice.Effects
                 obj.GetComponent<GrabbableObject>().fallTime = 0f;
                 var netob = obj.GetComponent<NetworkObject>();
                 netob.Spawn();
+                obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
                 int ammoAmount = UnityEngine.Random.Range(2, 6);
                 for (int i = 0; i < ammoAmount; i++)
                 {
@@ -82,9 +83,9 @@ namespace MysteryDice.Effects
                         RoundManager.Instance.playersManager.propsContainer);
 
                     obj2.GetComponent<GrabbableObject>().fallTime = 0f;
-                    obj2.GetComponent<NetworkObject>().Spawn();
-                    var netob2 = obj2.GetComponent<NetworkObject>();
+                    NetworkObject netob2 = obj2.GetComponent<NetworkObject>();
                     netob2.Spawn();
+                    obj2.GetComponent<GrabbableObject>().EnableItemMeshes(true);
                 }
             }
             catch (Exception e) 

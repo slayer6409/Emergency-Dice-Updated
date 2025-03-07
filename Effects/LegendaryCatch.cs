@@ -14,7 +14,7 @@ namespace MysteryDice.Effects
         public string Tooltip => "Go Catch a Legendary!";
         public void Use()
         {
-            Networker.Instance.MasterballServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            Networker.Instance.MasterballServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
 
         public static void SpawnMasterball(ulong playerID)
@@ -28,6 +28,7 @@ namespace MysteryDice.Effects
 
             obj.GetComponent<GrabbableObject>().fallTime = 0f;
             obj.GetComponent<NetworkObject>().Spawn();
+            obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
         }
     }
 }

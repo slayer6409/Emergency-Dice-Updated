@@ -16,7 +16,7 @@ namespace MysteryDice.Effects
         public string Tooltip => "Returning to ship with items!";
         public void Use()
         {
-            Networker.Instance.TeleportToShipServerRPC(StartOfRound.Instance.localPlayerController.playerClientId);
+            Networker.Instance.TeleportToShipServerRPC(StartOfRound.Instance.localPlayerController.actualClientId);
         }
 
         public static void TeleportPlayerToShip(ulong clientID)
@@ -26,7 +26,7 @@ namespace MysteryDice.Effects
             foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
             {
                 PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
-                if (playerComp.playerClientId == clientID)
+                if (playerComp.actualClientId == clientID)
                 {
                     player = playerComp;
                     break;

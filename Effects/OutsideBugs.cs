@@ -14,7 +14,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            int bugToSpawn = UnityEngine.Random.Range(15, 30);
+            int bugToSpawn = UnityEngine.Random.Range(10, 15);
             if (GetEnemies.HoardingBug == null || GetEnemies.Centipede == null)
                 return;
 

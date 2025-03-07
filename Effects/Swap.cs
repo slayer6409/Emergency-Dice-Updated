@@ -17,7 +17,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.SwapPlayersServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            Networker.Instance.SwapPlayersServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
 
         public static void SwapPlayers(ulong p1ID, ulong p2ID)
@@ -27,9 +27,9 @@ namespace MysteryDice.Effects
             foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
             {
                 PlayerControllerB player = playerPrefab.GetComponent<PlayerControllerB>();
-                if (player.playerClientId == p1ID)
+                if (player.actualClientId == p1ID)
                     p1 = player;
-                if (player.playerClientId == p2ID)
+                if (player.actualClientId == p2ID)
                     p2 = player;
             }
             if (p1 == null || p2 == null) return;

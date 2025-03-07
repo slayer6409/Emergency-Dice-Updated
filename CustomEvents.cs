@@ -248,53 +248,55 @@ namespace MysteryDice
         public EffectType Outcome => config.outcome; // Adjust as necessary
         public bool ShowDefaultTooltip => true;
         public string Tooltip => config.customTooltip;
-        public static SpawnableEnemyWithRarity enemy = null;
+        public static EnemyType enemy = null;
         public void Use()
         {
             Networker.Instance.CustomMonsterServerRPC(config.monsterName, config.AmountMin, config.AmountMax, config.IsInside);
         }
-        public static void spawnEnemy(string names, int min, int max, bool inside)
+        public static void spawnEnemy(string names, int min, int max, bool inside, Vector3 size = default)
         {
             var enemyNames = names.Split(',');
             foreach (var name in enemyNames)
             {
                 int randomSpawn = 0; 
-                List<SpawnableEnemyWithRarity> allenemies = new List<SpawnableEnemyWithRarity>();
-
-                foreach (var level in StartOfRound.Instance.levels)
-                {
-                    allenemies = allenemies
-                        .Union(level.Enemies)
-                        .Union(level.OutsideEnemies)
-                        .Union(level.DaytimeEnemies)
-                        .ToList();
-                }
-                allenemies = allenemies
-                    .GroupBy(x => x.enemyType.enemyName)
-                    .Select(g => g.First())
-                    .OrderBy(x => x.enemyType.enemyName)
-                    .ToList();
-                enemy = allenemies.FirstOrDefault(x => x.enemyType.enemyName == name);
+                // List<SpawnableEnemyWithRarity> allenemies = new List<SpawnableEnemyWithRarity>();
+                //
+                // foreach (var level in StartOfRound.Instance.levels)
+                // {
+                //     allenemies = allenemies
+                //         .Union(level.Enemies)
+                //         .Union(level.OutsideEnemies)
+                //         .Union(level.DaytimeEnemies)
+                //         .ToList();
+                // }
+                // allenemies = allenemies
+                //     .GroupBy(x => x.enemyType.enemyName)
+                //     .Select(g => g.First())
+                //     .OrderBy(x => x.enemyType.enemyName)
+                //     .ToList();
+                
+                var allEnemies = GetEnemies.allEnemies.OrderBy(x => x.enemyName).ToList();
+                enemy = allEnemies.FirstOrDefault(x => x.enemyName == name);
+                // if (enemy == null)
+                // { //do original method as backup
+                //     foreach (SelectableLevel level in StartOfRound.Instance.levels)
+                //     {
+                //
+                //         enemy = level.Enemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
+                //         if (enemy == null)
+                //             enemy = level.DaytimeEnemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
+                //         if (enemy == null)
+                //             enemy = level.OutsideEnemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
+                //
+                //
+                //     }
+                // }
                 if (enemy == null)
-                { //do original method as backup
-                    foreach (SelectableLevel level in StartOfRound.Instance.levels)
-                    {
-
-                        enemy = level.Enemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
-                        if (enemy == null)
-                            enemy = level.DaytimeEnemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
-                        if (enemy == null)
-                            enemy = level.OutsideEnemies.FirstOrDefault(x => x.enemyType.enemyName.ToLower() == name.ToLower());
-
-
-                    }
-                }
-                if (enemy == null)
                 {
-                    MysteryDice.CustomLogger.LogWarning($"Enemy '{name}' not found. Available enemies: {string.Join(", ", allenemies.Select(e => e.enemyType.enemyName))}"); return;
+                    MysteryDice.CustomLogger.LogWarning($"Enemy '{name}' not found. Available enemies: {string.Join(", ", allEnemies.Select(e => e.enemyName))}"); return;
                 }
                 randomSpawn = UnityEngine.Random.Range(min, max + 1);
-                Misc.SpawnEnemyForced(enemy, randomSpawn, inside);
+                Misc.SpawnEnemy(enemy, randomSpawn, inside);
             }
            
         }
@@ -316,7 +318,7 @@ namespace MysteryDice
         public string Tooltip => config.customTooltip;
         public void Use()
         {
-            Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, UnityEngine.Random.Range(1, config.AmountMax+1), config.itemName);
+            Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, UnityEngine.Random.Range(1, config.AmountMax+1), config.itemName);
         }
     }
     internal class DynamicTrapEffect : IEffect

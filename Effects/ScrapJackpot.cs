@@ -17,7 +17,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.JackpotServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, UnityEngine.Random.Range(3, 9));
+            Networker.Instance.JackpotServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, UnityEngine.Random.Range(3, 9));
         }
 
 
@@ -59,6 +59,7 @@ namespace MysteryDice.Effects
 
                 NetworkObject netObj = obj.GetComponent<NetworkObject>();
                 netObj.Spawn(); 
+                obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
                 component.FallToGround(true);
                 netObjs.Add(netObj);
             }

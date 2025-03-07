@@ -19,7 +19,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.TarotServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            Networker.Instance.TarotServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
         public static void TarotScrap(ulong userID)
         {
@@ -47,6 +47,7 @@ namespace MysteryDice.Effects
                 scrapWeights.Add(component.itemProperties.weight);
                 NetworkObject netObj = obj.GetComponent<NetworkObject>();
                 netObj.Spawn();
+                obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
                 component.FallToGround(true);
                 netObjs.Add(netObj);
             }

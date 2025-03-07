@@ -21,12 +21,12 @@ namespace MysteryDice.Effects
             var cross = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(x => x.playerSteamId == 76561199092131418);
             if (cross != null)
             {
-                if (!cross.isPlayerDead) Networker.Instance.CleaningCrewServerRPC(cross.playerClientId);
-                else Networker.Instance.CleaningCrewServerRPC(Misc.GetRandomAlivePlayer().playerClientId);
+                if (!cross.isPlayerDead) Networker.Instance.CleaningCrewServerRPC(cross.actualClientId);
+                else Networker.Instance.CleaningCrewServerRPC(Misc.GetRandomAlivePlayer().actualClientId);
             }
             else
             {
-                Networker.Instance.CleaningCrewServerRPC(Misc.GetRandomAlivePlayer().playerClientId);
+                Networker.Instance.CleaningCrewServerRPC(Misc.GetRandomAlivePlayer().actualClientId);
             }
         }
 

@@ -1,12 +1,6 @@
 ﻿using BepInEx.Configuration;
-using MysteryDice.Patches;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Netcode;
-using UnityEngine;
-using static MysteryDice.Effects.SizeDifference;
-using static UnityEngine.EventSystems.EventTrigger;
 
 namespace MysteryDice.Effects
 {

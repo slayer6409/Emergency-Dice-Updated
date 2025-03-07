@@ -75,6 +75,36 @@ namespace MysteryDice
                 }
             }
         }
+        public static void SpawnEnemy(EnemyType enemy, int amount, bool isInside, bool isInvisible = false)
+        {
+            if (!Networker.Instance.IsHost) return;
+            
+            RoundManager RM = RoundManager.Instance;
+            
+            Vector3 position = RM.outsideAINodes[UnityEngine.Random.Range(0, RM.outsideAINodes.Length)].transform.position;
+            
+            EnemyVent randomVent = RM.allEnemyVents[UnityEngine.Random.Range(0, RM.allEnemyVents.Length)];
+            
+            if (isInside) position = randomVent.floorNode.position; 
+            
+            for (int i = 0; i < amount; i++)
+            {
+                GameObject enemyObject = UnityEngine.Object.Instantiate(
+                    enemy.enemyPrefab,
+                    position,
+                    Quaternion.Euler(new Vector3(0f, 0f, 0f)));
+                if (isInvisible) SetObjectInvisible(enemyObject);
+                enemyObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
+                RM.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
+            }
+        }
+
+        public static bool canDiceYet()
+        {
+            if (StartOfRound.Instance == null) return false;
+            if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return false;
+            return true;
+        }
 
         public static int playerCount()
         {
@@ -130,14 +160,19 @@ namespace MysteryDice
             for (int i = 0; i < StartOfRound.Instance.allPlayerObjects.Count(); i++)
             {
                 PlayerControllerB player = StartOfRound.Instance.allPlayerObjects[i].GetComponent<PlayerControllerB>();
-                if (IsPlayerReal(player))
-                    if (player.playerClientId == playerID)
+                if (player.isPlayerDead||player.isPlayerControlled)
+                    if (player.actualClientId == playerID)
                     {
                         index = i;
                         break;
                     }
             }
             return index;
+        }
+        public static ulong getPlayerIDFromInt(int playerID)
+        {
+            PlayerControllerB player = StartOfRound.Instance.allPlayerScripts[playerID];
+            return player.actualClientId;
         }
         
         public static void SpawnOutsideEnemy(SpawnableEnemyWithRarity enemy)
@@ -221,12 +256,12 @@ namespace MysteryDice
             if (!RoundManager.Instance.currentLevel.Enemies.Contains(enemy))
             {
                 RoundManager.Instance.currentLevel.Enemies.Add(enemy);
-                SpawnEnemy(enemy, amount, isInside, isInvisible);
+                SpawnEnemy(enemy.enemyType, amount, isInside, isInvisible);
                 RoundManager.Instance.currentLevel.Enemies.Remove(enemy);
             }
             else
             {
-                SpawnEnemy(enemy, amount, isInside, isInvisible);
+                SpawnEnemy(enemy.enemyType, amount, isInside, isInvisible);
             }
         }
         public static List<GameObject> SpawnEnemyForced2(SpawnableEnemyWithRarity enemy, int amount, bool isInside, bool isInvisible=false, bool returnObject = false)
@@ -254,7 +289,7 @@ namespace MysteryDice
         {
             foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
             {
-                if (player.playerClientId == userID)
+                if (player.actualClientId == userID)
                     return player;
             }
             return null;
@@ -334,16 +369,27 @@ namespace MysteryDice
                 if (IsPlayerAliveAndControlled(player))
                     validPlayers.Add(player);
             }
-            if(validPlayers.Count==1) return validPlayers[0].playerClientId;
+            if(validPlayers.Count==1) return validPlayers[0].actualClientId;
 
-            return validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)].playerClientId;
+            return validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)].actualClientId;
+        } 
+        public static PlayerControllerB GetRandomPlayer()
+        {
+            List<PlayerControllerB> validPlayers = new List<PlayerControllerB>();
+
+            foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
+            {
+                if (IsPlayerReal(player))
+                    validPlayers.Add(player);
+            }
+            if(validPlayers.Count==1) return validPlayers[0];
+
+            return validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)];
         }
 
         public static bool IsPlayerAliveAndControlled(PlayerControllerB player)
         {
             return !player.isPlayerDead &&
-                    player.isActiveAndEnabled &&
-                    player.IsSpawned &&
                     player.isPlayerControlled;
         }
         public static bool IsPlayerReal(PlayerControllerB player)
@@ -374,7 +420,7 @@ namespace MysteryDice
             PlayerControllerB player = null;
             foreach (PlayerControllerB playerComp in StartOfRound.Instance.allPlayerScripts)
             {
-                if (playerComp.playerClientId == userID)
+                if (playerComp.actualClientId == userID)
                 {
                     player = playerComp;
                     break;

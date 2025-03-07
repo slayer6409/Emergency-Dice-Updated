@@ -19,22 +19,15 @@ namespace MysteryDice.Effects
         public void Use()
         {
             Vector3 randomInsidePos = RoundManager.Instance.insideAINodes[UnityEngine.Random.Range(0, RoundManager.Instance.insideAINodes.Length)].transform.position;
-            Networker.Instance.TeleportInsideServerRPC(StartOfRound.Instance.localPlayerController.playerClientId, randomInsidePos);
+            Networker.Instance.TeleportInsideServerRPC(StartOfRound.Instance.localPlayerController.actualClientId, randomInsidePos);
         }
 
         public static void TeleportPlayerInside(ulong clientID, Vector3 teleportPos)
         {
             PlayerControllerB player = null;
 
-            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
-            {
-                PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
-                if (playerComp.playerClientId == clientID)
-                {
-                    player = playerComp;
-                    break;
-                }
-            }
+            player = Misc.GetPlayerByUserID(clientID);
+            
             if (player == null) return;
 
             if ((bool)GameObject.FindObjectOfType<AudioReverbPresets>())

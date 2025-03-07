@@ -44,14 +44,18 @@ namespace MysteryDice.Dice
 
             if(diceRoll == 6)
             {
-                SelectEffect.ShowSelectMenu(false,false, fromSaint: true);
+                if(MysteryDice.NewDebugMenu.Value) DebugMenuStuff.ShowSelectEffectMenu();
+                else SelectEffect.ShowSelectMenu(false,false,fromSaint:true);
                 Misc.SafeTipMessage($"Rolled 6", "Choose an effect");
+                var who2 = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";
+                Networker.Instance.LogEffectsToOwnerServerRPC(who2, randomEffect.Name, diceRoll);
                 return;
             }
 
             randomEffect.Use();
-            Networker.Instance.LogEffectsToOwnerServerRPC(PlayerUser.playerUsername, randomEffect.Name);
-
+            
+            var who = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";
+            Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
             Misc.SafeTipMessage($"Rolled {diceRoll}", randomEffect.Tooltip);
         }
     }

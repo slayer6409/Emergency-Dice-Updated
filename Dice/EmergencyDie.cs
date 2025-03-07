@@ -47,7 +47,8 @@ namespace MysteryDice.Dice
             if (diceRoll == 6) randomEffect = new ReturnToShipTogether();
 
             randomEffect.Use();
-            Networker.Instance.LogEffectsToOwnerServerRPC(PlayerUser.playerUsername, randomEffect.Name);
+            var who = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";
+            Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
             
             ShowDefaultTooltip(randomEffect, diceRoll);
         }

@@ -27,15 +27,15 @@ namespace MysteryDice.Dice
                 switch (diceRoll)
                 {
                     case 3:
-                        Networker.Instance.JackpotServerRPC(PlayerUser.playerClientId, UnityEngine.Random.Range(1, 2));
+                        Networker.Instance.JackpotServerRPC(PlayerUser.actualClientId, UnityEngine.Random.Range(1, 2));
                         Misc.SafeTipMessage($"Rolled 3", "Spawning some scrap");
                         break;
                     case 4:
-                        Networker.Instance.JackpotServerRPC(PlayerUser.playerClientId, UnityEngine.Random.Range(3, 4));
+                        Networker.Instance.JackpotServerRPC(PlayerUser.actualClientId, UnityEngine.Random.Range(3, 4));
                         Misc.SafeTipMessage($"Rolled 4", "Spawning scrap");
                         break;
                     case 5:
-                        Networker.Instance.JackpotServerRPC(PlayerUser.playerClientId, UnityEngine.Random.Range(5, 6));
+                        Networker.Instance.JackpotServerRPC(PlayerUser.actualClientId, UnityEngine.Random.Range(5, 6));
                         Misc.SafeTipMessage($"Rolled 5", "Spawning more scrap");
                         break;
                     case 6:
@@ -49,20 +49,20 @@ namespace MysteryDice.Dice
                         switch (diceRoll2)
                         {
                             case 1:
-                                Networker.Instance.SameScrapServerRPC(PlayerUser.playerClientId, UnityEngine.Random.Range(4, 6), "Easter egg");
+                                Networker.Instance.SameScrapServerRPC(PlayerUser.actualClientId, UnityEngine.Random.Range(4, 6), "Easter egg");
                                 Misc.SafeTipMessage($"Hop Hop", "Explosive Eggs?");
                                 break;
                             case 2:
-                                Networker.Instance.SameScrapServerRPC(PlayerUser.playerClientId, UnityEngine.Random.Range(4, 7),"Gift");
+                                Networker.Instance.SameScrapServerRPC(PlayerUser.actualClientId, UnityEngine.Random.Range(4, 7),"Gift");
                                 Misc.SafeTipMessage($"HO HO HO", "Christmas Time!");
                                 break;
                             case 3:
                                 var item = RM.currentLevel.spawnableScrap[RM.GetRandomWeightedIndex(weights)].spawnableItem;
-                                Networker.Instance.SameScrapServerRPC(PlayerUser.playerClientId, UnityEngine.Random.Range(6, 8),item.itemName);
+                                Networker.Instance.SameScrapServerRPC(PlayerUser.actualClientId, UnityEngine.Random.Range(6, 8),item.itemName);
                                 Misc.SafeTipMessage($"Wat?", "It's all the same?!?");
                                 break;
                             default:
-                                Networker.Instance.JackpotServerRPC(PlayerUser.playerClientId, UnityEngine.Random.Range(7, 8));
+                                Networker.Instance.JackpotServerRPC(PlayerUser.actualClientId, UnityEngine.Random.Range(7, 8));
                                 Misc.SafeTipMessage($"Rolled 6", "Spawning a lot of scrap!");
                                 break;
                         }
@@ -74,7 +74,9 @@ namespace MysteryDice.Dice
             {
                 PlaySoundBasedOnEffect(randomEffect.Outcome);
                 randomEffect.Use();
-                Networker.Instance.LogEffectsToOwnerServerRPC(PlayerUser.playerUsername, randomEffect.Name);
+                
+                var who = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";
+                Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
                 ShowDefaultTooltip(randomEffect, diceRoll);
             }
             

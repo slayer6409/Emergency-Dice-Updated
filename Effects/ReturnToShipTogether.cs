@@ -18,8 +18,8 @@ namespace MysteryDice.Effects
         public static float DistanceToCaller = 8f;
         public void Use()
         {
-            TeleportToShipTogether(StartOfRound.Instance.localPlayerController.playerClientId);
-            //Networker.Instance.TeleportToShipTogetherServerRPC(StartOfRound.Instance.localPlayerController.playerClientId);
+            TeleportToShipTogether(StartOfRound.Instance.localPlayerController.actualClientId);
+            //Networker.Instance.TeleportToShipTogetherServerRPC(StartOfRound.Instance.localPlayerController.actualClientId);
         }
 
         public static void TeleportToShipTogether(ulong callerID)
@@ -32,7 +32,7 @@ namespace MysteryDice.Effects
                 if (player == null) continue;
                 if (!Misc.IsPlayerAliveAndControlled(player)) continue;
 
-                if (callerID == player.playerClientId)
+                if (callerID == player.actualClientId)
                 {
                     caller = player;
                     break;
@@ -52,7 +52,7 @@ namespace MysteryDice.Effects
 
                 if (Vector3.Distance(player.transform.position, caller.transform.position) < DistanceToCaller)
                 {
-                    playersToTeleport.Add(player.playerClientId);
+                    playersToTeleport.Add(player.actualClientId);
                 }
             }
             foreach(var ply in playersToTeleport)

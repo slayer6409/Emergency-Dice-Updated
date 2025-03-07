@@ -18,7 +18,7 @@ namespace MysteryDice.Patches
             string txt = __instance.chatTextField.text.ToLower();
             if(txt == "/visor"||txt == "\\visor")
             {
-                SizeDifference.ToggleVisor();
+                ToggleVisor();
                 Misc.SafeTipMessage("Visor Toggled", "Run the command again to toggle it back");
             }
             if(txt == "/fixhud"||txt == "\\fixhud")
@@ -26,11 +26,11 @@ namespace MysteryDice.Patches
                 HUDManager.Instance.enabled=true;
                 HUDManager.Instance.ToggleHUD(true);
             }
-            if((txt == "/size" || txt == "\\size") && SizeDifferenceSwitcher.canSwitch)
-            {
-                SizeDifferenceSwitcher.BecomeSmall(GameNetworkManager.Instance.localPlayerController.playerClientId);
-                Misc.SafeTipMessage("Size Switched", "Run the command again to toggle it back");
-            }
+            // if((txt == "/size" || txt == "\\size") && SizeDifferenceSwitcher.canSwitch)
+            // {
+            //     SizeDifferenceSwitcher.BecomeSmall(GameNetworkManager.Instance.localPlayerController.actualClientId);
+            //     Misc.SafeTipMessage("Size Switched", "Run the command again to toggle it back");
+            // }
 
             if (!MysteryDice.allowChatCommands.Value) return;
 
@@ -82,6 +82,7 @@ namespace MysteryDice.Patches
 
                     obj.GetComponent<GrabbableObject>().fallTime = 0f;
                     obj.GetComponent<NetworkObject>().Spawn();
+                    obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
                 }
             }
 
@@ -95,6 +96,12 @@ namespace MysteryDice.Patches
                     effect.Use();
                 }
             }
+        }
+        public static void ToggleVisor()
+        {
+            GameObject visor = GameObject.Find("Systems/Rendering/PlayerHUDHelmetModel/ScavengerHelmet");
+            MeshRenderer component = visor.GetComponent<MeshRenderer>();
+            component.enabled = !component.enabled;
         }
         
     }

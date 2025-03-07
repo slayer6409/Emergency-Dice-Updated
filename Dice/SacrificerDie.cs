@@ -32,14 +32,18 @@ namespace MysteryDice.Dice
 
             PlaySoundBasedOnEffect(randomEffect.Outcome);
             randomEffect.Use();
-            Networker.Instance.LogEffectsToOwnerServerRPC(PlayerUser.playerUsername, randomEffect.Name);
+           
+            var who = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";
+            Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
 
             if (diceRoll == 1)
             {
                 Misc.SafeTipMessage($"Rolled 1...", "Run");
                 randomEffect = GetRandomEffect(diceRoll, Effects);
                 randomEffect.Use();
-                Networker.Instance.LogEffectsToOwnerServerRPC(PlayerUser.playerUsername, randomEffect.Name);
+                
+                who = PlayerUser != null ? PlayerUser.playerUsername : "An Enemy";
+                Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
             }
             else
                 Misc.SafeTipMessage($"Rolled {diceRoll}", EffectText(randomEffect.Outcome));

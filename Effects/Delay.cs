@@ -18,19 +18,20 @@ namespace MysteryDice.Effects
         public string Tooltip => "Wait for it..."; 
         public void Use()
         {
-            Networker.Instance.DelayedReactionServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            Networker.Instance.DelayedReactionServerRPC(Misc.GetRandomPlayerID());
         }
 
 
         public static void DelayedReaction(ulong userID)
         {
             PlayerControllerB player = GameNetworkManager.Instance.localPlayerController;
-            if (player.playerClientId != userID) return;
+            if (player.actualClientId != userID) return;
             int e = UnityEngine.Random.Range(0, 7);
             IEffect randomEffect = GetRandomEffect(e); 
             PlaySoundBasedOnEffect(randomEffect.Outcome);
             randomEffect.Use();
-            Networker.Instance.LogEffectsToOwnerServerRPC(player.playerUsername, randomEffect.Name);
+            var who = player != null ? player.playerUsername : "An Enemy";
+            Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, e);
             Misc.SafeTipMessage($"NOW", randomEffect.Tooltip);
         }
         public static void PlaySoundBasedOnEffect(EffectType effectType)

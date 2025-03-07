@@ -21,17 +21,10 @@ namespace MysteryDice.Effects
 		        if(player.isPlayerDead) Networker.Instance.RevivePlayerServerRpc(player.actualClientId, StartOfRound.Instance.middleOfShipNode.position);
 	        }
         }
-        
-
-        public static void revivePlayer(ulong PlayerClientID, Vector3 SpawnPosition)
+        public static void revivePlayer(int playerID, Vector3 SpawnPosition)
         {
 	        int DefaultHealth = 100;
-	        PlayerControllerB playerControllerB = null;
-	        foreach (var players in StartOfRound.Instance.allPlayerScripts)
-	        {
-		         if(players.actualClientId == PlayerClientID) playerControllerB = players;
-	        }
-	        if(playerControllerB == null) return;
+	        var playerControllerB = StartOfRound.Instance.allPlayerScripts[playerID];
 	        //if ( playerControllerB.isPlayerDead)
 			if (!playerControllerB.isPlayerDead) return;
 			playerControllerB.isInsideFactory = false;
@@ -98,8 +91,8 @@ namespace MysteryDice.Effects
 				playerControllerB.reverbPreset = StartOfRound.Instance.shipReverb;
 				SoundManager.Instance.earsRingingTimer = 0f;
 				playerControllerB.voiceMuffledByEnemy = false;
-				SoundManager.Instance.playerVoicePitchTargets[Misc.getIntPlayerID(PlayerClientID)] = 1f;
-				SoundManager.Instance.SetPlayerPitch(1f, Misc.getIntPlayerID(PlayerClientID));
+				SoundManager.Instance.playerVoicePitchTargets[playerID] = 1f;
+				SoundManager.Instance.SetPlayerPitch(1f, playerID);
 				if (playerControllerB.currentVoiceChatIngameSettings == null)
 				{
 					StartOfRound.Instance.RefreshPlayerVoicePlaybackObjects();
@@ -124,7 +117,7 @@ namespace MysteryDice.Effects
 				}
 			}
 			PlayerControllerB localPlayerController = GameNetworkManager.Instance.localPlayerController;
-			if (localPlayerController.playerClientId == playerControllerB.playerClientId)
+			if (localPlayerController.actualClientId == playerControllerB.actualClientId)
 			{
 				localPlayerController.bleedingHeavily = false;
 				localPlayerController.criticallyInjured = false;

@@ -18,7 +18,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.EggFountainServerRPC(StartOfRound.Instance.localPlayerController.playerClientId, 0);
+            Networker.Instance.EggFountainServerRPC(StartOfRound.Instance.localPlayerController.actualClientId, 0);
         }
 
         public static void spawnEggs(ulong callerID, int choice)
@@ -72,6 +72,7 @@ namespace MysteryDice.Effects
                 component.targetFloorPosition = spawnPosition;
                 NetworkObject netObj = obj.GetComponent<NetworkObject>();
                 netObj.Spawn();
+                obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
                 component.FallToGround(true);
 
                 spawnedItems.Add(obj);
@@ -84,7 +85,7 @@ namespace MysteryDice.Effects
                 NetworkObject net = spawnedNetItems[i];
                 Vector3 spawnPos = spawnedPoints[i];
                 spawnPos.y=player.transform.position.y;
-                Networker.Instance.TeleportEggServerRPC(net, player.playerClientId, spawnPos);
+                Networker.Instance.TeleportEggServerRPC(net, player.actualClientId, spawnPos);
 
                 Networker.Instance.explodeItemServerRPC(net.NetworkObjectId, useEgg, count);
                 count += 1;
@@ -181,7 +182,7 @@ namespace MysteryDice.Effects
         public string Tooltip => "Flashbang inbound!";
         public void Use()
         {
-            Networker.Instance.EggFountainServerRPC(StartOfRound.Instance.localPlayerController.playerClientId, 1);
+            Networker.Instance.EggFountainServerRPC(StartOfRound.Instance.localPlayerController.actualClientId, 1);
         }
     }
 }

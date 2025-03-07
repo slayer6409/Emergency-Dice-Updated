@@ -52,11 +52,11 @@ namespace MysteryDice.Effects
             foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
             {
                 PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
-                if (playerComp.playerClientId == p1)
+                if (playerComp.actualClientId == p1)
                 {
                     player1 = playerComp;
                 }
-                else if (playerComp.playerClientId == p2)
+                else if (playerComp.actualClientId == p2)
                 {
                     player2 = playerComp;
                 }

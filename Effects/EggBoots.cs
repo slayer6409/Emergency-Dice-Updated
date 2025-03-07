@@ -18,7 +18,7 @@ namespace MysteryDice.Effects
         public static bool canSpawnAnother = true;
         public void Use()
         {
-            Networker.Instance.EggBootsServerRpc(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            Networker.Instance.EggBootsServerRpc(GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
         public static void SpawnAndExplodeEgg(ulong playerid)
         {

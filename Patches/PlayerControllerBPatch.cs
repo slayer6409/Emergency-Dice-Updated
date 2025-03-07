@@ -161,7 +161,7 @@ namespace MysteryDice.Patches
             if(!EggBoots.eggBootsEnabled) return;
             if(!EggBoots.canSpawnAnother) return;
             EggBoots.canSpawnAnother = false;
-            Networker.Instance.spawnExplodeEggServerRpc(StartOfRound.Instance.localPlayerController.playerClientId);
+            Networker.Instance.spawnExplodeEggServerRpc(StartOfRound.Instance.localPlayerController.actualClientId);
         }
     }
     

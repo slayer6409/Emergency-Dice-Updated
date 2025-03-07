@@ -45,9 +45,9 @@ namespace MysteryDice.Patches
                 __instance.inKillAnimation)
                 return;
 
-            __instance.KillPlayerAnimationServerRpc((int)player.playerClientId);
+            __instance.KillPlayerAnimationServerRpc((int)player.actualClientId);
             ___startingKillAnimationLocalClient = true;
-            __instance.KillPlayerAnimationClientRpc((int)player.playerClientId);
+            __instance.KillPlayerAnimationClientRpc((int)player.actualClientId);
         }
     }
     */

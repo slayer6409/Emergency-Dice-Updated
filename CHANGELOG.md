@@ -1,8 +1,73 @@
+-	**1.9.9**
+    - Fixed Hoarding bugs and other Enemies Spam rolling dice
+    - Fixed a NRE with the gambler
+    - Adjusted the offsets of the gambler (hopefully)
+    - Some effects now properly trigger for everyone now
+    - Fixed the ammo of the shotgun effect not spawning properly
+    - Fixed invisible items when cull factory is installed
+      - If any item is invisible when they spawn in, let me know on [This github thread](https://github.com/slayer6409/Emergency-Dice-Updated/issues/15) 
+	- Added a few new effects
+	- There was a lot changed so if something broke, lmk on my github or on the Discord Thread
+
+- 	**1.9.8**
+    - Fix for NRE with Lobby Control Experimental
+    - Fix for NRE with Debug menu
+    - Fix for Zortin2 spawning only on the host
+    - Fix for some New Debug menu stuff
+    - New Select Effect Menu (If you have NewDebugMenu Checked)
+    - Select an Effect from Saint and Rolling now are sorted correctly
+
+- 	**1.9.7**
+    - Fix for Bad Romance Causing Errors for Clients
+	- Fix for Teleports in Debug Menu not working in LAN play
+    - I forgot to mention in a previous changelog Enum Config values are now strings so they won't reset
+
+-	**1.9.6**
+    - Yippee!!!
+      - Surely nothing will go wrong :D 
+    - Search Bar for the New Debug Menu!
+
+- 	**1.9.5**
+    - Fixed Delay and Brutal being able to do dice effects on company moons
+    - Bad Romance Sound Effect :D
+
+- 	**1.9.4**
+    - 4 new things :D
+    - Tested these a bit more so hopefully they are fine
+
+- 	**1.9.3**
+    - Apparently it broke things
+    - Fixed
+     
+-	**1.9.2**
+    - Secrets
+      - THIS SHOULDN'T BREAK ANYTHING
+      - If it does #BlameGlitch
+
+- 	**1.9.1**
+    - Fixed a small issue with the new Debug menu
+
+- 	**1.9.0**
+    - New Debug Menu (default off just in case) :D
+    - Fixed frame issues (hopefully)
+    - **Hopefully no issues this time**
+
+- 	**1.8.5**
+    - Fixed some issues with the debug menu
+
+-   **1.8.4**
+    - Adjusted values for Zombie Apocalypse, Bug Plague, and Outside Bugs to be at a less laggy value
+    - Added a non-deductible breakfast and more events
+    - Fixed some stuff
+
 -	**1.8.3**
     - Added a few new cool events (at least I think so lol)
     - Optimized some weird code
       - Not that much though
     - Fixed some issues (still don't know why gambler is stupid)
+    - Removed size options due to them breaking a ton of things for some reason
+      - Might add them in a separate addon mod if people want them
+	- Fixed and brought back Where did my friends go!
 
 -	**1.8.2**
     - Fixed Bald not being Bald for clients

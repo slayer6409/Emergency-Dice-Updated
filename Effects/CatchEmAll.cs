@@ -14,7 +14,7 @@ namespace MysteryDice.Effects
         public string Tooltip => "Go Catch Em All!";
         public void Use()
         {
-            Networker.Instance.PokeballsServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            Networker.Instance.PokeballsServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
 
         public static void SpawnPokeballs(ulong playerID)

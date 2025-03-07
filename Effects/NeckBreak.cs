@@ -20,7 +20,7 @@ namespace MysteryDice.Effects
         
         public void Use()
         {
-            Networker.Instance.NeckBreakRandomPlayerServerRpc(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            Networker.Instance.NeckBreakRandomPlayerServerRpc(GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
 
         public static void BreakNeck()
@@ -31,8 +31,10 @@ namespace MysteryDice.Effects
         public static void FixNeck()
         {
             IsNeckBroken = 0;
+            var player = GameNetworkManager.Instance.localPlayerController;
+            if (player == null) return;
             Transform cam = GameNetworkManager.Instance.localPlayerController.gameplayCamera.transform;
-            cam.eulerAngles = new Vector3(cam.eulerAngles.x, cam.eulerAngles.y, 0f);
+            if(cam != null) cam.eulerAngles = new Vector3(cam.eulerAngles.x, cam.eulerAngles.y, 0f);
         }
         public static IEnumerator WaitTime()
         {

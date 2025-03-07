@@ -12,7 +12,7 @@ namespace MysteryDice.Effects
         public string Tooltip => "Forces the ship to Takeoff";
         public void Use()
         {
-            StartOfRound.Instance.ShipLeaveAutomatically(false);
+            Networker.Instance.ForceTakeoffServerRPC();
         }
     }
 }

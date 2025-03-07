@@ -62,8 +62,14 @@
     <Reference Include="LethalThings">
       <HintPath>$(ThunderstorePath)\Evaisa-LethalThings\LethalThings\LethalThings.dll</HintPath>
     </Reference>
+    <Reference Include="MoreCompany">
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\notnotnotswipez-MoreCompany\MoreCompany.dll</HintPath>
+    </Reference>
     <Reference Include="Surfaced" Publicize="true">
       <HintPath>$(ThunderstorePath)\SurfacedTeam-Surfaced\Surfaced.dll</HintPath>
+    </Reference>
+    <Reference Include="WeatherRegistry">
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\mrov-WeatherRegistry\WeatherRegistry.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
@@ -75,6 +81,9 @@
       cd C:\Users\andre\Documents\NetcodePatcher
       NetcodePatcher.dll "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\netstandard2.1" deps
        
+       
+      copy "C:\Users\andre\DiceMod\Assets\AssetBundles\mysterydice2" "C:\Users\andre\Desktop\MysteryDice\Regular"
+      copy "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\netstandard2.1\MysteryDice.dll" "C:\Users\andre\DiceMod\Assets\LethalCompany\Plugins"
       copy "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\netstandard2.1\MysteryDice.dll" "C:\Users\andre\Desktop\MysteryDice\Regular"
       copy "C:\Users\andre\source\repos\Emergency-Dice-main\CHANGELOG.md" "C:\Users\andre\Desktop\MysteryDice\Regular"
       copy "C:\Users\andre\source\repos\Emergency-Dice-main\README.md" "C:\Users\andre\Desktop\MysteryDice\Regular"

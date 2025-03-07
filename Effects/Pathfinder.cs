@@ -13,7 +13,7 @@ namespace MysteryDice.Effects
         public string Tooltip => "You've got a pathfinder!";
         public void Use()
         {
-            Networker.Instance.PathfinderGiveSpawnerServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            Networker.Instance.PathfinderGiveSpawnerServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
 
         public static void GiveBlobItem(ulong userID)
@@ -26,6 +26,7 @@ namespace MysteryDice.Effects
 
             obj.GetComponent<GrabbableObject>().fallTime = 0f;
             obj.GetComponent<NetworkObject>().Spawn();
+            obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
         }
 
         public static void SpawnBlobs()

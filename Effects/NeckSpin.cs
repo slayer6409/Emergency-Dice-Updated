@@ -22,7 +22,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.NeckSpinRandomPlayerServerRpc(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            Networker.Instance.NeckSpinRandomPlayerServerRpc(GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
 
         public static void SpinNeck()
@@ -40,8 +40,10 @@ namespace MysteryDice.Effects
         }
         public static void FixNeck()
         {
+            var player = GameNetworkManager.Instance.localPlayerController;
+            if(player == null) return;
             IsNeckSpinning = 0;
-            Transform cam = GameNetworkManager.Instance.localPlayerController.gameplayCamera.transform;
+            Transform cam = player.gameplayCamera.transform;
             cam.eulerAngles = new Vector3(cam.eulerAngles.x, cam.eulerAngles.y, 0f);
         }
     }

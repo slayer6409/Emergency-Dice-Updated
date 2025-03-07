@@ -20,7 +20,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.ItemDuplicatorServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            Networker.Instance.ItemDuplicatorServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
 
         public static void duplicateItems(ulong userID)
@@ -35,7 +35,7 @@ namespace MysteryDice.Effects
             foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
             {
                 PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
-                if (playerComp.playerClientId == userID)
+                if (playerComp.actualClientId == userID)
                 {
                     player = playerComp;
                     break;
@@ -57,6 +57,7 @@ namespace MysteryDice.Effects
 
                 NetworkObject netObj = obj.GetComponent<NetworkObject>();
                 netObj.Spawn();
+                obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
                 component.FallToGround(true);
                 netObjs.Add(netObj);
             }

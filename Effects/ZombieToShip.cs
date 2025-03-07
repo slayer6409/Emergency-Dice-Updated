@@ -17,7 +17,7 @@ namespace MysteryDice.Effects
         public string Tooltip => "Returns you to the ship and places a zombie in your original position";
         public void Use()
         {
-            Networker.Instance.ZombieToShipServerRPC(StartOfRound.Instance.localPlayerController.playerClientId);
+            Networker.Instance.ZombieToShipServerRPC(StartOfRound.Instance.localPlayerController.actualClientId);
         }
 
         public static void ZombieUseServer(ulong clientID)

@@ -30,12 +30,12 @@ namespace MysteryDice.Effects
             var glitch = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(x => x.playerSteamId == 76561198984467725);
             if ( glitch != null)
             {
-                if (!glitch.isPlayerDead) Networker.Instance.AlarmServerRPC(glitch.playerClientId);
-                else Networker.Instance.AlarmServerRPC(Misc.GetRandomAlivePlayer().playerClientId);
+                if (!glitch.isPlayerDead) Networker.Instance.AlarmServerRPC(glitch.actualClientId);
+                else Networker.Instance.AlarmServerRPC(Misc.GetRandomAlivePlayer().actualClientId);
             }
             else
             {
-                Networker.Instance.AlarmServerRPC(Misc.GetRandomAlivePlayer().playerClientId);
+                Networker.Instance.AlarmServerRPC(Misc.GetRandomAlivePlayer().actualClientId);
             }
         }
 

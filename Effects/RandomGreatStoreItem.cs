@@ -16,7 +16,7 @@ namespace MysteryDice.Effects
         public string Tooltip => "Many random store items for you!";
         public void Use()
         {
-            Networker.Instance.RandomStoreItemsServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId, UnityEngine.Random.Range(2,5));
+            Networker.Instance.RandomStoreItemsServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, UnityEngine.Random.Range(2,5));
         }
         public static void SpawnItem(ulong playerID, int icount)
         {
@@ -35,6 +35,7 @@ namespace MysteryDice.Effects
                 RoundManager.Instance.playersManager.propsContainer);
                 obj.GetComponent<GrabbableObject>().fallTime = 0f;
                 obj.GetComponent<NetworkObject>().Spawn();
+                obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
             }
         }
     }

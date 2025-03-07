@@ -17,7 +17,7 @@ namespace MysteryDice.Effects
         public string Tooltip => "A random store item for you!";
         public void Use()
         {
-            Networker.Instance.RandomStoreItemServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId);
+            Networker.Instance.RandomStoreItemServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
         public static void SpawnItem(ulong playerID, Vector3 position = default(Vector3))
         {
@@ -34,6 +34,7 @@ namespace MysteryDice.Effects
 
             obj.GetComponent<GrabbableObject>().fallTime = 0f;
             obj.GetComponent<NetworkObject>().Spawn();
+            obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
         }
         public static void SpawnItemNamed(ulong playerID, string name, Vector3 position = default(Vector3))
         {
@@ -51,6 +52,7 @@ namespace MysteryDice.Effects
 
             obj.GetComponent<GrabbableObject>().fallTime = 0f;
             obj.GetComponent<NetworkObject>().Spawn();
+            obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
         }
     }
 }

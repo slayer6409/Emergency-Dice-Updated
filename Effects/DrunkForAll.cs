@@ -19,7 +19,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.DrunkServerRPC(GameNetworkManager.Instance.localPlayerController.playerClientId,true);
+            Networker.Instance.DrunkServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId,true);
         }
 
         public static void startDrinking(ulong userID)

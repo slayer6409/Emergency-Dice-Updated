@@ -17,7 +17,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.DoFollowerFanServerRpc(Misc.GetRandomAlivePlayer().playerClientId);
+            Networker.Instance.DoFollowerFanServerRpc(Misc.GetRandomAlivePlayer().actualClientId);
         }
 
         public static void giveFriend(ulong playerID)
@@ -31,7 +31,7 @@ namespace MysteryDice.Effects
             fan.GetComponentInChildren<IndustrialFanFrontCollider>().industrialFan.pushForce *= -1;
             netObj.Spawn();
             Networker.Instance.setSizeClientRPC(netObj.NetworkObjectId,new Vector3(0.4f,0.4f,0.4f));
-            Networker.Instance.AddMovingTrapClientRPC(fan.name,true,player.playerClientId);
+            Networker.Instance.AddMovingTrapClientRPC(fan.name,true,player.actualClientId);
         }
         public static void fixFan(GameObject fan)
         {

@@ -27,7 +27,7 @@ namespace MysteryDice.Effects
             foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
             {
                 PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
-                if (playerComp.playerClientId == userID)
+                if (playerComp.actualClientId == userID)
                 {
                     player = playerComp;
                     break;

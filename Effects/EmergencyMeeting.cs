@@ -49,7 +49,7 @@ namespace MysteryDice.Effects
                 PlayerControllerB player = playerPrefab.GetComponent<PlayerControllerB>();
                 if (Misc.IsPlayerAliveAndControlled(player))
                 {
-                    playersToTeleport.Add(player.playerClientId);
+                    playersToTeleport.Add(player.actualClientId);
                 }
             }
 
@@ -69,7 +69,7 @@ namespace MysteryDice.Effects
                 PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
                 if (playerComp == null) continue;
 
-                if (playerComp.playerClientId == who)
+                if (playerComp.actualClientId == who)
                 {
                     player = playerComp;
                 }
