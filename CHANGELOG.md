@@ -1,4 +1,20 @@
--	**1.9.9**
+-	**1.9.12**
+    - Added additional logging just in case it fails to roll
+    - Fixed ship turret erroring when wide ship or mel's 2 story ship is installed
+    - Fixed burger flippers spawning in weird positions (sometimes)
+    - 
+
+- 	**1.9.11**
+    - Actually made Weather Registery a soft dependency
+    - Had to make a api for adding things to the Debug menu because of that lol
+    - Hopefully everything works well
+    - Converted Dice Twitch Integration Mod to be implemented via a soft dependency on TwitchChatAPI (and enabled via config) 
+
+- 	**1.9.10**
+    - Added a dependency I forgor about 
+    - Only temporary until I make a actual soft compat for it (working on it rn)
+
+- 	**1.9.9**
     - Fixed Hoarding bugs and other Enemies Spam rolling dice
     - Fixed a NRE with the gambler
     - Adjusted the offsets of the gambler (hopefully)

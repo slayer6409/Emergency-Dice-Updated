@@ -472,9 +472,13 @@ namespace MysteryDice
                     player.transform.position.y + 0.25f,
                     Mathf.Sin(angle) * radius
                 );
+                
                 spawnPosition += player.transform.position;
                 Vector3 directionToPlayer = player.transform.position - spawnPosition;
                 Quaternion rotation = Quaternion.LookRotation(directionToPlayer);
+                spawnPosition = RoundManager.Instance.GetRandomNavMeshPositionInRadius(spawnPosition, 0.5f);
+                if(spawnPosition==Vector3.zero)continue;
+                if(spawnPosition.y>player.transform.position.y+10)continue;
                 GameObject enemyObject = UnityEngine.Object.Instantiate(
                     enemy.enemyType.enemyPrefab,
                     spawnPosition,
@@ -2152,7 +2156,28 @@ namespace MysteryDice
             if (IsServer) return;
             AlarmCurse.AlarmAudio(position, AudioNum, isGlitch);
         }
+        
 
+        #endregion
+        
+        #region TargetPractice
+
+        [ServerRpc(RequireOwnership = false)]
+        public void targetPracticeServerRPC(ulong playerID)
+        {
+            var player = StartOfRound.Instance.allPlayerScripts[playerID];
+            if (player == null) return;
+            Vector3 position = player.transform.position;
+            foreach (var enemy in RoundManager.Instance.SpawnedEnemies)
+            {
+                if(enemy.agent==null) continue;
+                enemy.targetPlayer = player;
+                enemy.movingTowardsTargetPlayer = true;
+                enemy.moveTowardsDestination = true;
+                enemy.agent.SetDestination(position);
+            }
+        }
+        
         #endregion
         
         #region SpawnObjects

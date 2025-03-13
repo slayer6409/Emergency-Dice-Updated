@@ -107,6 +107,7 @@ namespace MysteryDice
             var chronosUpdatedTimeOfDayBoolField = new BoolCheckBoxConfigItem(MysteryDice.chronosUpdatedTimeOfDay, false);
             var useDiceOutsideBoolField = new BoolCheckBoxConfigItem(MysteryDice.useDiceOutside, false);
             var debugDiceBoolField = new BoolCheckBoxConfigItem(MysteryDice.debugDice, false);
+            var TwitchEnabledBoolField = new BoolCheckBoxConfigItem(MysteryDice.TwitchEnabled, true);
             var allowChatCommandsBoolField = new BoolCheckBoxConfigItem(MysteryDice.allowChatCommands, true);
             var useNeckBreakTimerBoolField = new BoolCheckBoxConfigItem(MysteryDice.useNeckBreakTimer, false);
             var debugMenuShowsAllBoolField = new BoolCheckBoxConfigItem(MysteryDice.debugMenuShowsAll, false);
@@ -179,6 +180,7 @@ namespace MysteryDice
             LethalConfigManager.AddConfigItem(debugMenuShowsAllBoolField);
             LethalConfigManager.AddConfigItem(DebugButtonBoolField);
             LethalConfigManager.AddConfigItem(DebugChatEnumField);
+            LethalConfigManager.AddConfigItem(TwitchEnabledBoolField);
             LethalConfigManager.AddConfigItem(GrabDebugBoolField);
             LethalConfigManager.AddConfigItem(BaldBoolField);
             LethalConfigManager.AddConfigItem(EmergencyDiePriceSlider);
@@ -204,6 +206,7 @@ namespace MysteryDice
                 var effectBoolField = new BoolCheckBoxConfigItem(config,true);
                 LethalConfigManager.AddConfigItem(effectBoolField);
             }
+            
             // foreach (ConfigEntry<bool> config in DieBehaviour.favConfigs)
             // {
             //     var effectBoolField = new BoolCheckBoxConfigItem(config,false);

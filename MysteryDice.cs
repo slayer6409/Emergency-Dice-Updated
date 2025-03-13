@@ -32,10 +32,8 @@ namespace MysteryDice
     [BepInDependency("Jordo.BombCollar", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("dev.kittenji.NavMeshInCompany", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("me.swipez.melonloader.morecompany", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency("mrov.WeatherRegistry", BepInDependency.DependencyFlags.SoftDependency)]
     public class MysteryDice : BaseUnityPlugin
     {
-        
         //public static bool DEBUGMODE = false;
         private static HashSet<ulong> admins = new HashSet<ulong>{   
             76561198077184650 /*Me*/,
@@ -53,7 +51,7 @@ namespace MysteryDice
         public enum chatDebug { Host, Everyone, None};
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.9.9";
+        private const string modVersion = "1.9.12";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -93,7 +91,6 @@ namespace MysteryDice
         public static bool LCTarotCardPresent = false;
         public static bool TakeyPlushPresent = false;
         public static bool DiversityPresent = false;
-        public static bool weatherRegistryPresent = false;
         public static bool NightOfTheLivingMimicPresent = false;
         public static bool NavMeshInCompanyPresent = false;
         public static bool BombCollarPresent = false;
@@ -103,7 +100,7 @@ namespace MysteryDice
         public static Assembly LCOfficeAssembly;
         public static bool terminalLockout = false;
         public static CustomConfigs customCfg;
-
+        
         #region configEntry
         public static ConfigEntry<bool> pussyMode;
         public static ConfigEntry<float> minHyperShake;
@@ -156,6 +153,7 @@ namespace MysteryDice
         public static ConfigEntry<bool> LoversOnStart;
         // public static ConfigEntry<bool> OnlyOwnerDisablesGal;
         public static ConfigEntry<bool> DebugMenuClosesAfter;
+        public static ConfigEntry<bool> TwitchEnabled;
         public static ConfigEntry<string> DisplayResults;
         public static ConfigEntry<string> debugChat;
         
@@ -332,6 +330,12 @@ namespace MysteryDice
                 "Do Dice Explosion",
                 true,
                 "If the dice explode after rolling or not");
+            
+            TwitchEnabled = BepInExConfig.Bind<bool>(
+                "Twitch",
+                "Enable Twitch Integration",
+                false,
+                "If Dice Twitch Integration is enabled (Needs TwitchChatAPI)");
 
             useDiceOutside = BepInExConfig.Bind<bool>(
                 "Misc",
@@ -529,10 +533,8 @@ namespace MysteryDice
             MoreCompanyPresent = IsModPresent("me.swipez.melonloader.morecompany", "MoreCompany compatibility enabled!");
             NavMeshInCompanyPresent = IsModPresent("dev.kittenji.NavMeshInCompany", "Nav Mesh In Company compatibility enabled! >:)");
             NightOfTheLivingMimicPresent = IsModPresent("Slayer6409.NightOfTheLivingMimic", ">:)");
-            weatherRegistryPresent = IsModPresent("mrov.WeatherRegistry", "Weather stuff here! :D");
             if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("ainavt.lc.lethalconfig"))
                 LethalConfigPresent = true;
-            //MimicsPresent = IsModPresent("x753.Mimics", "Mimics compatablilty enabled!");
             BepInExConfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "Emergency Dice.cfg"),true);
             ModConfig();
             InvisibleEnemy.Config();
@@ -821,7 +823,7 @@ namespace MysteryDice
         private static bool IsModPresent(string name, string logMessage)
         {
             bool isPresent = Chainloader.PluginInfos.ContainsKey(name);
-            if(isPresent)MysteryDice.CustomLogger.LogMessage(logMessage);
+            if (isPresent) MysteryDice.CustomLogger.LogMessage(logMessage);
             return isPresent;
         }
         private static void NetcodeWeaver()

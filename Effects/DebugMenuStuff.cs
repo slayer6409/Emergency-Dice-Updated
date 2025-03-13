@@ -2,22 +2,15 @@ using System;
 using GameNetcodeStuff;
 using MysteryDice.Dice;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using BepInEx;
 using MysteryDice.Patches;
-using Newtonsoft.Json;
-using Steamworks.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using static UnityEngine.InputSystem.OnScreen.OnScreenStick;
 using Color = UnityEngine.Color;
 using Image = UnityEngine.UI.Image;
-using Random = UnityEngine.Random;
 
 namespace MysteryDice.Effects;
 
@@ -29,22 +22,29 @@ public class DebugMenuStuff : MonoBehaviour
     public static Color BackgroundColor = new Color(0.6039216f, 0.2392157f, 1f, 0.2f);
     public static Color AccentColor = new Color(0.6078432f, 0.2588235f, 0.9921569f, 0.4627451f);
     public static bool full, complete, su, ReviveOpen;
-    public static GameObject EffectMenu = null;
+    public static GameObject EffectMenu = null!;
 
     public static List<Image> backgroundImages = new List<Image>();
     public static List<Image> accentImages = new List<Image>();
     public static List<Image> buttonImages = new List<Image>();
     public static List<TMP_Text> textElements = new List<TMP_Text>();
     public static List<Text> textElements2 = new List<Text>();
-    public static bool ran = false;
-    public static bool fromYippee = false;
-    public static bool fromMe = false;
-    public static bool fromRandom = false;
-    private static Transform mainScrollContent;
-    private static Transform subScrollContent;
+    public static bool ran;
+    public static bool fromYippee;
+    public static bool fromMe;
+    public static bool fromRandom;
+    public static Transform mainScrollContent;
+    public static Transform subScrollContent;
+    public static event Action OnDebugMenuOpen;
+    public static event Action<Transform> OnSpecialFunctionsAdded;
+    public static event Action<Transform> OnSpawnFunctionsAdded;
+    public static event Action<Transform> OnPlayerFunctionsAdded;
+    
     public static void SetupColors()
     {
-        if (ColorUtility.TryParseHtmlString(AppendTransparency(MysteryDice.DebugButtonColor.Value, MysteryDice.DebugButtonAlpha.Value), out ButtonColor)) ;
+        if (ColorUtility.TryParseHtmlString(
+                AppendTransparency(MysteryDice.DebugButtonColor.Value, MysteryDice.DebugButtonAlpha.Value),
+                out ButtonColor)) ;
         else ColorUtility.TryParseHtmlString("#A447FF", out ButtonColor);
         
         if (ColorUtility.TryParseHtmlString(AppendTransparency(MysteryDice.DebugMenuTextColor.Value, MysteryDice.DebugMenuTextAlpha.Value), out TextColor)) ;
@@ -167,16 +167,16 @@ public class DebugMenuStuff : MonoBehaviour
     }
     public static void showDebugMenu(bool fulls, bool completes, bool sus = false)
     {   
+        
         SetupColors();
         if(!ran) setupElements();
         if(ran) setColors();
-        
         if (EffectMenu != null)
         {
             GameObject.Destroy(EffectMenu);
             EffectMenu = null;
         }
-        
+        OnDebugMenuOpen?.Invoke();
         EffectMenu = GameObject.Instantiate(MysteryDice.DebugMenuPrefab);
         StartOfRound.Instance.localPlayerController.quickMenuManager.isMenuOpen = true;
         subScrollContent = EffectMenu.transform.Find("DebugMenu/Scroll View/Viewport/Content");
@@ -1003,6 +1003,7 @@ public class DebugMenuStuff : MonoBehaviour
                 });
             }
         }
+        OnSpawnFunctionsAdded?.Invoke(subScrollContent);
     }
     public static void specialFunctions(bool special)
     {
@@ -1033,27 +1034,7 @@ public class DebugMenuStuff : MonoBehaviour
                 UnlockSomething();
             });
             
-            GameObject effectObj4 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
-            TMP_Text buttonText4 = effectObj4.transform.GetChild(0).GetComponent<TMP_Text>();
-            buttonText4.text = $"Set Weather";
-
-            Button button4 = effectObj4.GetComponent<Button>();
-            button4.onClick.AddListener(() =>
-            {
-                clearMainViewport();
-                weathers();
-            });
-            
-            GameObject effectObj5 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
-            TMP_Text buttonText5 = effectObj5.transform.GetChild(0).GetComponent<TMP_Text>();
-            buttonText5.text = $"Add Weather";
-
-            Button button5 = effectObj5.GetComponent<Button>();
-            button5.onClick.AddListener(() =>
-            {
-                clearMainViewport();
-                addweathers();
-            });
+            OnSpecialFunctionsAdded?.Invoke(subScrollContent);
         }
         
         GameObject effectObj2 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
@@ -1111,40 +1092,7 @@ public class DebugMenuStuff : MonoBehaviour
             });
         }
     }
-    public static void weathers()
-    {
-        var weathers = WeatherRegistryCompat.getWeathers();
-        foreach (var weather in weathers)
-        {
-            GameObject effectObj2 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, mainScrollContent);
-            TMP_Text buttonText2 = effectObj2.transform.GetChild(0).GetComponent<TMP_Text>();
-            buttonText2.text = weather;
-
-            Button button2 = effectObj2.GetComponent<Button>();
-            button2.onClick.AddListener(() =>
-            {
-                WeatherRegistryCompat.setWeather(weather);
-                CloseSelectMenu();
-            });
-        }
-    } 
-    public static void addweathers()
-    {
-        var weathers = WeatherRegistryCompat.getWeathers();
-        foreach (var weather in weathers)
-        {
-            GameObject effectObj2 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, mainScrollContent);
-            TMP_Text buttonText2 = effectObj2.transform.GetChild(0).GetComponent<TMP_Text>();
-            buttonText2.text = weather;
-
-            Button button2 = effectObj2.GetComponent<Button>();
-            button2.onClick.AddListener(() =>
-            {
-                WeatherRegistryCompat.addWeather(weather);
-                CloseSelectMenu();
-            });
-        }
-    }
+   
     public static void enemyTeleports()
     {
         foreach (var enemy in RoundManager.Instance.SpawnedEnemies)
@@ -1242,6 +1190,7 @@ public class DebugMenuStuff : MonoBehaviour
                 ForceSuitPlayerSelector();
             });
         }
+        OnPlayerFunctionsAdded?.Invoke(subScrollContent);
     }
 
     public static void TeleportPlayer(bool bring = false)
@@ -1585,6 +1534,9 @@ public class DebugMenuStuff : MonoBehaviour
                 Cursor.lockState = CursorLockMode.Locked;
                 GameObject.Destroy(EffectMenu);
                 StartOfRound.Instance.localPlayerController.quickMenuManager.isMenuOpen = false;
+                OnSpecialFunctionsAdded = null;
+                OnSpawnFunctionsAdded = null;
+                OnPlayerFunctionsAdded = null;
             }
         }
     }

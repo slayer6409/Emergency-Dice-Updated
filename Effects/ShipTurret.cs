@@ -27,12 +27,16 @@ namespace MysteryDice.Effects
 
         public static void SpawnTurretsShip(int amount)
         {
-            Transform catwalkShip = GameObject.Find("CatwalkShip").transform;
+            GameObject catwalk = GameObject.Find("CatwalkShip");
+            Transform catwalkShip;
+            if (catwalk == null) catwalkShip = StartOfRound.Instance.middleOfShipNode;
+            else catwalkShip = catwalk.transform;
             for (int i = 0; i < amount; i++)
             {
                 Vector3 pos = catwalkShip.position;
+                if (catwalk == null) pos += new Vector3(-8, 0.5f, 0);
 
-                pos = RoundManager.Instance.GetRandomNavMeshPositionInRadiusSpherical(pos,5f);
+                pos = RoundManager.Instance.GetRandomNavMeshPositionInRadiusSpherical(pos,8f);
 
                 GameObject gObj = UnityEngine.Object.Instantiate(
                     GetEnemies.SpawnableTurret.prefabToSpawn,

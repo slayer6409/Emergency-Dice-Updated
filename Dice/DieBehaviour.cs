@@ -114,30 +114,38 @@ namespace MysteryDice.Dice
             yield return new WaitForSeconds(spinTime);
 
             if(MysteryDice.doDiceExplosion.Value) Landmine.SpawnExplosion(gameObject.transform.position, true, 0, 0, 0, 0, null, false);
-            
-            if (userID == 6409046)
+            try
             {
-                wasEnemy = true;
-                Roll();
-            }
-            else
-            {
-                if (GameNetworkManager.Instance.localPlayerController.actualClientId == userID)
+                if (userID == 6409046)
                 {
-                    if (StartOfRound.Instance is null) yield break;
-                    if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) yield break;
-
-                    if (StartOfRound.Instance.currentLevel.PlanetName == "71 Gordion" || StartOfRound.Instance.currentLevel.PlanetName == "98 Galetry" )
-                    {
-                        Misc.SafeTipMessage($"Company penalty", "Do not try this again.");
-                        doPenalty();
-                        yield break;
-                    }
+                    wasEnemy = true;
                     Roll();
                 }
+                else
+                {
+                    if (GameNetworkManager.Instance.localPlayerController.actualClientId == userID)
+                    {
+                        if (StartOfRound.Instance is null) yield break;
+                        if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) yield break;
+
+                        if (StartOfRound.Instance.currentLevel.PlanetName == "71 Gordion" || StartOfRound.Instance.currentLevel.PlanetName == "98 Galetry" )
+                        {
+                            Misc.SafeTipMessage($"Company penalty", "Do not try this again.");
+                            doPenalty();
+                            yield break;
+                        }
+                        Roll();
+                    }
+                }
+                DestroyObject();
+            }
+            catch (Exception e)
+            {
+                MysteryDice.CustomLogger.LogError(e);
+                DestroyObject();
             }
             yield return new WaitForSeconds(0.4f);
-            DestroyObject();
+            
         }
         
         
@@ -418,13 +426,7 @@ namespace MysteryDice.Dice
             MysteryDice.MainRegisterNewEffect(new AllAtOnce(), true, true);
             MysteryDice.MainRegisterNewEffect(new Unkillable());
             MysteryDice.MainRegisterNewEffect(new FreebirdEnemy(), true);
-            
-            if (MysteryDice.weatherRegistryPresent)
-            {
-                MysteryDice.MainRegisterNewEffect(new ClearWeather());
-                MysteryDice.MainRegisterNewEffect(new AddWeather());
-                MysteryDice.MainRegisterNewEffect(new RandomWeather());
-            }
+            //MysteryDice.MainRegisterNewEffect(new TargetPractice(), true); //it bad no do this
             
             if (MysteryDice.lethalThingsPresent)
             {

@@ -68,9 +68,6 @@
     <Reference Include="Surfaced" Publicize="true">
       <HintPath>$(ThunderstorePath)\SurfacedTeam-Surfaced\Surfaced.dll</HintPath>
     </Reference>
-    <Reference Include="WeatherRegistry">
-      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\mrov-WeatherRegistry\WeatherRegistry.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
