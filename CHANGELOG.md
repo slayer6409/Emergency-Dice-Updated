@@ -1,3 +1,15 @@
+-	**1.9.14**
+    - 
+
+-	**1.9.13**
+    - Even more logging (debug) right before a effect is rolled to determine what roll is causing dice to error
+    - Added new events >:D
+    - Grab object patch fix for debug
+    - Fixed Moving traps being silly and staying at the doors
+      - They can now do scarier things though >:D 
+      - FREEBIRDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+    - Other small changes here and there
+
 -	**1.9.12**
     - Added additional logging just in case it fails to roll
     - Fixed ship turret erroring when wide ship or mel's 2 story ship is installed

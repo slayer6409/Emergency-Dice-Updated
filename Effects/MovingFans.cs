@@ -78,6 +78,42 @@ namespace MysteryDice.Effects
                 }
             }
         }
+
+        public static IEnumerator freebirdTrapSpawn(string trapName, bool random=false)
+        {
+            List<SpawnableMapObject> allTraps = StartOfRound.Instance.levels
+                .SelectMany(level => level.spawnableMapObjects)
+                .GroupBy(x => x.prefabToSpawn.name)
+                .Select(g => g.First())
+                .ToList();
+            SpawnableMapObject trapToSpawn;
+            if (random)
+            {
+                trapToSpawn = allTraps.OrderBy(_=> Random.value).First();
+            }
+            else
+            {
+                trapToSpawn = allTraps.Find(x => x.prefabToSpawn.name == trapName);
+            }
+            
+            var RM = RoundManager.Instance;
+            yield return new WaitForSeconds(2f);
+            var position = Random.value>0.5 ? RM.outsideAINodes[UnityEngine.Random.Range(0, RM.outsideAINodes.Length)].transform.position : RM.insideAINodes[UnityEngine.Random.Range(0, RM.outsideAINodes.Length)].transform.position;
+            var agent = GameObject.Instantiate(MysteryDice.AgentObjectPrefab, position, Quaternion.Euler(0, 0, 0));
+            var trap = GameObject.Instantiate(trapToSpawn.prefabToSpawn, position, Quaternion.Euler(0, 0, 0));
+            trap.GetComponent<NetworkObject>().Spawn(destroyWithScene:true);
+            agent.GetComponent<NetworkObject>().Spawn(destroyWithScene:true);
+            var smartAgentNavigator = agent.GetComponent<SmartAgentNavigator>();
+            var mm = trap.AddComponent<MakeMove>();
+            trap.transform.SetParent(agent.transform);
+            trap.transform.localPosition = Vector3.zero;
+            trap.transform.localRotation = Quaternion.identity;
+            mm.Initialize(smartAgentNavigator);
+            mm.enabled = true;
+            SceneManager.MoveGameObjectToScene(agent, RoundManager.Instance.mapPropsContainer.scene);
+            if(StartOfRound.Instance.IsHost)
+                Networker.Instance.FreebirdTrapClientRPC(agent.GetComponent<NetworkObject>().NetworkObjectId);
+        } 
     }
 
     
@@ -91,6 +127,8 @@ namespace MysteryDice.Effects
         public SmartAgentNavigator agent;
         public bool currently = false;
         [CanBeNull] public PlayerControllerB follows = null;
+        private Vector3 _currentTargetPosition = Vector3.zero;
+        bool _currentIsInside = false;
         private void Awake()
         {
             
@@ -108,6 +146,7 @@ namespace MysteryDice.Effects
             agent.SetAllValues(true);
             agent.OnUseEntranceTeleport.AddListener(OnUseEntranceTeleport);
             agent.OnEnableOrDisableAgent.AddListener(OnEnableOrDisableAgent);
+           
         }
         public void OnEnableOrDisableAgent(bool agentEnabled)
         {
@@ -121,95 +160,63 @@ namespace MysteryDice.Effects
 
         public void FixedUpdate()
         {
-            
-            // if (StartOfRound.Instance.inShipPhase)
-            // {
-            //     if(StartOfRound.Instance.IsHost) if(gameObject.transform.parent.GetComponent<NetworkObject>() != null) gameObject.transform.parent.GetComponent<NetworkObject>().Despawn();
-            // }
-            // try
-            // {
-            //     
-                if (Networker.Instance.IsServer)
+            if (Networker.Instance.IsServer)
+            {
+                if (follows != null && agent != null)
                 {
-                    if (follows!=null && agent != null)
+                    agent.AdjustSpeedBasedOnDistance(1.5f);
+                    if (StartOfRound.Instance.inShipPhase) follows = null;
+                }
+
+                _pathTimer -= Time.fixedDeltaTime;
+
+                if (_pathTimer <= 0f)
+                {
+                    if (follows != null)
                     {
-                        agent.AdjustSpeedBasedOnDistance(2);
-                        if (StartOfRound.Instance.inShipPhase) follows = null;
+                        _currentTargetPosition = follows.transform.position; // Update target position periodically
+                        _currentIsInside = follows.isInsideFactory;
                     }
-                    _pathTimer -= Time.fixedDeltaTime;
-                
-                    // if (agent == null)
-                    // {
-                    //     //Debug.LogError($"SmartAgentNavigator is null on {gameObject.name}. Ensure it is properly initialized.");
-                    //     Destroy(this);
-                    //     return;
-                    // }
-                    if (_pathTimer <= 0f)
+                    else
                     {
-                        if (follows != null)
+                        bool isInside = false;
+                        Vector3 targetPosition = Vector3.zero;
+                        _pathTimer = UnityEngine.Random.Range(5f, 25f);
+                        var e = UnityEngine.Random.value;
+
+                        if (e > 0.5f)
                         {
-                            agent.DoPathingToDestination(follows.transform.position, follows.isInsideFactory);
+                            isInside = false;
+                            targetPosition = RoundManager.Instance.GetRandomNavMeshPositionInRadiusSpherical(
+                                outsidePoints[UnityEngine.Random.Range(0, outsidePoints.Length)].transform.position +
+                                new Vector3(UnityEngine.Random.Range(-10f, 10f), 0f,
+                                    UnityEngine.Random.Range(-10f, 10f))
+                            );
                         }
                         else
-                        {  
-                            bool isInside = false;
-                            Vector3 TargetPosition = Vector3.zero;
-                            _pathTimer = UnityEngine.Random.Range(10f, 25f);
-                            var e = UnityEngine.Random.value;
-                            if (e > 0.5f)
-                            {
-                                isInside = false;
-                                //Debug.LogWarning("Moving outside");
-                                TargetPosition = RoundManager.Instance.GetRandomNavMeshPositionInRadiusSpherical(outsidePoints[UnityEngine.Random.Range(0, outsidePoints.Length)].transform.position + new Vector3(UnityEngine.Random.Range(-10f, 10f), 0f, UnityEngine.Random.Range(-10f, 10f)));
-                            }
-                            else
-                            {
-                                isInside = true;
-                                //Debug.LogWarning("Moving inside");
-                                TargetPosition = RoundManager.Instance.GetRandomNavMeshPositionInRadiusSpherical(InsidePoints[UnityEngine.Random.Range(0, InsidePoints.Length)].transform.position + new Vector3(UnityEngine.Random.Range(-10f, 10f), 0f, UnityEngine.Random.Range(-10f, 10f)));
-                            }
-                            if (agent == null)
-                            {
-                                //Debug.LogError($"SmartAgent component not found on GameObject {transform.parent.name}.");
-                                return;
-                            }
-                   
-                            Networker.Instance.MoveTrapServerRpc(agent.GetInstanceID(), TargetPosition, isInside);
-                            
+                        {
+                            isInside = true;
+                            targetPosition = RoundManager.Instance.GetRandomNavMeshPositionInRadiusSpherical(
+                                InsidePoints[UnityEngine.Random.Range(0, InsidePoints.Length)].transform.position +
+                                new Vector3(UnityEngine.Random.Range(-10f, 10f), 0f,
+                                    UnityEngine.Random.Range(-10f, 10f))
+                            );
                         }
-                      
+
+                        if (agent == null)
+                        {
+                            return;
+                        }
+
+                        _currentTargetPosition = targetPosition;
+                        _currentIsInside = isInside;
                     }
                 }
-            // }
-            // catch (NullReferenceException e)
-            // {
-            //     //This is a very stupid way to do it, but it works
-            //     //don't look at this code
-            //     foreach (Transform child in transform)
-            //     {
-            //         //MysteryDice.CustomLogger.LogWarning("Deleting child: " + child.name + "");
-            //         var neto = child.gameObject.GetComponent<NetworkObject>();
-            //         if (neto!=null)neto.Despawn();
-            //         if (child != null)
-            //         {
-            //             Destroy(child.gameObject);
-            //         }
-            //     }
-            //     //MysteryDice.CustomLogger.LogWarning("Deleting parent: " + transform.parent.name + "");
-            //     transform.parent.GetComponent<NetworkObject>().Despawn();
-            //     if (transform.parent.name.StartsWith("Agent"))
-            //     {
-            //         try
-            //         {
-            //             Destroy(transform.parent.gameObject);
-            //         }
-            //         catch
-            //         {
-            //             
-            //         }
-            //     }
-            //     Destroy(this.gameObject);
-            // }
+                if (agent != null)
+                {
+                    agent.DoPathingToDestination(_currentTargetPosition, _currentIsInside);
+                }
+            }
         }
     }
 }

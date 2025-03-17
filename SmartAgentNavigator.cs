@@ -66,7 +66,7 @@ public class SmartAgentNavigator : NetworkBehaviour
         exitPoints.Clear();
         elevatorScript = null;
     }
-
+    
     public void Update()
     {
         if (InElevator)
@@ -281,7 +281,7 @@ public class SmartAgentNavigator : NetworkBehaviour
         }
 
         float distanceToDestination = Vector3.Distance(transform.position, destination);
-        if (distanceToDestination <= agent.stoppingDistance + 1f)
+        if (distanceToDestination <= agent.stoppingDistance)
         {
             entranceToUse = null;
             agent.Warp(destinationAfterTeleport);

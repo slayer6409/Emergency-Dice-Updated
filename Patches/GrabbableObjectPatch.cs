@@ -21,39 +21,42 @@ namespace MysteryDice.Patches
     {
         [HarmonyPrefix]
         [HarmonyPatch("EquipItem")]
-        public static void EquipItem()
+        public static void EquipItem(GrabbableObject __instance)
         {
             if(!MysteryDice.DebugLogging.Value) return;
-            var player = GameNetworkManager.Instance?.localPlayerController;
-            if (player == null)
-            {
-                MysteryDice.CustomLogger.LogError("Player controller is null.");
-                return;
-            }
-            int currentSlot = player.currentItemSlot;
-            int validSlotIndex = currentSlot >= 1 ? currentSlot - 1 : currentSlot;
-            if (player.ItemSlots == null || validSlotIndex < 0 || validSlotIndex >= player.ItemSlots.Length)
-            {
-                MysteryDice.CustomLogger.LogError($"ItemSlots are null or validSlotIndex {validSlotIndex} is out of bounds.");
-                return;
-            }
-            var i = player.ItemSlots[validSlotIndex];
+            // var player = GameNetworkManager.Instance?.localPlayerController;
+            // if (player == null)
+            // {
+            //     MysteryDice.CustomLogger.LogError("Player controller is null.");
+            //     return;
+            // }
+            // int currentSlot = player.currentItemSlot;
+            // int validSlotIndex = currentSlot >= 1 ? currentSlot - 1 : currentSlot;
+            // if (player.ItemSlots == null || validSlotIndex < 0 || validSlotIndex >= player.ItemSlots.Length)
+            // {
+            //     MysteryDice.CustomLogger.LogError($"ItemSlots are null or validSlotIndex {validSlotIndex} is out of bounds.");
+            //     return;
+            // }
+            // var i = player.ItemSlots[validSlotIndex];
+            
+            var i = __instance;
+            string InfoLogging = "Picked up Item: ";
+            if (i.playerHeldBy.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId) return;
             if (i == null)
             {
-                MysteryDice.CustomLogger.LogError($"Item at slot {validSlotIndex} is null.");
+                MysteryDice.CustomLogger.LogError($"Item is null.");
                 return;
             }
-            if (i.itemProperties == null)
+            InfoLogging += i.name + " ";
+            if (i.itemProperties.spawnPrefab != null)
             {
-                MysteryDice.CustomLogger.LogError("Item properties are null.");
-                return;
+                InfoLogging += $"with prefab name {i.itemProperties.spawnPrefab.name} ";
             }
-            if (i.itemProperties.spawnPrefab == null)
+            if (i.itemProperties != null)
             {
-                MysteryDice.CustomLogger.LogError("Spawn prefab is null.");
-                return;
+                InfoLogging += $"and item properties name: {i.itemProperties.name} ";
             }
-            MysteryDice.CustomLogger.LogInfo($"Picked up: {i.name} with prefab name {i.itemProperties.spawnPrefab.name}, and properties name {i.itemProperties.name}");
+            MysteryDice.CustomLogger.LogInfo(InfoLogging);
         }
 
         

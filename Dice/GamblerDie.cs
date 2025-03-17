@@ -45,6 +45,7 @@ namespace MysteryDice.Dice
             if (randomEffect == null) return;
 
             PlaySoundBasedOnEffect(randomEffect.Outcome);
+            MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
             randomEffect.Use();
             
             var who = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";

@@ -200,6 +200,8 @@ namespace MysteryDice.Dice
             if (randomEffect == null) return;
 
             PlaySoundBasedOnEffect(randomEffect.Outcome);
+            
+            MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
             randomEffect.Use();
 
             
@@ -426,6 +428,9 @@ namespace MysteryDice.Dice
             MysteryDice.MainRegisterNewEffect(new AllAtOnce(), true, true);
             MysteryDice.MainRegisterNewEffect(new Unkillable());
             MysteryDice.MainRegisterNewEffect(new FreebirdEnemy(), true);
+            MysteryDice.MainRegisterNewEffect(new DoubleTrouble());
+            MysteryDice.MainRegisterNewEffect(new ThreesCompany());
+            MysteryDice.MainRegisterNewEffect(new FreebirdTrap(), true);
             //MysteryDice.MainRegisterNewEffect(new TargetPractice(), true); //it bad no do this
             
             if (MysteryDice.lethalThingsPresent)

@@ -29,12 +29,12 @@ namespace MysteryDice.Effects
                     }
                     catch (Exception ex) 
                     {
-                        //error
+                        MysteryDice.CustomLogger.LogDebug("Probably not an error, but: "+ex.Message+"\n"+ex.StackTrace);
                     }
                 }
                 catch (Exception ex2)
                 {
-                    // hmmm
+                    MysteryDice.CustomLogger.LogDebug("Probably not an error, but: "+ex2.Message+"\n"+ex2.StackTrace);
                 }
             }
         }

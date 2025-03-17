@@ -44,7 +44,7 @@ namespace MysteryDice.Effects
             }
             catch (Exception e)
             {
-                
+                MysteryDice.CustomLogger.LogDebug("Probably not an error, but: "+e.Message+"\n"+e.StackTrace);
             }
             
             player.isInElevator = true;

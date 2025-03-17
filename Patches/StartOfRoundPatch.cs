@@ -118,8 +118,6 @@ namespace MysteryDice.Patches
             Martyrdom.doMinesDrop = false;
             
             
-            
-            
             if (LeverShake.IsShaking)
             {
                 LeverShake.ShipLeverTrigger.transform.localPosition = LeverShake.InitialLevelTriggerLocalPosition;
@@ -153,7 +151,11 @@ namespace MysteryDice.Patches
             // {
             //     if (SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.after || SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.bothAgainAfter) Networker.Instance.fixSizeServerRPC(StartOfRound.Instance.localPlayerController.actualClientId);
             // }
-            Networker.Instance.StopAllCoroutines();
+            if (Networker.Instance == null) MysteryDice.CustomLogger.LogFatal("Networker is null, this should never happen, what is going on???????");
+            else
+            {
+                Networker.Instance.StopAllCoroutines();
+            }
 
             if (Networker.Instance.IsServer)
                 Networker.Instance.SyncRateClientRPC(StartOfRound.Instance.companyBuyingRate);

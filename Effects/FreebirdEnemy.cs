@@ -69,6 +69,14 @@ namespace MysteryDice.Effects
                 obj.gameObject.AddComponent<freebirdMaker>();
             }
         }
+        public static void fixTrap(ulong id)
+        {
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(id, out var networkObj))
+            {
+                GameObject obj = networkObj.gameObject;
+                obj.gameObject.AddComponent<freebirdTrapMaker>();
+            }
+        }
     }
 
     public class freebirdMaker : MonoBehaviour
@@ -100,6 +108,34 @@ namespace MysteryDice.Effects
                 audiosrc.Stop();
                 Destroy(this);
             }
+            if (agent==null) return;
+            agent.acceleration = 999;
+            agent.angularSpeed = 360;
+            agent.speed = 20;
+        }
+    }
+    public class freebirdTrapMaker : MonoBehaviour
+    {
+        public NavMeshAgent agent;
+        private AudioSource audiosrc;
+        public void Start()
+        {
+            if (agent == null) agent = gameObject.GetComponent<NavMeshAgent>();
+            if (agent == null) return;
+            audiosrc = gameObject.AddComponent<AudioSource>();
+            audiosrc.loop = true;
+            audiosrc.maxDistance = 30;
+            audiosrc.minDistance = 0;
+            audiosrc.volume = 0.8f;
+            audiosrc.rolloffMode = AudioRolloffMode.Custom;
+            audiosrc.spatialBlend = 1;
+            audiosrc.dopplerLevel = 0;
+            audiosrc.clip = MysteryDice.LoadedAssets2.LoadAsset<AudioClip>("Freebird");
+            audiosrc.Play();
+        }
+
+        public void Update()
+        {
             if (agent==null) return;
             agent.acceleration = 999;
             agent.angularSpeed = 360;

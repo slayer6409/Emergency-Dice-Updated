@@ -632,6 +632,46 @@ public class DebugMenuStuff : MonoBehaviour
             rightClickHandler.complete = complete;
         }
     } 
+    public static void spawnFreebirdTrap()
+    {
+        FavoriteEffectManager.FavoriteData favoritesData = FavoriteEffectManager.LoadFavorites();
+        List<string> favoriteTrapNames = favoritesData.FavoriteTraps;
+
+        List<SpawnableMapObject> allTraps = StartOfRound.Instance.levels
+            .SelectMany(level => level.spawnableMapObjects)
+            .GroupBy(x => x.prefabToSpawn.name)
+            .Select(g => g.First())
+            .ToList();
+
+        allTraps = allTraps.OrderBy(t => favoriteTrapNames.Contains(t.prefabToSpawn.name) ? 0 : 1)
+            .ThenBy(t => t.prefabToSpawn.name)
+            .ToList();
+
+        
+        foreach (var trap in allTraps)
+        {
+            GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, mainScrollContent);
+            TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
+
+            bool isFavorite = favoriteTrapNames.Contains(trap.prefabToSpawn.name);
+            string favoriteMarker = isFavorite ? "*" : "";
+            buttonText.text = $"{favoriteMarker} {trap.prefabToSpawn.name}";
+            buttonText.color = isFavorite ? Color.red : TextColor;
+
+            Button button = effectObj.GetComponent<Button>();
+            button.onClick.AddListener(() =>
+            {
+                CloseSelectMenu();
+                Networker.Instance.SpawnFreebirdTrapServerRPC(trap.prefabToSpawn.name);
+            });
+
+            RightClickHandler2 rightClickHandler = effectObj.AddComponent<RightClickHandler2>();
+            rightClickHandler.effectName = trap.prefabToSpawn.name;
+            rightClickHandler.category = "FavoriteTraps";
+            rightClickHandler.full = full;
+            rightClickHandler.complete = complete;
+        }
+    } 
 
     public static void spawnTrap()
     {
@@ -644,7 +684,6 @@ public class DebugMenuStuff : MonoBehaviour
             .Select(g => g.First())
             .ToList();
 
-        // ✅ Sort: Favorites first, then others alphabetically
         allTraps = allTraps.OrderBy(t => favoriteTrapNames.Contains(t.prefabToSpawn.name) ? 0 : 1)
             .ThenBy(t => t.prefabToSpawn.name)
             .ToList();
@@ -667,12 +706,12 @@ public class DebugMenuStuff : MonoBehaviour
                 Vector3 spawnPosition;
                 if (StartOfRound.Instance.localPlayerController.isPlayerDead)
                 {
-                    spawnPosition = StartOfRound.Instance.spectateCamera.transform.position; // ✅ Spectator Fix
+                    spawnPosition = StartOfRound.Instance.spectateCamera.transform.position;
                 }
                 else
                 {
                     spawnPosition =
-                        StartOfRound.Instance.localPlayerController.transform.position; // ✅ Normal Player Spawn
+                        StartOfRound.Instance.localPlayerController.transform.position;
                 }
 
                 Networker.Instance.spawnTrapOnServerRPC(trap.prefabToSpawn.name, 1,
@@ -993,13 +1032,23 @@ public class DebugMenuStuff : MonoBehaviour
             {
                 GameObject effectObj8 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
                 TMP_Text buttonText8 = effectObj8.transform.GetChild(0).GetComponent<TMP_Text>();
-                buttonText8.text = $"Spawn Freebird";
+                buttonText8.text = $"Spawn Freebird Enemy";
 
                 Button button8 = effectObj8.GetComponent<Button>();
                 button8.onClick.AddListener(() =>
                 {
                     clearMainViewport();
                     spawnFreebirdEnemy();
+                });
+                GameObject effectObj10 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
+                TMP_Text buttonText10 = effectObj10.transform.GetChild(0).GetComponent<TMP_Text>();
+                buttonText10.text = $"Spawn Freebird Trap";
+
+                Button button10 = effectObj10.GetComponent<Button>();
+                button10.onClick.AddListener(() =>
+                {
+                    clearMainViewport();
+                    spawnFreebirdTrap();
                 });
             }
         }

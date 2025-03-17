@@ -578,14 +578,14 @@ namespace MysteryDice
                 {
                     GameObject obj = networkObj.gameObject;
 
-                    if(super == 0) Flinger.horseStuff(obj);
-                    else if(super==1) SuperFlinger.horseStuff(obj, a,b,c);
+                    if (super == 0) Flinger.horseStuff(obj);
+                    else if (super == 1) SuperFlinger.horseStuff(obj, a, b, c);
                     else if (super == 2) Horseshootnt.horseStuff(obj);
                 }
             }
             catch (Exception ex) 
             {
-            
+                MysteryDice.CustomLogger.LogWarning("Probably not an error, but: "+ex.Message+"\n"+ex.StackTrace);
             }
         }
 
@@ -1328,6 +1328,12 @@ namespace MysteryDice
         {
             FreebirdEnemy.spawnEnemy(name, pos);
         }  
+        [ServerRpc(RequireOwnership = false)]
+        public void SpawnFreebirdTrapServerRPC(string name, bool random = false)
+        {
+            StartCoroutine(
+                MovingFans.freebirdTrapSpawn(name, random));
+        }  
         
         [ServerRpc(RequireOwnership = false)]
         public void FreebirdEnemyServerRPC(ulong id)
@@ -1339,6 +1345,11 @@ namespace MysteryDice
         public void FreebirdEnemyClientRPC(ulong id)
         {
             FreebirdEnemy.fixEnemy(id);
+        }
+        [ClientRpc]
+        public void FreebirdTrapClientRPC(ulong id)
+        {
+            FreebirdEnemy.fixTrap(id);
         }
         
         #endregion

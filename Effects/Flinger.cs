@@ -41,9 +41,9 @@ namespace MysteryDice.Effects
                 obj.GetComponent<Surfaced.HorseAI>().launchForceIndex = 2;
                 obj.GetComponents<SkinnedMeshRenderer>()[0].materials[1].SetColor("red", Color.red);
             }
-            catch
+            catch(Exception e)
             {
-
+                MysteryDice.CustomLogger.LogWarning("Small Error: "+e.Message+"\n"+e.StackTrace);
             }
 
         }

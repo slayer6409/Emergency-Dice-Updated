@@ -44,6 +44,7 @@ namespace MysteryDice.Dice
 
             if(diceRoll == 6)
             {
+                MysteryDice.CustomLogger.LogDebug("Rolling Effect: Saint 6");
                 if(MysteryDice.NewDebugMenu.Value) DebugMenuStuff.ShowSelectEffectMenu();
                 else SelectEffect.ShowSelectMenu(false,false,fromSaint:true);
                 Misc.SafeTipMessage($"Rolled 6", "Choose an effect");
@@ -52,6 +53,7 @@ namespace MysteryDice.Dice
                 return;
             }
 
+            MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
             randomEffect.Use();
             
             var who = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";

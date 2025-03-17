@@ -31,6 +31,7 @@ namespace MysteryDice.Dice
             if (randomEffect == null) return;
 
             PlaySoundBasedOnEffect(randomEffect.Outcome);
+            MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
             randomEffect.Use();
            
             var who = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";
@@ -40,6 +41,7 @@ namespace MysteryDice.Dice
             {
                 Misc.SafeTipMessage($"Rolled 1...", "Run");
                 randomEffect = GetRandomEffect(diceRoll, Effects);
+                MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
                 randomEffect.Use();
                 
                 who = PlayerUser != null ? PlayerUser.playerUsername : "An Enemy";

@@ -41,11 +41,13 @@ namespace MysteryDice.Dice
 
             if (randomEffect == null) return;
 
+            
             PlaySoundBasedOnEffect(randomEffect.Outcome);
 
             if (diceRoll > 3) randomEffect = new ReturnToShip();
             if (diceRoll == 6) randomEffect = new ReturnToShipTogether();
 
+            MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
             randomEffect.Use();
             var who = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";
             Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
