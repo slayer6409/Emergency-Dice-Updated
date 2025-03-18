@@ -1,5 +1,7 @@
 -	**1.9.14**
-    - 
+    - Fixed Amazon Shipping and Airsupply not spawning mimics randomly
+    - Added Beartraps, Crates, and Boomtraps to the spawnmenu of DebugMenu
+    - Haha Laser go brrrr
 
 -	**1.9.13**
     - Even more logging (debug) right before a effect is rolled to determine what roll is causing dice to error
@@ -14,7 +16,6 @@
     - Added additional logging just in case it fails to roll
     - Fixed ship turret erroring when wide ship or mel's 2 story ship is installed
     - Fixed burger flippers spawning in weird positions (sometimes)
-    - 
 
 - 	**1.9.11**
     - Actually made Weather Registery a soft dependency

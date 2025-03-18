@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using UnityEngine;
+
 namespace MysteryDice.Patches;
 using CodeRebirth;
 
@@ -46,6 +49,20 @@ public class CodeRebirthCheckConfigs
     public static bool checkZortConfig()
     {
         return CodeRebirth.src.Plugin.ModConfig.ConfigZortAddonsEnabled.Value;
+    }
+
+    public static List<trap> getSpawnPrefabs()
+    {
+        List<trap> traps = new List<trap>();
+        traps.Add(new trap("BoomTrap",CodeRebirth.src.Content.Maps.MapObjectHandler.Instance.BearTrap.BoomTrapPrefab));
+        traps.Add(new trap("GrassBeartrap",CodeRebirth.src.Content.Maps.MapObjectHandler.Instance.BearTrap.GrassMatPrefab));
+        traps.Add(new trap("SnowBeartrap",CodeRebirth.src.Content.Maps.MapObjectHandler.Instance.BearTrap.SnowMatPrefab));
+        traps.Add(new trap("GravelBeartrap",CodeRebirth.src.Content.Maps.MapObjectHandler.Instance.BearTrap.GravelMatPrefab));
+        traps.Add(new trap("Crate",CodeRebirth.src.Content.Maps.MapObjectHandler.Instance.Crate.WoodenCratePrefab));
+        traps.Add(new trap("Safe",CodeRebirth.src.Content.Maps.MapObjectHandler.Instance.Crate.MetalCratePrefab));
+        traps.Add(new trap("MimicCrate",CodeRebirth.src.Content.Maps.MapObjectHandler.Instance.Crate.MimicWoodenCratePrefab));
+        traps.Add(new trap("MimicSafe",CodeRebirth.src.Content.Maps.MapObjectHandler.Instance.Crate.MimicMetalCratePrefab));
+        return traps;
     }
     
     

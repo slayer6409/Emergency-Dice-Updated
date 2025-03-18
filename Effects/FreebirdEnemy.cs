@@ -1,7 +1,6 @@
 ﻿using MysteryDice.Patches;
 using System;
 using System.Collections;
-using CodeRebirth.src.Content.Enemies;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
@@ -67,17 +66,24 @@ namespace MysteryDice.Effects
             {
                 GameObject obj = networkObj.gameObject;
                 obj.gameObject.AddComponent<freebirdMaker>();
+                
             }
         }
+        
         public static void fixTrap(ulong id)
         {
             if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(id, out var networkObj))
             {
                 GameObject obj = networkObj.gameObject;
                 obj.gameObject.AddComponent<freebirdTrapMaker>();
+                if (MysteryDice.CodeRebirthPresent)
+                {
+                    Networker.Instance.StartCoroutine(MovingBeartraps.fixSpiney(obj));
+                }
             }
         }
     }
+    
 
     public class freebirdMaker : MonoBehaviour
     {
@@ -99,6 +105,7 @@ namespace MysteryDice.Effects
             audiosrc.dopplerLevel = 0;
             audiosrc.clip = MysteryDice.LoadedAssets2.LoadAsset<AudioClip>("Freebird");
             audiosrc.Play();
+            
         }
 
         public void Update()

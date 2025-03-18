@@ -81,26 +81,25 @@ namespace MysteryDice.Effects
 
         public static IEnumerator freebirdTrapSpawn(string trapName, bool random=false)
         {
-            List<SpawnableMapObject> allTraps = StartOfRound.Instance.levels
-                .SelectMany(level => level.spawnableMapObjects)
-                .GroupBy(x => x.prefabToSpawn.name)
+            var allTraps = Misc.getAllTraps()
+                .GroupBy(x => x.name)
                 .Select(g => g.First())
                 .ToList();
-            SpawnableMapObject trapToSpawn;
+            trap trapToSpawn;
             if (random)
             {
                 trapToSpawn = allTraps.OrderBy(_=> Random.value).First();
             }
             else
             {
-                trapToSpawn = allTraps.Find(x => x.prefabToSpawn.name == trapName);
+                trapToSpawn = allTraps.Find(x => x.name == trapName);
             }
             
             var RM = RoundManager.Instance;
             yield return new WaitForSeconds(2f);
             var position = Random.value>0.5 ? RM.outsideAINodes[UnityEngine.Random.Range(0, RM.outsideAINodes.Length)].transform.position : RM.insideAINodes[UnityEngine.Random.Range(0, RM.outsideAINodes.Length)].transform.position;
             var agent = GameObject.Instantiate(MysteryDice.AgentObjectPrefab, position, Quaternion.Euler(0, 0, 0));
-            var trap = GameObject.Instantiate(trapToSpawn.prefabToSpawn, position, Quaternion.Euler(0, 0, 0));
+            var trap = GameObject.Instantiate(trapToSpawn.prefab, position, Quaternion.Euler(0, 0, 0));
             trap.GetComponent<NetworkObject>().Spawn(destroyWithScene:true);
             agent.GetComponent<NetworkObject>().Spawn(destroyWithScene:true);
             var smartAgentNavigator = agent.GetComponent<SmartAgentNavigator>();

@@ -637,14 +637,14 @@ public class DebugMenuStuff : MonoBehaviour
         FavoriteEffectManager.FavoriteData favoritesData = FavoriteEffectManager.LoadFavorites();
         List<string> favoriteTrapNames = favoritesData.FavoriteTraps;
 
-        List<SpawnableMapObject> allTraps = StartOfRound.Instance.levels
-            .SelectMany(level => level.spawnableMapObjects)
-            .GroupBy(x => x.prefabToSpawn.name)
+        var allTraps = Misc.getAllTraps()
+            .GroupBy(x => x.name)
             .Select(g => g.First())
             .ToList();
+        trap trapToSpawn;
 
-        allTraps = allTraps.OrderBy(t => favoriteTrapNames.Contains(t.prefabToSpawn.name) ? 0 : 1)
-            .ThenBy(t => t.prefabToSpawn.name)
+        allTraps = allTraps.OrderBy(t => favoriteTrapNames.Contains(t.name) ? 0 : 1)
+            .ThenBy(t => t.name)
             .ToList();
 
         
@@ -653,20 +653,20 @@ public class DebugMenuStuff : MonoBehaviour
             GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, mainScrollContent);
             TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
 
-            bool isFavorite = favoriteTrapNames.Contains(trap.prefabToSpawn.name);
+            bool isFavorite = favoriteTrapNames.Contains(trap.name);
             string favoriteMarker = isFavorite ? "*" : "";
-            buttonText.text = $"{favoriteMarker} {trap.prefabToSpawn.name}";
+            buttonText.text = $"{favoriteMarker} {trap.name}";
             buttonText.color = isFavorite ? Color.red : TextColor;
 
             Button button = effectObj.GetComponent<Button>();
             button.onClick.AddListener(() =>
             {
                 CloseSelectMenu();
-                Networker.Instance.SpawnFreebirdTrapServerRPC(trap.prefabToSpawn.name);
+                Networker.Instance.SpawnFreebirdTrapServerRPC(trap.name);
             });
 
             RightClickHandler2 rightClickHandler = effectObj.AddComponent<RightClickHandler2>();
-            rightClickHandler.effectName = trap.prefabToSpawn.name;
+            rightClickHandler.effectName = trap.name;
             rightClickHandler.category = "FavoriteTraps";
             rightClickHandler.full = full;
             rightClickHandler.complete = complete;
@@ -678,24 +678,26 @@ public class DebugMenuStuff : MonoBehaviour
         FavoriteEffectManager.FavoriteData favoritesData = FavoriteEffectManager.LoadFavorites();
         List<string> favoriteTrapNames = favoritesData.FavoriteTraps;
 
-        List<SpawnableMapObject> allTraps = StartOfRound.Instance.levels
-            .SelectMany(level => level.spawnableMapObjects)
-            .GroupBy(x => x.prefabToSpawn.name)
+       
+        var allTraps = Misc.getAllTraps()
+            .GroupBy(x => x.name)
             .Select(g => g.First())
             .ToList();
+        trap trapToSpawn;
 
-        allTraps = allTraps.OrderBy(t => favoriteTrapNames.Contains(t.prefabToSpawn.name) ? 0 : 1)
-            .ThenBy(t => t.prefabToSpawn.name)
+        allTraps = allTraps.OrderBy(t => favoriteTrapNames.Contains(t.name) ? 0 : 1)
+            .ThenBy(t => t.name)
             .ToList();
+
 
         foreach (var trap in allTraps)
         {
             GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, mainScrollContent);
             TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
 
-            bool isFavorite = favoriteTrapNames.Contains(trap.prefabToSpawn.name);
+            bool isFavorite = favoriteTrapNames.Contains(trap.name);
             string favoriteMarker = isFavorite ? "*" : "";
-            buttonText.text = $"{favoriteMarker} {trap.prefabToSpawn.name}";
+            buttonText.text = $"{favoriteMarker} {trap.name}";
             buttonText.color = isFavorite ? FavoriteTextColor : TextColor;
 
             Button button = effectObj.GetComponent<Button>();
@@ -714,17 +716,17 @@ public class DebugMenuStuff : MonoBehaviour
                         StartOfRound.Instance.localPlayerController.transform.position;
                 }
 
-                Networker.Instance.spawnTrapOnServerRPC(trap.prefabToSpawn.name, 1,
+                Networker.Instance.spawnTrapOnServerRPC(trap.name, 1,
                     StartOfRound.Instance.localPlayerController.isInsideFactory,
                     StartOfRound.Instance.localPlayerController.actualClientId,
                     StartOfRound.Instance.localPlayerController.isPlayerDead,
                     spawnPosition);
-                Misc.SafeTipMessage($"Spawned {trap.prefabToSpawn.name}", $"Spawned at {spawnPosition}");
+                Misc.SafeTipMessage($"Spawned {trap.name}", $"Spawned at {spawnPosition}");
             });
 
             // ✅ Right-click handler for favoriting
             RightClickHandler2 rightClickHandler = effectObj.AddComponent<RightClickHandler2>();
-            rightClickHandler.effectName = trap.prefabToSpawn.name;
+            rightClickHandler.effectName = trap.name;
             rightClickHandler.category = "FavoriteTraps";
             rightClickHandler.full = full;
             rightClickHandler.complete = complete;

@@ -325,6 +325,29 @@ namespace MysteryDice
             }
         }
 
+        public static trap[] getAllTraps()
+        {
+            List<trap> allTraps = new List<trap>();
+            List<SpawnableMapObject> allMapTraps = StartOfRound.Instance.levels
+                .SelectMany(level => level.spawnableMapObjects)
+                .GroupBy(x => x.prefabToSpawn.name)
+                .Select(g => g.First())
+                .ToList();
+            foreach (SpawnableMapObject spawnableMapObject in allMapTraps)
+            {
+                allTraps.Add(new trap(spawnableMapObject.prefabToSpawn.name, spawnableMapObject.prefabToSpawn));
+            }
+            if (MysteryDice.CodeRebirthPresent)
+            {
+                foreach (var crt in CodeRebirthCheckConfigs.getSpawnPrefabs())
+                {
+                    if(allTraps.Exists(x=>x.name==crt.name)) continue;
+                    allTraps.Add(crt);
+                }
+            }
+            return allTraps.ToArray();
+        }
+        
         public static void SafeTipMessage(string title, string body)
         {
             try
@@ -464,6 +487,18 @@ namespace MysteryDice
                 //MysteryDice.CustomLogger.LogWarning($"Player carry weight updated to: {player.carryWeight}");
 
             }
+        }
+    }
+
+    public class trap
+    {
+        public string name;
+        public GameObject prefab;
+
+        public trap(string _name, GameObject _prefab)
+        {
+            name = _name;
+            prefab = _prefab;
         }
     }
 }

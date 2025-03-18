@@ -60,6 +60,7 @@ namespace MysteryDice
         public static InputAction debugMenuAction = null;
         internal static IngameKeybinds Keybinds = null!;
 
+        
         //public static UnlockableItemDef diceGalUnlockable;  //gal commented
         public static GameObject NetworkerPrefab,
             JumpscareCanvasPrefab,

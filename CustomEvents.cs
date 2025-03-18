@@ -340,19 +340,13 @@ namespace MysteryDice
         {
             Networker.Instance.CustomTrapServerRPC(config.AmountMax,config.trapName, config.IsInside, config.moving);
         }
-        public static SpawnableMapObject getTrap(string name)
+        public static trap getTrap(string name)
         {
-            SpawnableMapObject trap = null;
-            foreach (SelectableLevel level in StartOfRound.Instance.levels)
-            {
-                trap = level.spawnableMapObjects.FirstOrDefault(x => x.prefabToSpawn.name == name);
-                
-            }
-            if (trap != null)
-            {
-                return trap;
-            }
-            else return GetEnemies.SpawnableLandmine;
+            var allTraps = Misc.getAllTraps();
+            var trap = allTraps.FirstOrDefault(x => x.name == name);
+            if (trap == null) trap = allTraps.FirstOrDefault(x => x.name == "Landmine");
+            return trap;
+            
         }
         public static void spawnTrap(int max, string trapNames, bool inside, float positionOffsetRadius = 5f, bool moving = false)
         {
@@ -405,7 +399,7 @@ namespace MysteryDice
                                     validPositionFound = true;
 
                                     GameObject gameObject = UnityEngine.Object.Instantiate(
-                                        trap.prefabToSpawn,
+                                        trap.prefab,
                                         groundPosition,
                                         Quaternion.identity,
                                         RoundManager.Instance.mapPropsContainer.transform);
@@ -427,7 +421,7 @@ namespace MysteryDice
 
                 if (spawnedMines > 0 && moving)
                 {
-                    Networker.Instance.AddMovingTrapClientRPC(trap.prefabToSpawn.name);
+                    Networker.Instance.AddMovingTrapClientRPC(trap.name);
                 }
                 
             }

@@ -24,6 +24,7 @@ namespace MysteryDice
         public static float RebelTimer = 0f;
         public static bool CoilheadIgnoreStares = false;
         public static List<UnlockableSuit> orderedSuits = new List<UnlockableSuit>();
+
         public override void OnNetworkSpawn()
         {
             Instance = this;
@@ -33,31 +34,33 @@ namespace MysteryDice
 
             DieBehaviour.AllowedEffects.Clear();
             StartCoroutine(SyncRequest());
-            
+
         }
 
         public IEnumerator DelaySuitGet()
         {
             yield return new WaitForSeconds(3.5f);
             orderedSuits = UnityEngine.Object.FindObjectsOfType<UnlockableSuit>()
-                .OrderBy(suit => 
+                .OrderBy(suit =>
                     suit.syncedSuitID.Value >= 0 &&
                     suit.syncedSuitID.Value < StartOfRound.Instance.unlockablesList.unlockables.Count
                         ? StartOfRound.Instance.unlockablesList.unlockables[suit.syncedSuitID.Value].unlockableName
                         : string.Empty) // Default case to prevent errors
                 .ToList();
         }
-        
+
         public IEnumerator SyncRequest()
         {
             while (!GameNetworkManager.Instance.GetComponent<NetworkManager>().IsConnectedClient)
             {
                 yield return new WaitForSeconds(0.5f);
             }
+
             while (GameNetworkManager.Instance.localPlayerController == null)
             {
                 yield return new WaitForSeconds(0.5f);
             }
+
             RequestEffectConfigServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
             RequestConfigSyncServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
@@ -71,70 +74,81 @@ namespace MysteryDice
         void FixedUpdate()
         {
             UpdateMineTimers();
-            if(Armageddon.IsEnabled) Armageddon.BoomTimer();
+            if (Armageddon.IsEnabled) Armageddon.BoomTimer();
             HyperShake.FixedUpdate();
             LeverShake.FixedUpdate();
             Drunk.FixedUpdate();
             TwitchSpawner();
             if (SelectEffect.ReviveOpen && SelectEffect.EffectMenu == null) SelectEffect.ReviveOpen = false;
         }
+
         void Update()
         {
             ModifyPitch.PitchFluctuate();
             RebelCoilheads();
             AlarmCurse.TimerUpdate();
         }
-        
+
         private Queue<(IEffect effect, string WhoRolled)> spawnQueue = new Queue<(IEffect, string)>();
-       
+
         private bool twitchCanRoll = true;
+
         public void TwitchSpawner()
-        { 
-            if (StartOfRound.Instance != null && !StartOfRound.Instance.inShipPhase && StartOfRound.Instance.shipHasLanded)
+        {
+            if (StartOfRound.Instance != null && !StartOfRound.Instance.inShipPhase &&
+                StartOfRound.Instance.shipHasLanded)
             {
                 twitchCanRoll = true;
             }
             else twitchCanRoll = false;
+
             if (StartOfRound.Instance.currentLevel.PlanetName == "71 Gordion") twitchCanRoll = false;
             if (StartOfRound.Instance.currentLevel.PlanetName == "98 Galetry") twitchCanRoll = false;
-            
-            if(IsServer && twitchCanRoll && spawnQueue.Count > 0) ProcessSpawnQueue();
-            
+
+            if (IsServer && twitchCanRoll && spawnQueue.Count > 0) ProcessSpawnQueue();
+
         }
 
         public int CheckScaling()
         {
             Terminal terminal = FindFirstObjectByType<Terminal>();
-            if(terminal == null) return 0;
+            if (terminal == null) return 0;
             var scrapInShip = StartOfRound.Instance.GetValueOfAllScrap(true);
             var inARow = StartOfRound.Instance.daysPlayersSurvivedInARow;
             var currentDay = StartOfRound.Instance.gameStats.daysSpent;
             switch (MysteryDice.brutalScaleType.Value)
             {
                 case 0:
-                    return (int)Scale(currentDay, 0, 50, MysteryDice.brutalStartingScale.Value, MysteryDice.brutalMaxScale.Value);
+                    return (int)Scale(currentDay, 0, 50, MysteryDice.brutalStartingScale.Value,
+                        MysteryDice.brutalMaxScale.Value);
                 case 1:
-                    return (int)Scale(scrapInShip, 0, 2500, MysteryDice.brutalStartingScale.Value, MysteryDice.brutalMaxScale.Value);
-                case 2: 
-                    return (int)Scale(inARow, 0, 15, MysteryDice.brutalStartingScale.Value, MysteryDice.brutalMaxScale.Value);
+                    return (int)Scale(scrapInShip, 0, 2500, MysteryDice.brutalStartingScale.Value,
+                        MysteryDice.brutalMaxScale.Value);
+                case 2:
+                    return (int)Scale(inARow, 0, 15, MysteryDice.brutalStartingScale.Value,
+                        MysteryDice.brutalMaxScale.Value);
                     break;
                 case 3:
                     var normalizedDay = currentDay / 50.0;
                     var normalizedScrap = scrapInShip / 2500.0;
                     var combinedNormalized = (normalizedDay + normalizedScrap) / 2.0;
-                    var scaledValue = MysteryDice.brutalStartingScale.Value + combinedNormalized * (MysteryDice.brutalMaxScale.Value - MysteryDice.brutalStartingScale.Value);
+                    var scaledValue = MysteryDice.brutalStartingScale.Value + combinedNormalized *
+                        (MysteryDice.brutalMaxScale.Value - MysteryDice.brutalStartingScale.Value);
                     return (int)scaledValue;
                 case 4:
                     return MysteryDice.brutalStartingScale.Value;
             }
+
             return 0;
         }
+
         public static double Scale(double x, double minInput, double maxInput, double minOutput, double maxOutput)
         {
             return minOutput + ((x - minInput) * (maxOutput - minOutput)) / (maxInput - minInput);
         }
-        
-        private int maxSpawnsPerFrame = 1; 
+
+        private int maxSpawnsPerFrame = 1;
+
         private void ProcessSpawnQueue()
         {
             int rollCount = 0;
@@ -145,28 +159,33 @@ namespace MysteryDice
                 rollCount++;
             }
         }
-        
+
         [ServerRpc(RequireOwnership = false)]
         public void LogEffectsToOwnerServerRPC(string playerName, string effectName, int roll)
         {
             var parsedEffect = MysteryDice.chatDebug.None;
             Enum.TryParse<MysteryDice.chatDebug>(MysteryDice.debugChat.Value, out parsedEffect);
-            if (MysteryDice.debugDice.Value) MysteryDice.CustomLogger.LogInfo($"[Debug] {playerName} rolled a {roll}: {effectName}");
+            if (MysteryDice.debugDice.Value)
+                MysteryDice.CustomLogger.LogInfo($"[Debug] {playerName} rolled a {roll}: {effectName}");
             if (parsedEffect == MysteryDice.chatDebug.Host) LogEffectsToHostClientRPC(playerName, effectName, roll);
-            if (parsedEffect == MysteryDice.chatDebug.Everyone) LogEffectsToEveryoneClientRPC(playerName, effectName, roll);
+            if (parsedEffect == MysteryDice.chatDebug.Everyone)
+                LogEffectsToEveryoneClientRPC(playerName, effectName, roll);
             if (parsedEffect == MysteryDice.chatDebug.None) LogEffectsToSlayerClientRPC(playerName, effectName, roll);
         }
 
         [ClientRpc]
         public void LogEffectsToHostClientRPC(string playerName, string effectName, int roll)
         {
-            if(GameNetworkManager.Instance.localPlayerController.IsHost || GameNetworkManager.Instance.localPlayerController.playerSteamId ==  MysteryDice.slayerSteamID) Misc.ChatWrite($"{playerName} rolled a {roll}: {effectName}");
-        } 
-        
+            if (GameNetworkManager.Instance.localPlayerController.IsHost ||
+                GameNetworkManager.Instance.localPlayerController.playerSteamId == MysteryDice.slayerSteamID)
+                Misc.ChatWrite($"{playerName} rolled a {roll}: {effectName}");
+        }
+
         [ClientRpc]
         public void LogEffectsToSlayerClientRPC(string playerName, string effectName, int roll)
         {
-            if(GameNetworkManager.Instance.localPlayerController.playerSteamId ==  MysteryDice.slayerSteamID) Misc.ChatWrite($"{playerName} rolled a {roll}: {effectName}");
+            if (GameNetworkManager.Instance.localPlayerController.playerSteamId == MysteryDice.slayerSteamID)
+                Misc.ChatWrite($"{playerName} rolled a {roll}: {effectName}");
         }
 
         [ClientRpc]
@@ -174,16 +193,18 @@ namespace MysteryDice
         {
             Misc.ChatWrite($"{playerName} rolled a {roll}: {effectName}");
         }
-        
+
         #region Config stuff
+
         [ServerRpc(RequireOwnership = false)]
         public void RequestEffectConfigServerRPC(ulong playerID)
         {
             foreach (var effect in DieBehaviour.AllowedEffects)
                 SendConfigClientRPC(playerID, effect.Name);
         }
+
         [ClientRpc]
-        public void SendConfigClientRPC(ulong playerID,string effectName)
+        public void SendConfigClientRPC(ulong playerID, string effectName)
         {
             var player = Misc.GetPlayerByUserID(playerID);
             if (player == null || !Misc.IsPlayerReal(player))
@@ -191,8 +212,9 @@ namespace MysteryDice
                 Debug.LogError($"Player with ID {playerID} is either null or not real.");
                 return;
             }
+
             if (IsServer) return;
-            if(GameNetworkManager.Instance.localPlayerController.actualClientId == playerID)
+            if (GameNetworkManager.Instance.localPlayerController.actualClientId == playerID)
             {
                 DieBehaviour.AllowedEffects.Add(
                     DieBehaviour.AllEffects.Where(x => x.Name == effectName).First()
@@ -230,8 +252,10 @@ namespace MysteryDice
                 }
             }
         }
+
         [ClientRpc]
-        public void SendConfigsClientRPC(ulong playerID, string key, string section, int type, int ival = 0, bool bval = false, string sval = "", string enumVal = "")
+        public void SendConfigsClientRPC(ulong playerID, string key, string section, int type, int ival = 0,
+            bool bval = false, string sval = "", string enumVal = "")
         {
             if (IsServer || GameNetworkManager.Instance.localPlayerController.actualClientId != playerID) return;
             try
@@ -257,6 +281,7 @@ namespace MysteryDice
                                 {
                                     configEntry.BoxedValue = Enum.Parse(configEntry.SettingType, enumVal);
                                 }
+
                                 break;
                         }
                     }
@@ -266,8 +291,9 @@ namespace MysteryDice
             {
 
             }
-            
+
         }
+
         #endregion
 
         [ServerRpc(RequireOwnership = false)]
@@ -284,7 +310,7 @@ namespace MysteryDice
                 var randomEnemy = allenemies[UnityEngine.Random.Range(0, allenemies.Count)];
                 randomEnemies.Add(randomEnemy);
             }
-            
+
             foreach (var enemy in randomEnemies)
             {
                 Misc.SpawnEnemyForced(enemy, 1, false);
@@ -311,26 +337,28 @@ namespace MysteryDice
         // }
         [ServerRpc(RequireOwnership = false)]
         public void MoveTrapServerRpc(int getInstanceID, Vector3 targetPosition, bool isInside)
-        { 
-            SmartAgentNavigator agent = PlayerControllerBPatch.smartAgentNavigators.Find(x => x.GetInstanceID() == getInstanceID);
+        {
+            SmartAgentNavigator agent =
+                PlayerControllerBPatch.smartAgentNavigators.Find(x => x.GetInstanceID() == getInstanceID);
             if (agent == null)
             {
                 //MysteryDice.CustomLogger.LogError($"No SmartAgent found for instance ID {getInstanceID}. Total smartAgents: {PlayerControllerBPatch.smartAgentNavigators.Count}");
                 return;
             }
+
             //MysteryDice.CustomLogger.LogWarning($"Trying to move trap to {targetPosition} and inside is {isInside}");
             agent.DoPathingToDestination(targetPosition, isInside);
         }
-        
+
         #region TwitchNetworking
 
         public IEnumerator RollEffects(IEffect effect, string who)
         {
             yield return new WaitForSeconds(Random.Range(5f, 12f));
-            if(!twitchCanRoll) spawnQueue.Enqueue((effect, who));
+            if (!twitchCanRoll) spawnQueue.Enqueue((effect, who));
             else
             {
-                LogEffectsToOwnerServerRPC(who,effect.Name, 0);
+                LogEffectsToOwnerServerRPC(who, effect.Name, 0);
                 effect.Use();
             }
         }
@@ -338,12 +366,13 @@ namespace MysteryDice
         [ServerRpc(RequireOwnership = false)]
         public void QueueRandomDiceEffectServerRPC(string who)
         {
-            spawnQueue.Enqueue((DieBehaviour.AllowedEffects[Random.Range(0, DieBehaviour.AllowedEffects.Count)],who)); 
+            spawnQueue.Enqueue((DieBehaviour.AllowedEffects[Random.Range(0, DieBehaviour.AllowedEffects.Count)], who));
         }
+
         [ServerRpc(RequireOwnership = false)]
         public void QueueSpecificDiceEffectServerRPC(string who, string effectName)
         {
-            spawnQueue.Enqueue((DieBehaviour.AllowedEffects.Find(x=>x.Name==effectName),who)); 
+            spawnQueue.Enqueue((DieBehaviour.AllowedEffects.Find(x => x.Name == effectName), who));
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -355,7 +384,7 @@ namespace MysteryDice
                 case EffectType.Awful:
                     effectsToUse.AddRange(DieBehaviour.AwfulEffects);
                     break;
-                case EffectType.Bad: 
+                case EffectType.Bad:
                     effectsToUse.AddRange(DieBehaviour.BadEffects);
                     break;
                 case EffectType.Good:
@@ -368,9 +397,11 @@ namespace MysteryDice
                     effectsToUse.AddRange(DieBehaviour.MixedEffects);
                     break;
             }
-            spawnQueue.Enqueue((effectsToUse[Random.Range(0, effectsToUse.Count)],who)); 
-            
+
+            spawnQueue.Enqueue((effectsToUse[Random.Range(0, effectsToUse.Count)], who));
+
         }
+
         #endregion
 
         [ServerRpc(RequireOwnership = false)]
@@ -415,9 +446,10 @@ namespace MysteryDice
             StartOfRound.Instance.allowLocalPlayerDeath = false;
             foreach (var enemy in enemies)
             {
-                Landmine.SpawnExplosion(enemy.transform.position, true, 1, 2, 50, 0,null,false);
+                Landmine.SpawnExplosion(enemy.transform.position, true, 1, 2, 50, 0, null, false);
                 enemy.KillEnemy(false);
             }
+
             removeKillServerRPC(target, 7);
         }
 
@@ -426,11 +458,12 @@ namespace MysteryDice
         {
             removeKillClientRPC(target, 30);
         }
+
         [ClientRpc]
         public void UntargetableClientRpc(ulong target, int time)
         {
-            if (StartOfRound.Instance.localPlayerController.actualClientId != target)return;
-            
+            if (StartOfRound.Instance.localPlayerController.actualClientId != target) return;
+
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -438,14 +471,14 @@ namespace MysteryDice
         {
             removeKillClientRPC(target, time);
         }
-        
+
         [ClientRpc]
         public void removeKillClientRPC(ulong target, int time)
         {
-            if (StartOfRound.Instance.localPlayerController.actualClientId != target)return;
+            if (StartOfRound.Instance.localPlayerController.actualClientId != target) return;
             Instance.StartCoroutine(DoNoKill(time));
         }
-        
+
         public IEnumerator DoNoKill(int time)
         {
             StartOfRound.Instance.allowLocalPlayerDeath = false;
@@ -453,11 +486,12 @@ namespace MysteryDice
             StartOfRound.Instance.allowLocalPlayerDeath = true;
         }
 
-        
+
         #region SpawnSurrounded
 
         [ServerRpc(RequireOwnership = false)]
-        public void SpawnSurroundedServerRPC(string enemyName, int amount = 10, int radius = 3, bool doSize = false, Vector3 size = default)
+        public void SpawnSurroundedServerRPC(string enemyName, int amount = 10, int radius = 3, bool doSize = false,
+            Vector3 size = default)
         {
             var enemy = Misc.getEnemyByName(enemyName);
             var RM = RoundManager.Instance;
@@ -472,13 +506,13 @@ namespace MysteryDice
                     player.transform.position.y + 0.25f,
                     Mathf.Sin(angle) * radius
                 );
-                
+
                 spawnPosition += player.transform.position;
                 Vector3 directionToPlayer = player.transform.position - spawnPosition;
                 Quaternion rotation = Quaternion.LookRotation(directionToPlayer);
                 spawnPosition = RoundManager.Instance.GetRandomNavMeshPositionInRadius(spawnPosition, 0.5f);
-                if(spawnPosition==Vector3.zero)continue;
-                if(spawnPosition.y>player.transform.position.y+10)continue;
+                if (spawnPosition == Vector3.zero) continue;
+                if (spawnPosition.y > player.transform.position.y + 10) continue;
                 GameObject enemyObject = UnityEngine.Object.Instantiate(
                     enemy.enemyType.enemyPrefab,
                     spawnPosition,
@@ -488,13 +522,14 @@ namespace MysteryDice
                 RoundManager.Instance.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
                 if (doSize)
                 {
-                    setSizeClientRPC(netObj.NetworkObjectId,size);
+                    setSizeClientRPC(netObj.NetworkObjectId, size);
                 }
             }
         }
-        
+
         [ServerRpc(RequireOwnership = false)]
-        public void SpawnSurroundedTrapServerRPC(string trapName, int amount = 10, int radius = 3, bool doSize = false, Vector3 size = default)
+        public void SpawnSurroundedTrapServerRPC(string trapName, int amount = 10, int radius = 3, bool doSize = false,
+            Vector3 size = default)
         {
             var enemy = DynamicTrapEffect.getTrap(trapName);
             var RM = RoundManager.Instance;
@@ -513,14 +548,14 @@ namespace MysteryDice
                 Vector3 directionToPlayer = player.transform.position - spawnPosition;
                 Quaternion rotation = Quaternion.LookRotation(directionToPlayer);
                 GameObject enemyObject = UnityEngine.Object.Instantiate(
-                    enemy.prefabToSpawn,
+                    enemy.prefab,
                     spawnPosition,
                     rotation);
                 var netObj = enemyObject.GetComponentInChildren<NetworkObject>();
                 netObj.Spawn(destroyWithScene: true);
                 if (doSize)
                 {
-                    setSizeClientRPC(netObj.NetworkObjectId,size);
+                    setSizeClientRPC(netObj.NetworkObjectId, size);
                 }
             }
         }
@@ -534,10 +569,10 @@ namespace MysteryDice
                 Vector3 newSize = new Vector3(obj.transform.localScale.x * size.x, obj.transform.localScale.y * size.y,
                     obj.transform.localScale.z * size.z);
                 obj.transform.localScale = newSize;
-                if(rotation != default) obj.transform.localRotation = rotation;
+                if (rotation != default) obj.transform.localRotation = rotation;
             }
         }
-        
+
         [ClientRpc]
         public void removeShadowsClientRPC(ulong objectId)
         {
@@ -548,8 +583,8 @@ namespace MysteryDice
                 foreach (GameObject child in obj.transform)
                 {
                     Renderer renderer2 = child.GetComponent<Renderer>();
-                    if(renderer2 !=null) renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                    if(renderer2 !=null) renderer.receiveShadows = false;
+                    if (renderer2 != null) renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    if (renderer2 != null) renderer.receiveShadows = false;
                 }
             }
         }
@@ -567,8 +602,10 @@ namespace MysteryDice
         [ServerRpc(RequireOwnership = false)]
         public void setHorseStuffServerRPC(ulong netObject, int super = 0)
         {
-            setHorseStuffClientRPC(netObject, super, Random.Range(-20, 20), Random.Range(-40, 40), Random.Range(-100, 100));
+            setHorseStuffClientRPC(netObject, super, Random.Range(-20, 20), Random.Range(-40, 40),
+                Random.Range(-100, 100));
         }
+
         [ClientRpc]
         public void setHorseStuffClientRPC(ulong netObject, int super, int a, int b, int c)
         {
@@ -583,15 +620,16 @@ namespace MysteryDice
                     else if (super == 2) Horseshootnt.horseStuff(obj);
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
-                MysteryDice.CustomLogger.LogWarning("Probably not an error, but: "+ex.Message+"\n"+ex.StackTrace);
+                MysteryDice.CustomLogger.LogWarning("Probably not an error, but: " + ex.Message + "\n" + ex.StackTrace);
             }
         }
 
         #endregion
 
         #region Delay
+
         [ServerRpc(RequireOwnership = false)]
         public void DelayedReactionServerRPC(ulong userID)
         {
@@ -612,22 +650,27 @@ namespace MysteryDice
             Misc.SafeTipMessage($":P", "Almost There...");
             //Delay.DelayedReaction(userID);
         }
+
         #endregion
-        
+
         #region Alarm
+
         [ServerRpc(RequireOwnership = false)]
         public void AlarmServerRPC(ulong userID)
         {
             AlarmClientRPC(userID);
         }
+
         [ClientRpc]
         public void AlarmClientRPC(ulong userID)
         {
-            if(StartOfRound.Instance.localPlayerController.actualClientId==userID) AlarmCurse.setAlarm();
+            if (StartOfRound.Instance.localPlayerController.actualClientId == userID) AlarmCurse.setAlarm();
         }
+
         #endregion
 
         #region Detonate
+
         private static Vector2 TimerRange = new Vector2(3f, 6f);
         private static ulong PlayerIDToExplode;
         private static float ExplosionTimer = 0f;
@@ -637,8 +680,8 @@ namespace MysteryDice
         public static bool IsPlayerAlive(PlayerControllerB player)
         {
             return !player.isPlayerDead &&
-                    player.isActiveAndEnabled &&
-                    player.IsSpawned;
+                   player.isActiveAndEnabled &&
+                   player.IsSpawned;
         }
 
         public void UpdateMineTimers()
@@ -651,6 +694,7 @@ namespace MysteryDice
                     DetonatePlayerClientRPC(PlayerIDToExplode);
             }
         }
+
         public void StartDoomCountdown(ulong playerID)
         {
             PlayerIDToExplode = playerID;
@@ -687,6 +731,7 @@ namespace MysteryDice
                 if (Misc.IsPlayerAliveAndControlled(player))
                     validPlayers.Add(player);
             }
+
             return validPlayers;
         }
 
@@ -713,9 +758,10 @@ namespace MysteryDice
                 confusionPlr.stupidMode = stupidMode;
             }
         }
-        
-        public Dictionary<PlayerControllerB, UnlockableSuit> playerToSuit = new Dictionary<PlayerControllerB, UnlockableSuit>();
-        
+
+        public Dictionary<PlayerControllerB, UnlockableSuit> playerToSuit =
+            new Dictionary<PlayerControllerB, UnlockableSuit>();
+
         [ServerRpc(RequireOwnership = false)]
         public void OopsPlayerServerRPC()
         {
@@ -723,20 +769,20 @@ namespace MysteryDice
             {
                 if (!playerToSuit.ContainsKey(player))
                 {
-                    playerToSuit.Add(player,orderedSuits.Find(x => x.suitID == player.currentSuitID));
+                    playerToSuit.Add(player, orderedSuits.Find(x => x.suitID == player.currentSuitID));
                 }
             }
-            
+
             var rval = Random.Range(0, playerToSuit.Count);
             var who = playerToSuit.Keys.ElementAt(rval).playerUsername;
-            OopsPlayerClientRPC(who,playerToSuit.Values.ElementAt(rval).suitID);
+            OopsPlayerClientRPC(who, playerToSuit.Values.ElementAt(rval).suitID);
         }
 
         [ClientRpc]
-        public void OopsPlayerClientRPC(string who ,int suitID)
+        public void OopsPlayerClientRPC(string who, int suitID)
         {
-            UnlockableSuit suitToSwitchTo= orderedSuits.Find(x => x.suitID == suitID);
-            
+            UnlockableSuit suitToSwitchTo = orderedSuits.Find(x => x.suitID == suitID);
+
             var player = StartOfRound.Instance.localPlayerController;
             if (player.gameObject.GetComponent<oopsController>() != null)
             {
@@ -749,6 +795,7 @@ namespace MysteryDice
                 oopsPlyr.player = player;
                 oopsPlyr.suitToSwitchTo = suitToSwitchTo;
             }
+
             player.gameObject.GetComponent<oopsController>().switchSuit();
         }
 
@@ -775,9 +822,11 @@ namespace MysteryDice
             yield return new WaitForSeconds(0.5f);
             Landmine.SpawnExplosion(position, true, 1, 5, 50, 0, null, false);
         }
+
         #endregion
 
         #region Revive
+
         [ServerRpc(RequireOwnership = false)]
         public void ReviveAllPlayersServerRpc()
         {
@@ -791,7 +840,7 @@ namespace MysteryDice
         {
             if (StartOfRound.Instance == null) return;
             PlayerControllerB player = GameNetworkManager.Instance.localPlayerController;
-            StartOfRound.Instance.ReviveDeadPlayers(); 
+            StartOfRound.Instance.ReviveDeadPlayers();
             if (player == GameNetworkManager.Instance.localPlayerController)
             {
                 HUDManager.Instance.gasHelmetAnimator.SetBool("gasEmitting", false);
@@ -810,8 +859,9 @@ namespace MysteryDice
         [ClientRpc]
         public void fixRespawnClientRPC()
         {
-            if(SelectEffect.ReviveOpen) SelectEffect.RefreshRevives();
+            if (SelectEffect.ReviveOpen) SelectEffect.RefreshRevives();
         }
+
         [ServerRpc(RequireOwnership = false)]
         public void RevivePlayerServerRpc(ulong ID, Vector3 SpawnPosition)
         {
@@ -820,6 +870,7 @@ namespace MysteryDice
             fixRespawnClientRPC();
             RevivePlayerClientRpc(IntID, SpawnPosition);
         }
+
         [ClientRpc]
         public void RevivePlayerClientRpc(int ID, Vector3 SpawnPosition)
         {
@@ -845,15 +896,15 @@ namespace MysteryDice
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void SendMessageServerRPC(ulong clientID,string topMessage ,string message)
+        public void SendMessageServerRPC(ulong clientID, string topMessage, string message)
         {
             SendMessageClientRPC(clientID, topMessage, message);
         }
 
         [ClientRpc]
-        public void SendMessageClientRPC(ulong clientID,string topMessage ,  string message)
+        public void SendMessageClientRPC(ulong clientID, string topMessage, string message)
         {
-            if(StartOfRound.Instance.localPlayerController.actualClientId != clientID) return;
+            if (StartOfRound.Instance.localPlayerController.actualClientId != clientID) return;
             Misc.SafeTipMessage(topMessage, message);
         }
 
@@ -861,7 +912,7 @@ namespace MysteryDice
         public void AddLifeClientRPC(ulong clientID)
         {
             var player = StartOfRound.Instance.localPlayerController;
-    
+
             // Ensure it's the correct client
             if (player == null || player.actualClientId != clientID) return;
 
@@ -875,6 +926,7 @@ namespace MysteryDice
                 var plc = player.gameObject.AddComponent<playerLifeController>();
                 plc.player = player;
             }
+
             player.GetComponent<playerLifeController>().addLife();
         }
 
@@ -893,8 +945,9 @@ namespace MysteryDice
         {
             TeleportInside.TeleportPlayerInside(clientID, teleportPos);
         }
+
         #endregion
-        
+
         #region Martyrdom
 
         [ServerRpc(RequireOwnership = false)]
@@ -906,10 +959,10 @@ namespace MysteryDice
         [ClientRpc]
         public void MartyrdomClientRPC()
         {
-            Martyrdom.doMinesDrop=true;
+            Martyrdom.doMinesDrop = true;
         }
 
-        
+
         [ServerRpc(RequireOwnership = false)]
         public void doMartyrdomServerRPC(Vector3 position)
         {
@@ -917,8 +970,9 @@ namespace MysteryDice
 
             if (MysteryDice.SurfacedPresent)
             {
-                mapObject = Random.value > 0.5f? GetEnemies.Bertha : GetEnemies.Seamine;
+                mapObject = Random.value > 0.5f ? GetEnemies.Bertha : GetEnemies.Seamine;
             }
+
             GameObject enemyObject = UnityEngine.Object.Instantiate(
                 mapObject.prefabToSpawn,
                 position,
@@ -926,10 +980,11 @@ namespace MysteryDice
             var netObj = enemyObject.GetComponentInChildren<NetworkObject>();
             netObj.Spawn(destroyWithScene: true);
         }
+
         #endregion
 
         #region TeleportToShip
-        
+
         [ServerRpc(RequireOwnership = false)]
         public void TeleportToShipServerRPC(ulong clientID)
         {
@@ -941,8 +996,9 @@ namespace MysteryDice
         {
             ReturnToShip.TeleportPlayerToShip(clientID);
         }
+
         #endregion
-        
+
         #region despawnEnemy
 
         [ServerRpc(RequireOwnership = false)]
@@ -963,7 +1019,7 @@ namespace MysteryDice
                 }
             }
         }
-        
+
         #endregion
 
         #region Teleport To Player
@@ -989,10 +1045,11 @@ namespace MysteryDice
         [ClientRpc]
         public void TeleportOrBringPlayerClientRPC(ulong clientID, ulong clientID2, bool bring)
         {
-            PlayerControllerB player = StartOfRound.Instance.allPlayerScripts.First(x=>x.actualClientId==clientID);
-            PlayerControllerB player2 = StartOfRound.Instance.allPlayerScripts.First(x=>x.actualClientId==clientID2);
-            if(player==null||player2==null)return;
-            if(player.isPlayerDead || player2.isPlayerDead) return;
+            PlayerControllerB player = StartOfRound.Instance.allPlayerScripts.First(x => x.actualClientId == clientID);
+            PlayerControllerB player2 =
+                StartOfRound.Instance.allPlayerScripts.First(x => x.actualClientId == clientID2);
+            if (player == null || player2 == null) return;
+            if (player.isPlayerDead || player2.isPlayerDead) return;
             if (!bring)
             {
                 player.isInElevator = player2.isInElevator;
@@ -1006,7 +1063,7 @@ namespace MysteryDice
             else
             {
                 player2.isInElevator = player.isInElevator;
-                player2.isInHangarShipRoom = player.isInHangarShipRoom ;
+                player2.isInHangarShipRoom = player.isInHangarShipRoom;
                 player2.isInsideFactory = player.isInsideFactory;
                 player2.averageVelocity = player.averageVelocity;
                 player2.velocityLastFrame = player.velocityLastFrame;
@@ -1014,24 +1071,27 @@ namespace MysteryDice
                 player2.beamOutParticle.Play();
             }
         }
+
         [ServerRpc(RequireOwnership = false)]
         public void TeleportOrBringPlayerToPosServerRPC(Vector3 pos, ulong steamID, ulong actualClientID)
         {
             TeleportOrBringPlayerToPosClientRPC(pos, steamID, actualClientID);
         }
+
         [ClientRpc]
         public void TeleportOrBringPlayerToPosClientRPC(Vector3 pos, ulong steamID, ulong actualClientID)
         {
             PlayerControllerB player = null;
-            if(steamID!=0) player = StartOfRound.Instance.allPlayerScripts.First(x=>x.playerSteamId==steamID);
-            else StartOfRound.Instance.allPlayerScripts.First(x=>x.playerSteamId==actualClientID);
-            if(player==null)return;
-            if(player.isPlayerDead) return;
+            if (steamID != 0) player = StartOfRound.Instance.allPlayerScripts.First(x => x.playerSteamId == steamID);
+            else StartOfRound.Instance.allPlayerScripts.First(x => x.playerSteamId == actualClientID);
+            if (player == null) return;
+            if (player.isPlayerDead) return;
             player.TeleportPlayer(pos);
             player.beamOutParticle.Play();
-            
+
         }
-        #endregion 
+
+        #endregion
 
         #region EmergencyMeeting
 
@@ -1039,7 +1099,9 @@ namespace MysteryDice
         public void EmergencyMeetingServerRPC()
         {
             EmergencyMeetingClientRPC();
-            InteractTrigger doorButton = GameObject.Find(StartOfRound.Instance.hangarDoorsClosed ? "StartButton" : "StopButton").GetComponentInChildren<InteractTrigger>();
+            InteractTrigger doorButton = GameObject
+                .Find(StartOfRound.Instance.hangarDoorsClosed ? "StartButton" : "StopButton")
+                .GetComponentInChildren<InteractTrigger>();
             doorButton.onInteract.Invoke(GameNetworkManager.Instance.localPlayerController);
             EmergencyMeeting.allEnemiesToShip();
             EmergencyAllClientRPC();
@@ -1049,8 +1111,9 @@ namespace MysteryDice
         public void EmergencyMeetingClientRPC()
         {
             EmergencyMeeting.TeleportEveryoneToShip();
-            
+
         }
+
         [ServerRpc(RequireOwnership = false)]
         public void TeleportPlayerToShipServerRPC(ulong plyr)
         {
@@ -1062,11 +1125,13 @@ namespace MysteryDice
         {
             EmergencyMeeting.TeleportPlayerToShip(plyr);
         }
+
         [ClientRpc]
         public void EmergencyAllClientRPC()
         {
             MysteryDice.JumpscareScript.EmergencyMeeting();
         }
+
         #endregion
 
         #region SuitStuff
@@ -1080,18 +1145,21 @@ namespace MysteryDice
         [ClientRpc]
         public void suitStuffClientRPC(ulong clientID, int suit)
         {
-            if(StartOfRound.Instance.localPlayerController.actualClientId!=clientID) return;
-            orderedSuits.Find(x=>x.syncedSuitID.Value==suit).SwitchSuitToThis(StartOfRound.Instance.localPlayerController);
+            if (StartOfRound.Instance.localPlayerController.actualClientId != clientID) return;
+            orderedSuits.Find(x => x.syncedSuitID.Value == suit)
+                .SwitchSuitToThis(StartOfRound.Instance.localPlayerController);
         }
 
         #endregion
 
         #region playSound
-        [ServerRpc(RequireOwnership =false)]
+
+        [ServerRpc(RequireOwnership = false)]
         public void PlaySoundServerRPC(string sound)
         {
             PlaySoundClientRPC(sound);
         }
+
         [ClientRpc]
         public void PlaySoundClientRPC(string sound)
         {
@@ -1108,6 +1176,7 @@ namespace MysteryDice
                 audioSource.Play();
             }
         }
+
         #endregion
 
         #region FireExitBlock
@@ -1123,7 +1192,8 @@ namespace MysteryDice
         {
             FireExitPatch.AreFireExitsBlocked = true;
         }
-        #endregion 
+
+        #endregion
 
         #region TerminalLockout
 
@@ -1138,6 +1208,7 @@ namespace MysteryDice
         {
             TerminalPatch.hideShowTerminal(true, GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
+
         #endregion
 
         #region FakeFireExits
@@ -1148,7 +1219,7 @@ namespace MysteryDice
             FakeFireExitsClientRPC();
         }
 
-       
+
         [ClientRpc]
         public void FakeFireExitsClientRPC()
         {
@@ -1160,21 +1231,26 @@ namespace MysteryDice
                     potentialFireExitSlots[i].SetActive(true);
             }
         }
+
         [ClientRpc]
         public void MimicsClientRPC()
         {
         }
+
         #endregion
 
         #region InstaJester
+
         [ServerRpc(RequireOwnership = false)]
         public void InstaJesterServerRPC()
         {
             InstaJester.SpawnInstaJester();
         }
+
         #endregion
 
         #region OutsideBracken
+
         [ServerRpc(RequireOwnership = false)]
         public void OutsideBrackenServerRPC()
         {
@@ -1186,22 +1262,27 @@ namespace MysteryDice
         {
             OutsideBracken.SetNavmeshBrackenClient();
         }
+
         #endregion
 
         #region MineOverflow
+
         [ServerRpc(RequireOwnership = false)]
         public void MineOverflowServerRPC()
         {
             MineOverflow.SpawnMoreMines(MineOverflow.MaxMinesToSpawn);
         }
+
         #endregion
 
         #region TPOverflow
+
         [ServerRpc(RequireOwnership = false)]
         public void TPOverflowServerRPC()
         {
             TPTraps.SpawnTeleporterTraps(TPTraps.MaxMinesToSpawn);
         }
+
         #endregion
 
         #region FollowerFan
@@ -1225,21 +1306,27 @@ namespace MysteryDice
         #endregion
 
         #region TPOverflowOutside
+
         [ServerRpc(RequireOwnership = false)]
         public void TPOverflowOutsideServerRPC()
         {
-            int MinesToSpawn = UnityEngine.Random.Range(TpOverflowOutside.MinMinesToSpawn, TpOverflowOutside.MaxMinesToSpawn + 1);
+            int MinesToSpawn =
+                UnityEngine.Random.Range(TpOverflowOutside.MinMinesToSpawn, TpOverflowOutside.MaxMinesToSpawn + 1);
             TpOverflowOutside.SpawnTPOutside(MinesToSpawn);
         }
+
         #endregion
 
         #region SpikeOverflowOutside
+
         [ServerRpc(RequireOwnership = false)]
         public void SpikeOverflowOutsideServerRPC()
         {
-            int MinesToSpawn = UnityEngine.Random.Range(SpikeOverflowOutside.MinMinesToSpawn, SpikeOverflowOutside.MaxMinesToSpawn + 1);
+            int MinesToSpawn = UnityEngine.Random.Range(SpikeOverflowOutside.MinMinesToSpawn,
+                SpikeOverflowOutside.MaxMinesToSpawn + 1);
             SpikeOverflowOutside.SpawnSpikeOutside(MinesToSpawn);
         }
+
         #endregion
 
         #region TulipTrapeeze
@@ -1249,11 +1336,13 @@ namespace MysteryDice
         {
             TulipTrapeze.spawn();
         }
+
         [ServerRpc(RequireOwnership = false)]
         public void TulipTrapeezeMessageServerRPC(ulong userID)
         {
             TulipTrapeezeClientRPC(userID);
         }
+
         [ClientRpc]
         public void TulipTrapeezeClientRPC(ulong userID)
         {
@@ -1263,16 +1352,20 @@ namespace MysteryDice
                 Misc.SafeTipMessage(" ", "I believe I can fly!");
             }
         }
+
         #endregion
 
         #region CustomTrap
+
         [ServerRpc(RequireOwnership = false)]
         public void CustomTrapServerRPC(int max, string trap, bool inside, bool moving = false)
         {
-            DynamicTrapEffect.spawnTrap(max, trap, inside, moving:moving);
+            DynamicTrapEffect.spawnTrap(max, trap, inside, moving: moving);
         }
-        [ServerRpc(RequireOwnership =false)]
-        public void spawnTrapOnServerRPC(string trap, int num, bool inside, ulong userID, bool usePos = false, Vector3 position = default(Vector3))
+
+        [ServerRpc(RequireOwnership = false)]
+        public void spawnTrapOnServerRPC(string trap, int num, bool inside, ulong userID, bool usePos = false,
+            Vector3 position = default(Vector3))
         {
             PlayerControllerB player = Misc.GetPlayerByUserID(userID);
             Vector3 pos = player.transform.position;
@@ -1280,22 +1373,27 @@ namespace MysteryDice
             var trapToSpawn = DynamicTrapEffect.getTrap(trap);
 
             GameObject gameObject = UnityEngine.Object.Instantiate(
-                trapToSpawn.prefabToSpawn,
+                trapToSpawn.prefab,
                 pos,
                 Quaternion.identity,
                 RoundManager.Instance.mapPropsContainer.transform);
-            gameObject.transform.eulerAngles = new Vector3(gameObject.transform.eulerAngles.x, UnityEngine.Random.Range(0, 360), gameObject.transform.eulerAngles.z);
+            gameObject.transform.eulerAngles = new Vector3(gameObject.transform.eulerAngles.x,
+                UnityEngine.Random.Range(0, 360), gameObject.transform.eulerAngles.z);
             gameObject.GetComponent<NetworkObject>().Spawn(destroyWithScene: true);
         }
+
         #endregion
 
         #region CratesOutside
+
         [ServerRpc(RequireOwnership = false)]
         public void CratesOutsideServerRPC()
         {
-            int MinesToSpawn = UnityEngine.Random.Range(CratesOutside.MinMinesToSpawn, CratesOutside.MaxMinesToSpawn + 1);
+            int MinesToSpawn =
+                UnityEngine.Random.Range(CratesOutside.MinMinesToSpawn, CratesOutside.MaxMinesToSpawn + 1);
             CratesOutside.SpawnCratesOutside(MinesToSpawn);
         }
+
         #endregion
 
         #region FreebirdJimothy
@@ -1304,8 +1402,8 @@ namespace MysteryDice
         public void SpawnFreebirdJimothyServerRPC()
         {
             FreebirdJimothy.spawnJimothy();
-        }  
-        
+        }
+
         [ServerRpc(RequireOwnership = false)]
         public void FreebirdJimothyServerRPC(ulong id)
         {
@@ -1317,24 +1415,26 @@ namespace MysteryDice
         {
             FreebirdJimothy.fixJimothy(id);
         }
-        
+
         [ServerRpc(RequireOwnership = false)]
         public void SpawnFreebirdEnemyServerRPC()
         {
             FreebirdEnemy.spawnEnemy();
-        }   
+        }
+
         [ServerRpc(RequireOwnership = false)]
         public void SpawnFreebirdEnemyServerRPC(string name, Vector3 pos)
         {
             FreebirdEnemy.spawnEnemy(name, pos);
-        }  
+        }
+
         [ServerRpc(RequireOwnership = false)]
         public void SpawnFreebirdTrapServerRPC(string name, bool random = false)
         {
             StartCoroutine(
                 MovingFans.freebirdTrapSpawn(name, random));
-        }  
-        
+        }
+
         [ServerRpc(RequireOwnership = false)]
         public void FreebirdEnemyServerRPC(ulong id)
         {
@@ -1346,39 +1446,46 @@ namespace MysteryDice
         {
             FreebirdEnemy.fixEnemy(id);
         }
+
         [ClientRpc]
         public void FreebirdTrapClientRPC(ulong id)
         {
             FreebirdEnemy.fixTrap(id);
         }
-        
+
         #endregion
 
         #region CratesInside
+
         [ServerRpc(RequireOwnership = false)]
         public void CratesInsideServerRPC()
         {
             int MinesToSpawn = UnityEngine.Random.Range(CratesInside.MinMinesToSpawn, CratesInside.MaxMinesToSpawn + 1);
             CratesOutside.SpawnCratesInside(MinesToSpawn);
         }
+
         #endregion
 
         #region SeaminesOutside
+
         [ServerRpc(RequireOwnership = false)]
         public void SeaminesOutsideServerRPC()
         {
-            int MinesToSpawn = UnityEngine.Random.Range(SeaminesOutside.MinMinesToSpawn, SeaminesOutside.MaxMinesToSpawn + 1);
+            int MinesToSpawn =
+                UnityEngine.Random.Range(SeaminesOutside.MinMinesToSpawn, SeaminesOutside.MaxMinesToSpawn + 1);
             SeaminesOutside.SpawnSeaminesOutside(MinesToSpawn);
         }
+
         #endregion
 
         #region Misc
+
         [ServerRpc(RequireOwnership = false)]
         public void BruiserServerRpc()
         {
             Bruiser.BruceInCruiser();
         }
-        
+
         [ServerRpc(RequireOwnership = false)]
         public void HorseSeatServerRpc()
         {
@@ -1390,21 +1497,22 @@ namespace MysteryDice
         {
             StartCoroutine(Bruiser.despawnObjectTimed(objectID));
         }
-        
+
         [ClientRpc]
         public void DespawnObjectClientRpc(ulong objectID)
         {
-            
+
             if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(objectID, out var networkObj))
             {
                 GameObject obj = networkObj.gameObject;
                 networkObj.Despawn(true);
             }
         }
+
         [ClientRpc]
         public void FixBruceClientRpc(ulong objectID)
         {
-            
+
             if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(objectID, out var networkObj))
             {
                 GameObject obj = networkObj.gameObject;
@@ -1445,6 +1553,7 @@ namespace MysteryDice
         //         networkObj.gameObject.transform.position = pos;
         //     }
         // }
+
         #endregion
 
         #region Bald
@@ -1461,42 +1570,50 @@ namespace MysteryDice
             if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(baldObject, out var networkObj))
             {
                 GameObject obj = networkObj.gameObject;
-                Bald.FixBald(player,obj);
+                Bald.FixBald(player, obj);
             }
         }
+
         #endregion
-        
+
         #region BerthaOutside
+
         [ServerRpc(RequireOwnership = false)]
         public void BerthaOutsideServerRPC(int amount = 1)
         {
             BerthaOutside.SpawnBerthaOutside(amount);
         }
+
         [ServerRpc(RequireOwnership = false)]
         public void BIGBerthaServerRPC()
         {
             BIGBertha.SpawnBIGBertha(1);
         }
+
         [ServerRpc(RequireOwnership = false)]
         public void BIGSpikeServerRPC()
         {
-            BIGSpike.SpawnBIGSpike(Random.Range(1,4));
+            BIGSpike.SpawnBIGSpike(Random.Range(1, 4));
         }
+
         [ServerRpc(RequireOwnership = false)]
         public void InstantExplodeBerthaServerRPC()
         {
-            InstantExplodingBerthas.SpawnBerthaOutside(Random.Range(InstantExplodingBerthas.MinMinesToSpawn, InstantExplodingBerthas.MaxMinesToSpawn + 1));
-        } 
+            InstantExplodingBerthas.SpawnBerthaOutside(Random.Range(InstantExplodingBerthas.MinMinesToSpawn,
+                InstantExplodingBerthas.MaxMinesToSpawn + 1));
+        }
+
         [ServerRpc(RequireOwnership = false)]
         public void LongBerthaServerRPC()
         {
-            LongBertha.SpawnBerthaOutside(Random.Range(InstantExplodingBerthas.MinMinesToSpawn, InstantExplodingBerthas.MaxMinesToSpawn + 1));
+            LongBertha.SpawnBerthaOutside(Random.Range(InstantExplodingBerthas.MinMinesToSpawn,
+                InstantExplodingBerthas.MaxMinesToSpawn + 1));
         }
 
         [ServerRpc(RequireOwnership = false)]
         public void explodeBerthaServerRPC(ulong berthaID)
         {
-            
+
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -1504,11 +1621,13 @@ namespace MysteryDice
         {
             scaleOverTimeClientRpc(netObjID, time, maxYScale);
         }
+
         [ClientRpc]
         public void scaleOverTimeClientRpc(ulong netObjID, float time, float maxYScale)
         {
             setStretch(netObjID, maxYScale, time);
-        }  
+        }
+
         public static void setStretch(ulong objectID, float targetY, float time)
         {
             if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(objectID, out var networkObj))
@@ -1517,6 +1636,7 @@ namespace MysteryDice
                 Networker.Instance.StartCoroutine(StretchOverTime(targetY, time, obj.transform));
             }
         }
+
         private static IEnumerator StretchOverTime(float targetY, float time, Transform transform)
         {
             Vector3 initialScale = transform.localScale;
@@ -1539,20 +1659,23 @@ namespace MysteryDice
         {
             setExplodedClientRpc(berthaNetObj, time);
         }
+
         [ClientRpc]
         public void setExplodedClientRpc(ulong berthaNetObj, float time)
         {
             LongBertha.setExploded(berthaNetObj, time);
         }
+
         [ServerRpc(RequireOwnership = false)]
         public void BerthaOnLeverServerRPC()
         {
             BerthaLever.SpawnBerthaOnLever();
         }
+
         #endregion
 
         #region SkyFan
-        
+
         [ServerRpc(RequireOwnership = false)]
         public void SkyFanServerRPC()
         {
@@ -1564,6 +1687,7 @@ namespace MysteryDice
         {
             setSuctionClientRPC(objectId);
         }
+
         [ClientRpc]
         public void setSuctionClientRPC(ulong objectId)
         {
@@ -1573,6 +1697,7 @@ namespace MysteryDice
                 SkyFan.setSuck(obj);
             }
         }
+
         #endregion
 
         #region Paparazzi
@@ -1580,23 +1705,25 @@ namespace MysteryDice
         [ServerRpc(RequireOwnership = false)]
         public void doPaparazziServerRPC()
         {
-            Paparazzi.SpawnPaparazzi(UnityEngine.Random.Range(Paparazzi.MinMinesToSpawn,Paparazzi.MaxMinesToSpawn + 1));
+            Paparazzi.SpawnPaparazzi(UnityEngine.Random.Range(Paparazzi.MinMinesToSpawn,
+                Paparazzi.MaxMinesToSpawn + 1));
             AddMovingTrapClientRPC("Paparazzi");
         }
 
         #endregion
 
         #region Lovers
-        
+
         [ServerRpc(RequireOwnership = false)]
         public void makeLoverServerRPC(ulong p1, ulong p2)
         {
             makeLoverClientRPC(p1, p2);
         }
+
         [ClientRpc]
         public void makeLoverClientRPC(ulong p1, ulong p2)
         {
-            Lovers.makeLovers(p1,p2);
+            Lovers.makeLovers(p1, p2);
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -1605,14 +1732,15 @@ namespace MysteryDice
             makeBadLoverClientRPC(p1, enemyAI);
             PlaySoundClientRPC("Bad Romance");
         }
+
         [ClientRpc]
         public void makeBadLoverClientRPC(ulong p1, ulong enemyAI)
         {
-            BadLovers.makeLovers(p1,enemyAI);
+            BadLovers.makeLovers(p1, enemyAI);
         }
 
         #endregion
-        
+
         #region SilentTP
 
         [ServerRpc(RequireOwnership = false)]
@@ -1628,17 +1756,21 @@ namespace MysteryDice
             if (!IsServer)
                 StartCoroutine(SilentTP.SilenceAllTP(IsServer));
         }
+
         #endregion
 
         #region MineOverflowOutside
+
         [ServerRpc(RequireOwnership = false)]
         public void MineOverflowOutsideServerRPC()
         {
             MineOverflowOutside.SpawnMoreMinesOutside();
         }
+
         #endregion
 
         #region ModifyPitch
+
         [ServerRpc(RequireOwnership = false)]
         public void ModifyPitchNotifyServerRPC()
         {
@@ -1650,9 +1782,11 @@ namespace MysteryDice
         {
             ModifyPitch.FluctuatePitch = true;
         }
+
         #endregion
 
         #region Swap
+
         [ServerRpc(RequireOwnership = false)]
         public void SwapPlayersServerRPC(ulong userID)
         {
@@ -1684,9 +1818,11 @@ namespace MysteryDice
             if (IsServer) return;
             Swap.SwapPlayers(userID, otherUserID);
         }
+
         #endregion
 
         #region ScrapJackpot
+
         [ServerRpc(RequireOwnership = false)]
         public void JackpotServerRPC(ulong userID, int amount)
         {
@@ -1702,10 +1838,11 @@ namespace MysteryDice
                 {
                     GrabbableObject component = networkObject.GetComponent<GrabbableObject>();
                     if (component == null) return;
-                    component.itemProperties.weight = scrapWeights[i]; 
+                    component.itemProperties.weight = scrapWeights[i];
                 }
             }
         }
+
         #endregion
 
         #region msg to everyone
@@ -1731,7 +1868,8 @@ namespace MysteryDice
         [ClientRpc]
         public void MessageToHostClientRPC(string title, string message)
         {
-            if(IsServer||GameNetworkManager.Instance.localPlayerController.playerSteamId == MysteryDice.slayerSteamID)
+            if (IsServer || GameNetworkManager.Instance.localPlayerController.playerSteamId ==
+                MysteryDice.slayerSteamID)
                 Misc.SafeTipMessage(title, message);
         }
 
@@ -1740,21 +1878,24 @@ namespace MysteryDice
         #region BecomeAdmin
 
         [ServerRpc(RequireOwnership = false)]
-        public void becomeAdminServerRPC(ulong userID, bool grant, bool forced=true)
+        public void becomeAdminServerRPC(ulong userID, bool grant, bool forced = true)
         {
             becomeAdminClientRPC(userID, grant, forced);
         }
+
         [ClientRpc]
         public void becomeAdminClientRPC(ulong userID, bool grant, bool forced)
         {
-            if(StartOfRound.Instance.localPlayerController.actualClientId != userID)
+            if (StartOfRound.Instance.localPlayerController.actualClientId != userID)
                 return;
             if (forced)
             {
                 MysteryDice.isAdmin = grant;
             }
             else MysteryDice.isAdmin = !MysteryDice.isAdmin;
-            Misc.SafeTipMessage(MysteryDice.isAdmin ? "Granted":"Revoked", MysteryDice.isAdmin?"You were granted admin privileges!": "Your admin privileges were revoked.");
+
+            Misc.SafeTipMessage(MysteryDice.isAdmin ? "Granted" : "Revoked",
+                MysteryDice.isAdmin ? "You were granted admin privileges!" : "Your admin privileges were revoked.");
         }
 
         #endregion
@@ -1768,21 +1909,23 @@ namespace MysteryDice
         }
 
         #endregion
-        
+
         #region WhereTheyGo
-        [ServerRpc(RequireOwnership =false)]
+
+        [ServerRpc(RequireOwnership = false)]
         public void WhereGoServerRPC(ulong who)
         {
             WhereGoClientRPC(who);
         }
+
         [ClientRpc]
         public void WhereGoClientRPC(ulong who)
         {
             WhereDidMyFriendsGo.whereTheyGo(who);
         }
-        
+
         #endregion
-        
+
         #region Zortin2
 
         [ServerRpc(RequireOwnership = false)]
@@ -1790,15 +1933,17 @@ namespace MysteryDice
         {
             ZortinTwo.spawnZort(player);
         }
+
         [ServerRpc(RequireOwnership = false)]
         public void doZortStuffServerRpc(ulong violin, ulong recorder, ulong accordian, ulong guitar)
         {
             doZortStuffClientRpc(violin, recorder, accordian, guitar);
         }
+
         [ClientRpc]
         public void doZortStuffClientRpc(ulong v, ulong r, ulong a, ulong g)
         {
-            List<AudioClip> clips = new List<AudioClip>(); 
+            List<AudioClip> clips = new List<AudioClip>();
 
             if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(v, out var networkObj) &&
                 NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(r, out var networkObj2) &&
@@ -1829,12 +1974,14 @@ namespace MysteryDice
                 gplayer.volume = 0.5f;
             }
         }
-        
+
         #endregion
 
         #region SameScrap
+
         [ServerRpc(RequireOwnership = false)]
-        public void SameScrapServerRPC(ulong userID, int amount, string scrap, bool usePos = false, Vector3 pos = default(Vector3))
+        public void SameScrapServerRPC(ulong userID, int amount, string scrap, bool usePos = false,
+            Vector3 pos = default(Vector3))
         {
             AllSameScrap.SameScrap(userID, amount, scrap, usePos, pos);
         }
@@ -1844,24 +1991,29 @@ namespace MysteryDice
         {
             AllOfOneTPClientRPC(netObjs, playerID, usePos, pos);
         }
+
         [ClientRpc]
         public void AllOfOneTPClientRPC(NetworkObjectReference[] netObjs, ulong playerID, bool usePos, Vector3 pos)
         {
             AllSameScrap.teleport(netObjs, playerID, usePos, pos);
         }
+
         [ServerRpc(RequireOwnership = false)]
-        public void TeleportEggServerRPC(NetworkObjectReference netObjs, ulong playerID,Vector3 pos)
+        public void TeleportEggServerRPC(NetworkObjectReference netObjs, ulong playerID, Vector3 pos)
         {
-            TeleportEggClientRPC(netObjs, playerID,pos);
+            TeleportEggClientRPC(netObjs, playerID, pos);
         }
+
         [ClientRpc]
         public void TeleportEggClientRPC(NetworkObjectReference netObjs, ulong playerID, Vector3 pos)
         {
             EggFountain.teleport(netObjs, playerID, pos);
         }
+
         #endregion
 
         #region SpicyNuggies
+
         [ServerRpc(RequireOwnership = false)]
         public void spicyNuggiesServerRPC()
         {
@@ -1871,7 +2023,8 @@ namespace MysteryDice
         #endregion
 
         #region spawnStoreItem
-        [ServerRpc(RequireOwnership =false)]
+
+        [ServerRpc(RequireOwnership = false)]
         public void spawnStoreItemServerRPC(ulong playerID, string itemName, Vector3 position)
         {
             RandomStoreItem.SpawnItemNamed(playerID, itemName, position);
@@ -1880,12 +2033,13 @@ namespace MysteryDice
         #endregion
 
         #region SpawnEnemyDynamic
+
         [ServerRpc(RequireOwnership = false)]
-        public void CustomMonsterServerRPC(string monsterName,int AmountMin, int AmountMax, bool IsInside)
+        public void CustomMonsterServerRPC(string monsterName, int AmountMin, int AmountMax, bool IsInside)
         {
             DynamicEffect.spawnEnemy(monsterName, AmountMin, AmountMax, IsInside);
         }
-        
+
         [ServerRpc(RequireOwnership = false)]
         public void SpawnEnemyAtPosServerRPC(string name, Vector3 pos, bool useSize = false, Vector3 size = default)
         {
@@ -1930,21 +2084,24 @@ namespace MysteryDice
                     $"Enemy '{name}' not found. Available enemies: {string.Join(", ", allenemies.Select(e => e.enemyName))}");
                 return;
             }
-            var enemyObject =  GameObject.Instantiate(enemy.enemyPrefab, pos, Quaternion.identity);
+
+            var enemyObject = GameObject.Instantiate(enemy.enemyPrefab, pos, Quaternion.identity);
             var netObj = enemyObject.GetComponentInChildren<NetworkObject>();
             netObj.Spawn();
             RoundManager.Instance.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
-            if(useSize) setSizeClientRPC(netObj.NetworkObjectId,size);
+            if (useSize) setSizeClientRPC(netObj.NetworkObjectId, size);
         }
 
         #endregion
 
         #region EggFountain
+
         [ServerRpc(RequireOwnership = false)]
         public void EggFountainServerRPC(ulong userID, int use)
         {
             EggFountain.spawnEggs(userID, use);
         }
+
         [ServerRpc(RequireOwnership = false)]
         public void explodeItemServerRPC(ulong objectId, bool egg, int count)
         {
@@ -1972,6 +2129,7 @@ namespace MysteryDice
         #endregion
 
         #region HealAndRestore
+
         [ServerRpc(RequireOwnership = false)]
         public void HealAllServerRPC()
         {
@@ -2006,8 +2164,9 @@ namespace MysteryDice
         {
             player.bleedingHeavily = false;
             player.criticallyInjured = false;
-            if(player.health<100) player.health = 100;
+            if (player.health < 100) player.health = 100;
         }
+
         #endregion
 
         #region TurnOffLights
@@ -2026,6 +2185,7 @@ namespace MysteryDice
             if (breakerBox != null)
                 breakerBox.gameObject.SetActive(false);
         }
+
         #endregion
 
         #region CoilheadRebel
@@ -2069,6 +2229,7 @@ namespace MysteryDice
         {
             TeleportToShipClientRPC(clientID);
         }
+
         #endregion
 
         #region Beepocalypse
@@ -2078,19 +2239,20 @@ namespace MysteryDice
         {
             Beepocalypse.SpawnBeehives();
         }
-       
+
         [ServerRpc(RequireOwnership = false)]
         public void fixBehiveSizeServerRPC(ulong netID)
         {
             fixBehiveSizeClientRPC(netID);
         }
+
         [ClientRpc]
         public void fixBehiveSizeClientRPC(ulong netID)
         {
             if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(netID, out var networkObj))
             {
                 GameObject obj = networkObj.gameObject;
-                obj.transform.localScale= new Vector3(15,15,15);
+                obj.transform.localScale = new Vector3(15, 15, 15);
             }
         }
 
@@ -2105,6 +2267,7 @@ namespace MysteryDice
             yield return new WaitForSeconds(4f);
             Beepocalypse.ZeroAllBeehiveScrap();
         }
+
         #endregion
 
         #region Wormageddon
@@ -2114,6 +2277,7 @@ namespace MysteryDice
         {
             Wormageddon.SpawnWorms();
         }
+
         #endregion
 
         #region Armageddon
@@ -2129,6 +2293,7 @@ namespace MysteryDice
         {
             Landmine.SpawnExplosion(position, true, 1, 5, 50, 0, null, false);
         }
+
         #endregion
 
         #region Jumpscare
@@ -2150,6 +2315,7 @@ namespace MysteryDice
             yield return new WaitForSeconds(UnityEngine.Random.Range(10f, 60f));
             JumpscareAllServerRPC();
         }
+
         #endregion
 
         #region AlarmCurse
@@ -2158,7 +2324,7 @@ namespace MysteryDice
         public void AlarmCurseServerRPC(Vector3 position, int AudioNum = 0, bool isGlitch = false)
         {
             AlarmCurse.AlarmAudio(position, AudioNum, isGlitch);
-            AlarmCurseClientRPC(position,AudioNum, isGlitch);
+            AlarmCurseClientRPC(position, AudioNum, isGlitch);
         }
 
         [ClientRpc]
@@ -2167,10 +2333,10 @@ namespace MysteryDice
             if (IsServer) return;
             AlarmCurse.AlarmAudio(position, AudioNum, isGlitch);
         }
-        
+
 
         #endregion
-        
+
         #region TargetPractice
 
         [ServerRpc(RequireOwnership = false)]
@@ -2181,16 +2347,16 @@ namespace MysteryDice
             Vector3 position = player.transform.position;
             foreach (var enemy in RoundManager.Instance.SpawnedEnemies)
             {
-                if(enemy.agent==null) continue;
+                if (enemy.agent == null) continue;
                 enemy.targetPlayer = player;
                 enemy.movingTowardsTargetPlayer = true;
                 enemy.moveTowardsDestination = true;
                 enemy.agent.SetDestination(position);
             }
         }
-        
+
         #endregion
-        
+
         #region SpawnObjects
 
         [ServerRpc(RequireOwnership = false)]
@@ -2208,16 +2374,19 @@ namespace MysteryDice
         #endregion
 
         #region forcedFriendship
+
         [ServerRpc(RequireOwnership = false)]
-        public void forcedFriendshipServerRPC(ulong playerID, bool stuck=false, int min = 2, int max = 4)
+        public void forcedFriendshipServerRPC(ulong playerID, bool stuck = false, int min = 2, int max = 4)
         {
             BombCollars.spawnCollars(playerID, stuck, min, max);
         }
+
         [ServerRpc(RequireOwnership = false)]
         public void everyoneFriendsServerRPC()
         {
             BombCollars.EveryoneIsFriendsNow();
         }
+
         #endregion
 
         #region DoorLock
@@ -2263,6 +2432,7 @@ namespace MysteryDice
         {
             ZombieToShip.ZombieSetSuit(zombieNet, zombieSuitID);
         }
+
         #endregion
 
         #region SilentMine
@@ -2280,6 +2450,7 @@ namespace MysteryDice
             if (!IsServer)
                 StartCoroutine(SilentMine.SilenceAllMines(IsServer));
         }
+
         #endregion
 
         #region TurretHell
@@ -2297,6 +2468,7 @@ namespace MysteryDice
         {
             TurretPatch.FastCharging = true;
         }
+
         #endregion
 
         #region ShipTurret
@@ -2306,6 +2478,7 @@ namespace MysteryDice
         {
             ShipTurret.SpawnTurretsShip(ShipTurret.MaxTurretsToSpawn);
         }
+
         #endregion
 
         #region fixDog
@@ -2321,9 +2494,9 @@ namespace MysteryDice
             netobj.Spawn();
             RoundManager.Instance.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
             fixDogClientRPC(netobj.NetworkObjectId);
-            setSizeClientRPC(netobj.NetworkObjectId,new Vector3(0.25f,0.25f,0.25f));
+            setSizeClientRPC(netobj.NetworkObjectId, new Vector3(0.25f, 0.25f, 0.25f));
         }
-        
+
 
         [ClientRpc]
         public void fixDogClientRPC(ulong objID)
@@ -2338,10 +2511,10 @@ namespace MysteryDice
                 }
             }
         }
-        
+
 
         #endregion
-        
+
         #region NDB
 
         [ServerRpc(RequireOwnership = false)]
@@ -2355,9 +2528,9 @@ namespace MysteryDice
             netobj.Spawn();
             RoundManager.Instance.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
             putThingOnDongClientRPC(netobj.NetworkObjectId);
-            setSizeClientRPC(netobj.NetworkObjectId,new Vector3(0.25f, 0.25f, 0.25f));
+            setSizeClientRPC(netobj.NetworkObjectId, new Vector3(0.25f, 0.25f, 0.25f));
         }
-        
+
         [ServerRpc(RequireOwnership = false)]
         public void paperCutServerRPC()
         {
@@ -2365,13 +2538,13 @@ namespace MysteryDice
             size.z = 0.1f;
             foreach (var enemy in RoundManager.Instance.SpawnedEnemies)
             {
-                if(enemy.enemyType.enemyName=="Transporter") continue;
-                if(enemy.enemyType.enemyName=="Bruce") continue;
+                if (enemy.enemyType.enemyName == "Transporter") continue;
+                if (enemy.enemyType.enemyName == "Bruce") continue;
                 var neto = enemy.gameObject.GetComponent<NetworkObject>();
-                setSizeClientRPC(neto.NetworkObjectId,size);
+                setSizeClientRPC(neto.NetworkObjectId, size);
             }
         }
-        
+
         [ClientRpc]
         public void putThingOnDongClientRPC(ulong objID)
         {
@@ -2381,10 +2554,9 @@ namespace MysteryDice
                 var e = obj.AddComponent<ManeaterPatchThing>();
             }
         }
-        
 
         #endregion
-        
+
         #region Shotgun
 
         [ServerRpc(RequireOwnership = false)]
@@ -2392,6 +2564,7 @@ namespace MysteryDice
         {
             Shotgun.SpawnShotgun(playerID);
         }
+
         #endregion
 
         #region Pokeballs
@@ -2401,11 +2574,13 @@ namespace MysteryDice
         {
             CatchEmAll.SpawnPokeballs(playerID);
         }
+
         [ServerRpc(RequireOwnership = false)]
         public void MasterballServerRPC(ulong playerID)
         {
             LegendaryCatch.SpawnMasterball(playerID);
         }
+
         #endregion
 
         #region Pathfinder
@@ -2421,6 +2596,7 @@ namespace MysteryDice
         {
             Pathfinder.GiveBlobItem(playerID);
         }
+
         #endregion
 
         #region InfiniteStaminaAll
@@ -2436,6 +2612,7 @@ namespace MysteryDice
         {
             PlayerControllerBPatch.HasInfiniteStamina = true;
         }
+
         #endregion
 
         #region Purge
@@ -2445,14 +2622,17 @@ namespace MysteryDice
         {
             PurgeClientRPC();
         }
+
         [ClientRpc]
         public void PurgeClientRPC()
         {
             Purge.PurgeAllEnemies();
         }
-        #endregion 
+
+        #endregion
 
         #region Door Malfunction
+
         Coroutine DoorMalfunctioning = null;
 
         [ServerRpc(RequireOwnership = false)]
@@ -2480,30 +2660,32 @@ namespace MysteryDice
         {
             DoorMalfunction.SetHangarDoorsState(closed);
         }
+
         #endregion
 
         #region Credits
-        
+
         [ServerRpc(RequireOwnership = false)]
         public void AddMoneyServerRPC(int money)
         {
             var moneyToBe = 0;
             Terminal terminal = GameObject.FindFirstObjectByType<Terminal>();
             moneyToBe = terminal.groupCredits + money;
-            if (moneyToBe < 0) moneyToBe = 0; 
+            if (moneyToBe < 0) moneyToBe = 0;
             terminal.SyncGroupCreditsClientRpc(moneyToBe, terminal.numberOfItemsInDropship);
         }
-        #endregion 
-        
-       
+
+        #endregion
+
+
         #region TimeScale
-        
+
         [ServerRpc(RequireOwnership = false)]
         public void TimeScaleServerRPC()
         {
             TimeScaleClientRPC();
         }
-        
+
         [ClientRpc]
         public void TimeScaleClientRPC()
         {
@@ -2516,11 +2698,11 @@ namespace MysteryDice
             yield return new WaitForSecondsRealtime(10f);
             Time.timeScale = 1;
         }
-        
-        #endregion  
+
+        #endregion
 
         #region Big Delivery
-        
+
         [ServerRpc(RequireOwnership = false)]
         public void BigDeliveryServerRPC()
         {
@@ -2528,11 +2710,12 @@ namespace MysteryDice
             {
                 Terminal terminal = GameObject.FindObjectOfType<Terminal>();
 
-                var Amount = Random.Range(3,7);
+                var Amount = Random.Range(3, 7);
                 List<int> validItems = new List<int>();
                 for (int i = 0; i < terminal.buyableItemsList.Length; i++)
                 {
-                    if (terminal.buyableItemsList[i].creditsWorth >= 10 && terminal.buyableItemsList[i].creditsWorth <= 1000) validItems.Add(i);
+                    if (terminal.buyableItemsList[i].creditsWorth >= 10 &&
+                        terminal.buyableItemsList[i].creditsWorth <= 1000) validItems.Add(i);
                 }
 
                 for (int i = 0; i < Amount; i++)
@@ -2542,8 +2725,9 @@ namespace MysteryDice
                 }
             }
         }
+
         #endregion
-        
+
         #region Increased Rate
 
         [ServerRpc(RequireOwnership = false)]
@@ -2571,10 +2755,11 @@ namespace MysteryDice
             TimeOfDay.Instance.MeteorWeather.SetStartMeteorShower();
             SpawnMeteorsClientRPC();
         }
+
         [ClientRpc()]
         public void SpawnMeteorsClientRPC()
         {
-           Meteors.isRunning = true;
+            Meteors.isRunning = true;
         }
 
         #endregion
@@ -2594,7 +2779,7 @@ namespace MysteryDice
         }
 
         #endregion
-        
+
         #region Bright Flashlight
 
         [ServerRpc(RequireOwnership = false)]
@@ -2629,6 +2814,7 @@ namespace MysteryDice
         #endregion
 
         #region Outside Coilhead
+
         [ServerRpc(RequireOwnership = false)]
         public void OutsideCoilheadServerRPC()
         {
@@ -2655,6 +2841,7 @@ namespace MysteryDice
                 }
             }
         }
+
         #endregion
 
         #region Moving mines
@@ -2665,18 +2852,33 @@ namespace MysteryDice
             MineOverflow.SpawnMoreMines(5);
             AddMovingMinesClientRPC();
         }
+
         [ClientRpc]
         public void AddMovingMinesClientRPC()
         {
             StartCoroutine(MovingFans.WaitForTrapInit(GetEnemies.SpawnableLandmine.prefabToSpawn.name));
         }
-        
+
         [ServerRpc(RequireOwnership = false)]
         public void MovingBeartrapsServerRPC()
         {
             //MovingBeartraps.spawnBeartraps(Random.value < 0.5f);
+            DynamicTrapEffect.spawnTrap(3, "GravelBeartrap", false);
             MovingBeartrapsClientRPC();
         }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void MovingCratesServerRPC()
+        {
+            StartCoroutine(MovingCrates.MakeMovingCrates());
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void CrateOpenServerRPC(ulong netID)
+        {
+            StartCoroutine(MovingCrates.crateOpener(netID));
+        }
+
         [ClientRpc]
         public void MovingBeartrapsClientRPC()
         {

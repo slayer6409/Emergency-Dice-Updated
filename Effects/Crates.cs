@@ -8,6 +8,7 @@ using Unity.Netcode;
 using UnityEngine;
 using CodeRebirth.src.Content.Maps;
 using CodeRebirth.src.Util.Extensions;
+using Random = System.Random;
 
 namespace MysteryDice.Effects
 {
@@ -30,7 +31,9 @@ namespace MysteryDice.Effects
         {
             MapObjectHandler handler = new MapObjectHandler();
             GameObject metalCrate = handler.Crate.MetalCratePrefab;
+            GameObject metalMimicCrate = handler.Crate.MimicMetalCratePrefab;
             GameObject woodenCrate = handler.Crate.WoodenCratePrefab;
+            GameObject woodenMimicCrate = handler.Crate.MimicWoodenCratePrefab;
             int spawnedMines = 0;
             System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed);
 
@@ -47,11 +50,12 @@ namespace MysteryDice.Effects
                     GameObject crate;
                     if (UnityEngine.Random.Range(0, 3) == 1)
                     {
-                        crate = metalCrate;
+                        
+                        crate = UnityEngine.Random.value > 0.5 ? metalCrate: metalMimicCrate;
                     }
                     else
                     {
-                        crate = woodenCrate;
+                        crate = UnityEngine.Random.value > 0.5 ? woodenCrate: woodenMimicCrate;
                     }
 
                     if (hit.collider != null)
@@ -74,7 +78,9 @@ namespace MysteryDice.Effects
         {
             MapObjectHandler handler = new MapObjectHandler();
             GameObject metalCrate = handler.Crate.MetalCratePrefab;
+            GameObject metalMimicCrate = handler.Crate.MimicMetalCratePrefab;
             GameObject woodenCrate = handler.Crate.WoodenCratePrefab;
+            GameObject woodenMimicCrate = handler.Crate.MimicWoodenCratePrefab;
             int spawnedMines = 0;
             System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed);
 
@@ -90,11 +96,11 @@ namespace MysteryDice.Effects
                     GameObject crate;
                     if (UnityEngine.Random.Range(0, 3) == 1)
                     {
-                        crate = metalCrate;
+                        crate = UnityEngine.Random.value > 0.5 ? metalCrate: metalMimicCrate;
                     }
                     else
                     {
-                        crate = woodenCrate;
+                        crate = UnityEngine.Random.value > 0.5 ? woodenCrate: woodenMimicCrate;
                     }
 
                     if (hit.collider != null)

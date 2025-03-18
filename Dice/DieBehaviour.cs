@@ -522,6 +522,7 @@ namespace MysteryDice.Dice
                 if(CodeRebirthCheckConfigs.checkTornadoConfig()) MysteryDice.MainRegisterNewEffect(new Tornado());
                 if(CodeRebirthCheckConfigs.checkCrateConfig()) MysteryDice.MainRegisterNewEffect(new CratesOutside());
                 if(CodeRebirthCheckConfigs.checkCrateConfig()) MysteryDice.MainRegisterNewEffect(new CratesInside());
+                if(CodeRebirthCheckConfigs.checkCrateConfig()) MysteryDice.MainRegisterNewEffect(new MovingCrates());
                 if(CodeRebirthCheckConfigs.checkFanConfig()) MysteryDice.MainRegisterNewEffect(new Fans());
                 if(CodeRebirthCheckConfigs.checkFlashConfig()) MysteryDice.MainRegisterNewEffect(new Flashers());
                 if(CodeRebirthCheckConfigs.checkMicrowaveConfig()) MysteryDice.MainRegisterNewEffect(new Microwave());
