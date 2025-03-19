@@ -51,7 +51,7 @@ namespace MysteryDice
         public enum chatDebug { Host, Everyone, None};
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.9.14";
+        private const string modVersion = "1.9.15";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -137,11 +137,14 @@ namespace MysteryDice
         public static ConfigEntry<string> DebugButtonColor;
         public static ConfigEntry<int> DebugButtonAlpha;
         public static ConfigEntry<bool> BrutalMode;
+        public static ConfigEntry<bool> BrutalChat;
         public static ConfigEntry<bool> SuperBrutalMode;
         public static ConfigEntry<int> brutalStartingScale;
         public static ConfigEntry<int> brutalMaxScale;
         public static ConfigEntry<int> brutalScaleType;
         public static ConfigEntry<bool> Bald;
+        public static ConfigEntry<bool> CopyrightFree;
+        public static ConfigEntry<float> SoundVolume;
         //public static ConfigEntry<string> adminKeybind;
         public static ConfigEntry<bool> debugButton;
         public static ConfigEntry<bool> superDebugMode;
@@ -307,7 +310,20 @@ namespace MysteryDice
                 "Lovers On Start",
                 false,
                 "Assigns New Lovers on each round (will be moved to a separate mod eventually after the next major update)");
-
+            
+            CopyrightFree = BepInExConfig.Bind<bool>(
+                "Clientside",
+                "Copyright Free",
+                false,
+                "Removes Copyright sounds over 10 seconds");
+            CopyrightFree.SettingChanged += freebirdChange;
+            
+            SoundVolume = BepInExConfig.Bind<float>(
+                "Clientside",
+                "Sound Volume",
+                0.75f,
+                "Sets the volume for most sounds/music from this mod");
+            SoundVolume.SettingChanged += setAudio;
             hyperShakeTimer = BepInExConfig.Bind<int>(
                 "Hypershake",
                 "HyperShake Length",
@@ -454,6 +470,11 @@ namespace MysteryDice
                 "Brutal Mode",
                 false,
                 "Makes it to where the Random Dice Events Happen at the start of the round\nThis was Requested by a friend");
+            BrutalChat = BepInExConfig.Bind<bool>(
+                "Brutal",
+                "Brutal Chat",
+                true,
+                "Makes it to where the Brutal Events show in chat");
             SuperBrutalMode = BepInExConfig.Bind<bool>(
                 "Brutal",
                 "Super Brutal Mode",
@@ -489,6 +510,36 @@ namespace MysteryDice
             //   8.0f,
             //   "Sets the speed of the Speedy Boombas");
             //}
+        }
+
+        public static void setAudio(object sender, System.EventArgs e)
+        {
+            if(Networker.Instance == null) return;
+            foreach (var audioSource in Networker.Instance.AudioSources)
+            {
+                audioSource.volume = SoundVolume.Value;
+            }
+            foreach (var audioSource in Networker.Instance.FreebirdAudioSources)
+            {
+                audioSource.volume = SoundVolume.Value;
+            }
+        }
+        public static void freebirdChange(object sender, System.EventArgs e)
+        {
+            if(Networker.Instance == null) return;
+            
+            foreach (var audioSource in Networker.Instance.FreebirdAudioSources)
+            {
+                if (MysteryDice.CopyrightFree.Value)
+                {
+                    audioSource.clip = MysteryDice.LoadedAssets2.LoadAsset<AudioClip>("SpazzmaticaPolka");
+                }
+                else
+                {
+                    audioSource.clip = MysteryDice.LoadedAssets2.LoadAsset<AudioClip>("Freebird");
+                }
+                audioSource.Play();
+            }
         }
         public static List<ConfigEntryBase> GetListConfigs()
         {

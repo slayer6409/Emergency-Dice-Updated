@@ -90,22 +90,38 @@ namespace MysteryDice.Effects
         public NavMeshAgent agent;
         private AudioSource audiosrc;
         private EnemyAI _enemyAI;
+
         public void Start()
         {
             if (agent == null) agent = gameObject.GetComponent<NavMeshAgent>();
             if (agent == null) return;
             if (_enemyAI == null) _enemyAI = gameObject.GetComponent<EnemyAI>();
             audiosrc = gameObject.AddComponent<AudioSource>();
+            Networker.Instance.FreebirdAudioSources.Add(audiosrc);
             audiosrc.loop = true;
+            audiosrc.playOnAwake = true;
             audiosrc.maxDistance = 30;
             audiosrc.minDistance = 0;
-            audiosrc.volume = 0.8f;
+            audiosrc.volume = MysteryDice.SoundVolume.Value;
             audiosrc.rolloffMode = AudioRolloffMode.Custom;
             audiosrc.spatialBlend = 1;
             audiosrc.dopplerLevel = 0;
-            audiosrc.clip = MysteryDice.LoadedAssets2.LoadAsset<AudioClip>("Freebird");
+            if (MysteryDice.CopyrightFree.Value)
+            {
+                audiosrc.volume -= 0.08f;
+                audiosrc.clip = MysteryDice.LoadedAssets2.LoadAsset<AudioClip>("SpazzmaticaPolka");
+            }
+            else
+            {
+                audiosrc.clip = MysteryDice.LoadedAssets2.LoadAsset<AudioClip>("Freebird");
+            }
+
             audiosrc.Play();
-            
+        }
+
+        public void OnDestroy()
+        {
+            Networker.Instance.FreebirdAudioSources.Remove(audiosrc);
         }
 
         public void Update()

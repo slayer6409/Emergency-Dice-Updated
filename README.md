@@ -171,6 +171,8 @@ Thanks to:
 
 [Glitch](https://www.twitch.tv/a_glitched_npc), [Lizzie](https://www.twitch.tv/lizziegirl0099), [Lunxara](https://www.twitch.tv/lunxara) and so many more amazing people that the list is too long to put, for testing and bug finding! 
 
+Music by Kevin MacLeod Spazzmatica Polka - https://incompetech.com/
+
 Thanks to everyone who participates on github -
 for the suggestions, and bug reporting!
 

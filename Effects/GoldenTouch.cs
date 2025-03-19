@@ -31,11 +31,10 @@ namespace MysteryDice.Effects
 
             if (player == null)
             {
-                Debug.LogError("Player not found.");
+                MysteryDice.CustomLogger.LogError("Player not found.");
                 return -1;
             }
 
-            // Create a dictionary of valid items with non-zero scrapValue and their slots
             Dictionary<GrabbableObject, int> validItems = new Dictionary<GrabbableObject, int>();
 
             for (int i = 0; i < player.ItemSlots.Length; i++)

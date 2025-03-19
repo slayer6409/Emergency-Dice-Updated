@@ -451,7 +451,7 @@ namespace MysteryDice
             }
             if (player == null)
             {
-                Debug.LogError("Player not found.");
+                MysteryDice.CustomLogger.LogError("Player not found.");
                 return;
             }
 

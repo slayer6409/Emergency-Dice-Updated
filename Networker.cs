@@ -24,6 +24,8 @@ namespace MysteryDice
         public static float RebelTimer = 0f;
         public static bool CoilheadIgnoreStares = false;
         public static List<UnlockableSuit> orderedSuits = new List<UnlockableSuit>();
+        public List<AudioSource> AudioSources = new List<AudioSource>();
+        public List<AudioSource> FreebirdAudioSources = new List<AudioSource>();
 
         public override void OnNetworkSpawn()
         {
@@ -167,6 +169,12 @@ namespace MysteryDice
             Enum.TryParse<MysteryDice.chatDebug>(MysteryDice.debugChat.Value, out parsedEffect);
             if (MysteryDice.debugDice.Value)
                 MysteryDice.CustomLogger.LogInfo($"[Debug] {playerName} rolled a {roll}: {effectName}");
+            if (playerName == "Brutal" && MysteryDice.BrutalChat.Value)
+            {
+                LogEffectsToEveryoneClientRPC(playerName, effectName, roll);
+                return;
+            }
+            if (playerName == "Brutal" && !StartOfRound.Instance.allPlayerScripts.Any(x => x.playerUsername == "Brutal")) return;
             if (parsedEffect == MysteryDice.chatDebug.Host) LogEffectsToHostClientRPC(playerName, effectName, roll);
             if (parsedEffect == MysteryDice.chatDebug.Everyone)
                 LogEffectsToEveryoneClientRPC(playerName, effectName, roll);
@@ -209,7 +217,7 @@ namespace MysteryDice
             var player = Misc.GetPlayerByUserID(playerID);
             if (player == null || !Misc.IsPlayerReal(player))
             {
-                Debug.LogError($"Player with ID {playerID} is either null or not real.");
+                MysteryDice.CustomLogger.LogError($"Player with ID {playerID} is either null or not real.");
                 return;
             }
 
@@ -1163,14 +1171,16 @@ namespace MysteryDice
         [ClientRpc]
         public void PlaySoundClientRPC(string sound)
         {
-            var audioSource = gameObject.AddComponent<AudioSource>();
-            audioSource.spatialBlend = 0;
-            audioSource.volume = 0.75f;
-            if (sound == "wiwiwi") audioSource.volume = 0.76f;
-            if (sound == "Bad Romance") audioSource.volume = 0.25f;
+            AudioSource audioSource;
+            if (!gameObject.TryGetComponent<AudioSource>(out audioSource))
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+                audioSource.spatialBlend = 0;
+                audioSource.volume = MysteryDice.SoundVolume.Value;
+                AudioSources.Add(audioSource);
+            }
             MysteryDice.sounds.TryGetValue(sound, out AudioClip audioClip);
             audioSource.clip = audioClip;
-
             if (audioSource.clip != null)
             {
                 audioSource.Play();
@@ -1523,7 +1533,7 @@ namespace MysteryDice
                 }
                 else
                 {
-                    Debug.LogWarning("PushTrigger_RedirectToRootNetworkObject not found!");
+                    MysteryDice.CustomLogger.LogWarning("PushTrigger_RedirectToRootNetworkObject not found!");
                 }
             }
         }

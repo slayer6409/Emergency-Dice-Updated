@@ -1,3 +1,8 @@
+-	**1.9.15**
+    - Added a copyright free mode for freebird based events since it is over 10 seconds (Spazzmatica Polka) (in Misc)
+    - Added a way to change the volume as well
+    - Added a toggle for brutal events to show up in chat seperate from normal rolls
+
 -	**1.9.14**
     - Fixed Amazon Shipping and Airsupply not spawning mimics randomly
     - Added Beartraps, Crates, and Boomtraps to the spawnmenu of DebugMenu

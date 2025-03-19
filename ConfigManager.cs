@@ -47,6 +47,11 @@ namespace MysteryDice
                 Min = 0,
                 Max = 5
             });
+            var soundVolumeSlider = new FloatSliderConfigItem(MysteryDice.SoundVolume, new FloatSliderOptions
+            {
+                Min = 0,
+                Max = 1
+            });
             var minNeckBreakTimerSlider = new IntSliderConfigItem(MysteryDice.minNeckBreakTimer, new IntSliderOptions
             {
                 Min = 0, 
@@ -108,6 +113,7 @@ namespace MysteryDice
             var useDiceOutsideBoolField = new BoolCheckBoxConfigItem(MysteryDice.useDiceOutside, false);
             var debugDiceBoolField = new BoolCheckBoxConfigItem(MysteryDice.debugDice, false);
             var TwitchEnabledBoolField = new BoolCheckBoxConfigItem(MysteryDice.TwitchEnabled, true);
+            var CopyrightBoolField = new BoolCheckBoxConfigItem(MysteryDice.CopyrightFree, false);
             var allowChatCommandsBoolField = new BoolCheckBoxConfigItem(MysteryDice.allowChatCommands, true);
             var useNeckBreakTimerBoolField = new BoolCheckBoxConfigItem(MysteryDice.useNeckBreakTimer, false);
             var debugMenuShowsAllBoolField = new BoolCheckBoxConfigItem(MysteryDice.debugMenuShowsAll, false);
@@ -123,6 +129,7 @@ namespace MysteryDice
             var LoversStartBoolField = new BoolCheckBoxConfigItem(MysteryDice.LoversOnStart, false);
             var DebugMenuClosesAfterBoolField = new BoolCheckBoxConfigItem(MysteryDice.DebugMenuClosesAfter, false);
             var BrutalBoolField = new BoolCheckBoxConfigItem(MysteryDice.BrutalMode, false);
+            var BrutalChatBoolField = new BoolCheckBoxConfigItem(MysteryDice.BrutalChat, false);
             var SuperBrutalBoolField = new BoolCheckBoxConfigItem(MysteryDice.SuperBrutalMode, false);
             var yippeeUseBoolField = new BoolCheckBoxConfigItem(MysteryDice.yippeeUse, false);
             
@@ -139,6 +146,7 @@ namespace MysteryDice
             //LethalConfigManager.AddConfigItem(adminKeybindStringField);
             LethalConfigManager.AddConfigItem(useDiceOutsideBoolField);
             LethalConfigManager.AddConfigItem(BrutalBoolField);
+            LethalConfigManager.AddConfigItem(BrutalChatBoolField);
             LethalConfigManager.AddConfigItem(SuperBrutalBoolField);
             LethalConfigManager.AddConfigItem(BrutalMinSlider);
             LethalConfigManager.AddConfigItem(BrutalMaxSlider);
@@ -158,8 +166,10 @@ namespace MysteryDice
             LethalConfigManager.AddConfigItem(randomSpinTimeBoolField);
             LethalConfigManager.AddConfigItem(pussyModeBoolField);
             LethalConfigManager.AddConfigItem(useNeckBreakTimerBoolField);
+            LethalConfigManager.AddConfigItem(soundVolumeSlider);
             // LethalConfigManager.AddConfigItem(SizeDifferenceEnumField);
             LethalConfigManager.AddConfigItem(DisplayResultsEnumField);
+            LethalConfigManager.AddConfigItem(CopyrightBoolField);
             LethalConfigManager.AddConfigItem(minHyperSlider);
             LethalConfigManager.AddConfigItem(maxHyperSlider);
             LethalConfigManager.AddConfigItem(hypershakeIntField);

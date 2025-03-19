@@ -47,7 +47,7 @@ namespace MysteryDice.Effects
                 //         continue;
                 //     }
                 // }
-                Debug.LogError($"Trap {trap.name}");
+                //Debug.LogError($"Trap {trap.name}");
                 if (!trap)
                 {
                     MysteryDice.CustomLogger.LogWarning("Trap is null.");

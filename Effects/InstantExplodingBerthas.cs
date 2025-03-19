@@ -83,7 +83,7 @@ namespace MysteryDice.Effects
 
                     if (!validPositionFound)
                     {
-                        Debug.LogWarning("Could not find a valid position for mine at spawn point: " + pos);
+                        MysteryDice.CustomLogger.LogWarning("Could not find a valid position for mine at spawn point: " + pos);
                     }
                 }
             }
