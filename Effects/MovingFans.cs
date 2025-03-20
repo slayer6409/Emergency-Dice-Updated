@@ -138,6 +138,7 @@ namespace MysteryDice.Effects
             {
                 MysteryDice.CustomLogger.LogError("AINodes not found. Ensure they are tagged correctly.");
             }
+            SceneManager.MoveGameObjectToScene(this.gameObject, RoundManager.Instance.mapPropsContainer.scene);
         }   
         public void Initialize(SmartAgentNavigator assignedAgent)
         {

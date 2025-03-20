@@ -1,3 +1,10 @@
+-	**1.9.16**
+    - Added logging to when it is destroyed/despawned to print the stacktrace so I know what is causing it
+      - It will log it when you return to the menu too though
+      - If you run into errors where dice don't roll or any other errors, please send the logs either in the Emergency Dice Updated thread in the Lethal modding Discord or create a github issue
+      - Thanks
+      - Networker pls no go poof
+
 -	**1.9.15**
     - Added a copyright free mode for freebird based events since it is over 10 seconds (Spazzmatica Polka) (in Misc)
     - Added a way to change the volume as well

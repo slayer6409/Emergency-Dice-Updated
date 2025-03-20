@@ -6,6 +6,7 @@ using MysteryDice.Patches;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using LethalLib.Extras;
@@ -14,6 +15,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
 using static MysteryDice.Effects.MovingLandmines;
+using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 namespace MysteryDice
@@ -31,6 +33,7 @@ namespace MysteryDice
         {
             Instance = this;
             base.OnNetworkSpawn();
+            //DontDestroyOnLoad(this);
             StartCoroutine(DelaySuitGet());
             if (IsServer) return;
 
@@ -66,9 +69,14 @@ namespace MysteryDice
             RequestEffectConfigServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
             RequestConfigSyncServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
-
+        
+        void OnDestroy()
+        {
+            MysteryDice.CustomLogger.LogError($"[DestroyDebugger] {gameObject.name} was destroyed!\nEither you left the game or something bad happened!\nStackTrace:\n" + new StackTrace());
+        }
         public override void OnNetworkDespawn()
         {
+            MysteryDice.CustomLogger.LogFatal($"[Network] {gameObject.name} is despawning!\nEither you left the game or something bad happened! StackTrace:\n" + new StackTrace());
             StartOfRoundPatch.ResetSettingsShared();
             base.OnNetworkDespawn();
         }
@@ -144,6 +152,7 @@ namespace MysteryDice
             return 0;
         }
 
+       
         public static double Scale(double x, double minInput, double maxInput, double minOutput, double maxOutput)
         {
             return minOutput + ((x - minInput) * (maxOutput - minOutput)) / (maxInput - minInput);
@@ -2521,8 +2530,6 @@ namespace MysteryDice
                 }
             }
         }
-
-
         #endregion
 
         #region NDB
