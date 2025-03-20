@@ -30,7 +30,7 @@ namespace MysteryDice.Patches
             if (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer)
             {
                 GameObject go = GameObject.Instantiate(MysteryDice.NetworkerPrefab,Vector3.zero,Quaternion.identity);
-                go.GetComponent<NetworkObject>().Spawn(true);
+                go.GetComponent<NetworkObject>().Spawn(false);
             }
         }
         [HarmonyPostfix]

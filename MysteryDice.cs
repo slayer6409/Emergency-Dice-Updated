@@ -44,6 +44,7 @@ namespace MysteryDice
             76561198086086035 /*Nut*/
         };
 
+        
         public static readonly ulong slayerSteamID = 76561198077184650;
         
         internal static bool isAdmin=false;
@@ -51,7 +52,7 @@ namespace MysteryDice
         public enum chatDebug { Host, Everyone, None};
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.9.16";
+        private const string modVersion = "1.9.17";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;

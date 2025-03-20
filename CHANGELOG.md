@@ -1,3 +1,7 @@
+-	**1.9.17**
+    - Potential Fixes for networker going poof
+    - and for dice not rolling sometimes
+
 -	**1.9.16**
     - Added logging to when it is destroyed/despawned to print the stacktrace so I know what is causing it
       - It will log it when you return to the menu too though

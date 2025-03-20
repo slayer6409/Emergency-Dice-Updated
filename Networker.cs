@@ -33,6 +33,7 @@ namespace MysteryDice
         {
             Instance = this;
             base.OnNetworkSpawn();
+            NetworkObject.DontDestroyWithOwner = true;
             //DontDestroyOnLoad(this);
             StartCoroutine(DelaySuitGet());
             if (IsServer) return;
@@ -72,11 +73,11 @@ namespace MysteryDice
         
         void OnDestroy()
         {
-            MysteryDice.CustomLogger.LogError($"[DestroyDebugger] {gameObject.name} was destroyed!\nEither you left the game or something bad happened!\nStackTrace:\n" + new StackTrace());
+            Debug.LogError($"Dice: [DestroyDebugger] {gameObject.name} was destroyed!\nEither you left the game or something bad happened!\nStackTrace:\n" + new StackTrace());
         }
         public override void OnNetworkDespawn()
         {
-            MysteryDice.CustomLogger.LogFatal($"[Network] {gameObject.name} is despawning!\nEither you left the game or something bad happened! StackTrace:\n" + new StackTrace());
+            Debug.LogError($"Dice: [Network] {gameObject.name} is despawning!\nEither you left the game or something bad happened! StackTrace:\n" + new StackTrace());
             StartOfRoundPatch.ResetSettingsShared();
             base.OnNetworkDespawn();
         }

@@ -189,7 +189,7 @@ namespace MysteryDice.Dice
             {
                 GameObject.Destroy(componentsInChildren2[j]);
             }
-            if(IsHost) NetworkObject.Despawn();
+            if (IsHost) this.NetworkObject.Despawn();
         }
         public virtual void Roll()
         {
