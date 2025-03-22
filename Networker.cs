@@ -31,10 +31,8 @@ namespace MysteryDice
 
         public override void OnNetworkSpawn()
         {
-            Instance = this;
             base.OnNetworkSpawn();
-            NetworkObject.DontDestroyWithOwner = true;
-            //DontDestroyOnLoad(this);
+            Instance = this;
             StartCoroutine(DelaySuitGet());
             if (IsServer) return;
 
@@ -70,13 +68,15 @@ namespace MysteryDice
             RequestEffectConfigServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
             RequestConfigSyncServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
         }
-        
-        void OnDestroy()
+
+        public override void OnDestroy()
         {
             Debug.LogError($"Dice: [DestroyDebugger] {gameObject.name} was destroyed!\nEither you left the game or something bad happened!\nStackTrace:\n" + new StackTrace());
+            base.OnDestroy();
         }
         public override void OnNetworkDespawn()
         {
+            if (Instance == this) Instance = null;
             Debug.LogError($"Dice: [Network] {gameObject.name} is despawning!\nEither you left the game or something bad happened! StackTrace:\n" + new StackTrace());
             StartOfRoundPatch.ResetSettingsShared();
             base.OnNetworkDespawn();
@@ -138,7 +138,6 @@ namespace MysteryDice
                 case 2:
                     return (int)Scale(inARow, 0, 15, MysteryDice.brutalStartingScale.Value,
                         MysteryDice.brutalMaxScale.Value);
-                    break;
                 case 3:
                     var normalizedDay = currentDay / 50.0;
                     var normalizedScrap = scrapInShip / 2500.0;
@@ -377,8 +376,22 @@ namespace MysteryDice
             else
             {
                 LogEffectsToOwnerServerRPC(who, effect.Name, 0);
-                effect.Use();
+                rollEffectRandomPlayerServerRPC(effect.Name);
             }
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void rollEffectRandomPlayerServerRPC(string effect)
+        {
+            var playerToBe = Misc.GetRandomPlayer();
+            ProcessRollEffectClientRPC(effect, playerToBe.actualClientId);
+        }
+
+        [ClientRpc]
+        public void ProcessRollEffectClientRPC(string effect, ulong playerID)
+        {
+            if(StartOfRound.Instance.localPlayerController.actualClientId != playerID) return;
+            DieBehaviour.AllowedEffects.Find(x => x.Name == effect).Use();
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -1028,7 +1041,9 @@ namespace MysteryDice
                 while (networkObj.IsSpawned)
                 {
                     counter++;
-                    networkObj.Despawn();
+                    
+                    if(networkObj.gameObject.name != "Networker") networkObj.Despawn();
+                    else MysteryDice.CustomLogger.LogDebug("Wat, why enemy named Networker??");
                     if (counter >= 15)
                     {
                         Debug.LogWarning($"Enemy tried to despawn {counter} times and is still spawned.");

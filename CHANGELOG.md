@@ -1,3 +1,12 @@
+-	**1.9.18**
+    - Reverted some code
+    - Added some changes to check for certain errors
+    - Hopefully all of this was to fix the recent errors
+      - It still will say that the networker is Despawned/Destroyed on leaving 
+      - I left that in for now just in case it isn't fixed
+      - I will remove it when the problem is fixed
+    - Also fixed Paparazzi not moving (woops my bad)
+
 -	**1.9.17**
     - Potential Fixes for networker going poof
     - and for dice not rolling sometimes

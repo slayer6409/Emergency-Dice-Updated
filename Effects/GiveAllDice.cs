@@ -48,6 +48,7 @@ namespace MysteryDice.Effects
                 NetworkObject netObj = obj.GetComponent<NetworkObject>();
                 netObj.Spawn();
                 obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+                obj.GetComponent<GrabbableObject>().EnablePhysics(true);
                 component.FallToGround(true);
                 netObjs.Add(netObj);
             }

@@ -29,10 +29,18 @@ namespace MysteryDice.Patches
             MysteryDice.JumpscareScript = MysteryDice.JumpscareOBJ.GetComponent<Jumpscare>();
             if (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer)
             {
-                GameObject go = GameObject.Instantiate(MysteryDice.NetworkerPrefab,Vector3.zero,Quaternion.identity);
-                go.GetComponent<NetworkObject>().Spawn(false);
+                if (Networker.Instance == null)
+                {
+                    GameObject go = GameObject.Instantiate(MysteryDice.NetworkerPrefab,Vector3.zero,Quaternion.identity);
+                    go.GetComponent<NetworkObject>().Spawn(false);
+                }
+                else
+                {
+                    MysteryDice.CustomLogger.LogError("Networker already exists??????");
+                }
             }
         }
+        
         [HarmonyPostfix]
         [HarmonyPatch("StartGame")]
         public static void OnStartGame(StartOfRound __instance)
@@ -151,11 +159,12 @@ namespace MysteryDice.Patches
             // {
             //     if (SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.after || SizeDifference.sizeOption.Value == SizeDifference.sizeRevert.bothAgainAfter) Networker.Instance.fixSizeServerRPC(StartOfRound.Instance.localPlayerController.actualClientId);
             // }
-            if (Networker.Instance == null) MysteryDice.CustomLogger.LogFatal("Networker is null, this should never happen, what is going on???????");
-            else
-            {
-                Networker.Instance.StopAllCoroutines();
-            }
+            //if (Networker.Instance == null) MysteryDice.CustomLogger.LogFatal("Networker is null, this should never happen, what is going on???????");
+            //else
+            //{
+            
+            Networker.Instance.StopAllCoroutines();
+            //}
 
             if (Networker.Instance.IsServer)
                 Networker.Instance.SyncRateClientRPC(StartOfRound.Instance.companyBuyingRate);

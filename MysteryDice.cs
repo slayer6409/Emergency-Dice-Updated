@@ -52,7 +52,7 @@ namespace MysteryDice
         public enum chatDebug { Host, Everyone, None};
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.9.17";
+        private const string modVersion = "1.9.18";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -152,6 +152,7 @@ namespace MysteryDice
         public static ConfigEntry<bool> DebugLogging;
         public static ConfigEntry<bool> BetterDebugMenu;
         public static ConfigEntry<bool> NewDebugMenu;
+        public static ConfigEntry<bool> LockDebugUI;
         //public static ConfigEntry<bool> DisableSizeBased;
         public static ConfigEntry<bool> doDiceExplosion;
         public static ConfigEntry<bool> DieEmergencyAsScrap;
@@ -205,6 +206,11 @@ namespace MysteryDice
                 "New Debug Menu",
                 true,
                 "Enables the New Debug Menu");
+            LockDebugUI = BepInExConfig.Bind<bool>(
+                "New Debug",
+                "Lock input",
+                true,
+                "Locks input while the UI is open");
 
             // DisableSizeBased = BepInExConfig.Bind<bool>(
             //     "Misc",
@@ -570,7 +576,7 @@ namespace MysteryDice
         #endregion
         void Awake()
         {
-            CustomLogger = BepInEx.Logging.Logger.CreateLogSource(modGUID);
+            CustomLogger = BepInEx.Logging.Logger.CreateLogSource("Emergency Dice Updated");
             lethalThingsAssembly = GetAssembly("evaisa.lethalthings");
             lethalThingsPresent = IsModPresent("evaisa.lethalthings", "LethalThings compatibility enabled!");
             LethalMonAssembly = GetAssembly("LethalMon"); //This was before I learned about soft dependencies lol
@@ -668,6 +674,7 @@ namespace MysteryDice
             scriptBlobspawner.grabbableToEnemies = true;
             scriptBlobspawner.itemProperties = PathfinderSpawner;
 
+            LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(NetworkerPrefab);
             LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(AgentObjectPrefab);
             LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(PathfinderSpawner.spawnPrefab);
             LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(PathfinderPrefab);

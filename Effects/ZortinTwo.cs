@@ -40,6 +40,7 @@ namespace MysteryDice.Effects
             NetworkObject netObj = obj.GetComponent<NetworkObject>();
             netObj.Spawn();
             obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+            obj.GetComponent<GrabbableObject>().EnablePhysics(true);
             component.FallToGround(true);
             netObjs.Add(netObj);
             
@@ -55,6 +56,7 @@ namespace MysteryDice.Effects
             NetworkObject netObj2 = obj2.GetComponent<NetworkObject>();
             netObj2.Spawn();
             obj2.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+            obj.GetComponent<GrabbableObject>().EnablePhysics(true);
             component2.FallToGround(true);
             netObjs.Add(netObj2);
             
@@ -71,6 +73,7 @@ namespace MysteryDice.Effects
             NetworkObject netObj3 = obj3.GetComponent<NetworkObject>();
             netObj3.Spawn();
             obj3.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+            obj.GetComponent<GrabbableObject>().EnablePhysics(true);
             component3.FallToGround(true);
             netObjs.Add(netObj3);
             
@@ -85,6 +88,7 @@ namespace MysteryDice.Effects
             NetworkObject netObj4 = obj4.GetComponent<NetworkObject>();
             netObj4.Spawn();
             obj4.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+            obj.GetComponent<GrabbableObject>().EnablePhysics(true);
             component4.FallToGround(true);
             netObjs.Add(netObj4);
             

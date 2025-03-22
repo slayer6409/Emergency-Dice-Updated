@@ -175,21 +175,36 @@ namespace MysteryDice.Dice
             grabbable = false;
             grabbableToEnemies = false;
             deactivated = true;
-            if (radarIcon != null)
+            // if (radarIcon != null)
+            // {
+            //     GameObject.Destroy(radarIcon.gameObject);
+            // }
+            // MeshRenderer[] componentsInChildren = base.gameObject.GetComponentsInChildren<MeshRenderer>();
+            // for (int i = 0; i < componentsInChildren.Length; i++)
+            // {
+            //     GameObject.Destroy(componentsInChildren[i]);
+            // }
+            // Collider[] componentsInChildren2 = base.gameObject.GetComponentsInChildren<Collider>();
+            // for (int j = 0; j < componentsInChildren2.Length; j++)
+            // {
+            //     GameObject.Destroy(componentsInChildren2[j]);
+            // }
+            if (IsHost)
             {
-                GameObject.Destroy(radarIcon.gameObject);
+                string parentName = this.gameObject.transform.parent != null
+                    ? this.gameObject.transform.parent.gameObject.name
+                    : "orphan :(";
+
+                MysteryDice.CustomLogger.LogDebug($"Despawning object: {this.NetworkObject.gameObject.name}\nParent Object: {parentName}");
+
+                if (this.NetworkObject.gameObject.name.StartsWith("Networker"))
+                {
+                    MysteryDice.CustomLogger.LogDebug("Well there's your issue >:D");
+                    return;
+                }
+                
+                this.NetworkObject.Despawn();
             }
-            MeshRenderer[] componentsInChildren = base.gameObject.GetComponentsInChildren<MeshRenderer>();
-            for (int i = 0; i < componentsInChildren.Length; i++)
-            {
-                GameObject.Destroy(componentsInChildren[i]);
-            }
-            Collider[] componentsInChildren2 = base.gameObject.GetComponentsInChildren<Collider>();
-            for (int j = 0; j < componentsInChildren2.Length; j++)
-            {
-                GameObject.Destroy(componentsInChildren2[j]);
-            }
-            if (IsHost) this.NetworkObject.Despawn();
         }
         public virtual void Roll()
         {

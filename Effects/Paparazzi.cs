@@ -32,7 +32,6 @@ namespace MysteryDice.Effects
             int spawnedMines = 0;
             System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed);
 
-            // Get all spawn points
             List<GameObject> spawnPoints = RoundManager.Instance.outsideAINodes.ToList();
             int totalSpawnPoints = spawnPoints.Count;
 
@@ -76,8 +75,10 @@ namespace MysteryDice.Effects
                                 allPositions.Add(groundPosition);
                                 var netobj = gameObject.GetComponent<NetworkObject>();
                                 var netobj2 = gameObject2.GetComponent<NetworkObject>();
+                                gameObject2.name = "Paparazzi";
                                 netobj.Spawn(destroyWithScene: true);
                                 netobj2.Spawn(destroyWithScene: true);
+                                Networker.Instance.setSizeClientRPC(netobj.NetworkObjectId, new Vector3(0.2545f,1,1));
                                 gameObject.transform.SetParent(gameObject2.transform);
                                 spawnedMines++;
 

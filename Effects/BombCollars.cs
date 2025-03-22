@@ -57,6 +57,7 @@ namespace MysteryDice.Effects
                     NetworkObject netObj = obj.GetComponent<NetworkObject>();
                     netObj.Spawn();
                     obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+                    obj.GetComponent<GrabbableObject>().EnablePhysics(true);
                     component.FallToGround(true);
                     EggFountain.teleport(netObj,StartOfRound.Instance.localPlayerController.actualClientId,component.transform.position+new Vector3(0,.25f,0));
                     BombCollarProp bcp = obj.GetComponent<BombCollarProp>();

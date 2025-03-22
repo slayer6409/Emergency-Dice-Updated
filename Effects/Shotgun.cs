@@ -73,6 +73,7 @@ namespace MysteryDice.Effects
                 var netob = obj.GetComponent<NetworkObject>();
                 netob.Spawn();
                 obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+                obj.GetComponent<GrabbableObject>().EnablePhysics(true);
                 int ammoAmount = UnityEngine.Random.Range(2, 6);
                 for (int i = 0; i < ammoAmount; i++)
                 {
@@ -86,6 +87,7 @@ namespace MysteryDice.Effects
                     NetworkObject netob2 = obj2.GetComponent<NetworkObject>();
                     netob2.Spawn();
                     obj2.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+                    obj.GetComponent<GrabbableObject>().EnablePhysics(true);
                 }
             }
             catch (Exception e) 

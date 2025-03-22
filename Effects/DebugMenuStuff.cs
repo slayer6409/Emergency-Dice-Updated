@@ -47,16 +47,16 @@ public class DebugMenuStuff : MonoBehaviour
                 out ButtonColor)) ;
         else ColorUtility.TryParseHtmlString("#A447FF", out ButtonColor);
         
-        if (ColorUtility.TryParseHtmlString(AppendTransparency(MysteryDice.DebugMenuTextColor.Value, MysteryDice.DebugMenuTextAlpha.Value), out TextColor)) ;
+        if (ColorUtility.TryParseHtmlString(AppendTransparency(MysteryDice.DebugMenuTextColor.Value, MysteryDice.DebugMenuTextAlpha.Value), out TextColor)) { }
         else ColorUtility.TryParseHtmlString("#F581FA", out TextColor);
         
-        if (ColorUtility.TryParseHtmlString(AppendTransparency(MysteryDice.DebugMenuFavoriteTextColor.Value, MysteryDice.DebugMenuFavoriteTextAlpha.Value), out FavoriteTextColor)) ;
+        if (ColorUtility.TryParseHtmlString(AppendTransparency(MysteryDice.DebugMenuFavoriteTextColor.Value, MysteryDice.DebugMenuFavoriteTextAlpha.Value), out FavoriteTextColor)) { }
         else ColorUtility.TryParseHtmlString("#F53548", out FavoriteTextColor);
         
-        if (ColorUtility.TryParseHtmlString(AppendTransparency(MysteryDice.DebugMenuAccentColor.Value, MysteryDice.DebugMenuAccentAlpha.Value), out AccentColor)) ;
+        if (ColorUtility.TryParseHtmlString(AppendTransparency(MysteryDice.DebugMenuAccentColor.Value, MysteryDice.DebugMenuAccentAlpha.Value), out AccentColor)) { }
         else ColorUtility.TryParseHtmlString("#A34EFF41", out AccentColor);
         
-        if (ColorUtility.TryParseHtmlString(AppendTransparency(MysteryDice.DebugMenuBackgroundColor.Value, MysteryDice.DebugMenuBackgroundAlpha.Value), out BackgroundColor)) ;
+        if (ColorUtility.TryParseHtmlString(AppendTransparency(MysteryDice.DebugMenuBackgroundColor.Value, MysteryDice.DebugMenuBackgroundAlpha.Value), out BackgroundColor)) { }
         else ColorUtility.TryParseHtmlString("#9B42FD76", out BackgroundColor);
     }
     public static void PrintHierarchy(Transform parent, string indent = "")
@@ -178,7 +178,7 @@ public class DebugMenuStuff : MonoBehaviour
         }
         OnDebugMenuOpen?.Invoke();
         EffectMenu = GameObject.Instantiate(MysteryDice.DebugMenuPrefab);
-        StartOfRound.Instance.localPlayerController.quickMenuManager.isMenuOpen = true;
+        if(MysteryDice.LockDebugUI.Value) StartOfRound.Instance.localPlayerController.quickMenuManager.isMenuOpen = true;
         subScrollContent = EffectMenu.transform.Find("DebugMenu/Scroll View/Viewport/Content");
         mainScrollContent = EffectMenu.transform.Find("DebugMenu/Background/Scroll View/Viewport/Content");
         InputAction escAction = new InputAction(binding: "<Keyboard>/escape");
@@ -267,6 +267,14 @@ public class DebugMenuStuff : MonoBehaviour
         {
             MysteryDice.DebugMenuClosesAfter.Value = !isOn;
         });
+        
+        Toggle moveValue = EffectMenu.transform.Find("DebugMenu/Move").GetComponent<Toggle>();
+        moveValue.isOn = !MysteryDice.LockDebugUI.Value;
+        moveValue.onValueChanged.AddListener((bool isOn) =>
+        {
+            MysteryDice.LockDebugUI.Value = !isOn;
+            StartOfRound.Instance.localPlayerController.quickMenuManager.isMenuOpen = MysteryDice.LockDebugUI.Value;
+        });
 
         Button exitButton = EffectMenu.transform.Find("DebugMenu/CloseButton").GetComponent<Button>();
         exitButton.onClick.AddListener(() =>
@@ -340,7 +348,7 @@ public class DebugMenuStuff : MonoBehaviour
         su = false;
         
         EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
-        StartOfRound.Instance.localPlayerController.quickMenuManager.isMenuOpen = true;
+        if(MysteryDice.LockDebugUI.Value)StartOfRound.Instance.localPlayerController.quickMenuManager.isMenuOpen = true;
         mainScrollContent = EffectMenu.transform.Find("DebugMenu/Background/Scroll View/Viewport/Content");
         InputAction escAction = new InputAction(binding: "<Keyboard>/escape");
         escAction.performed += ctx => CloseSelectMenu();
@@ -461,9 +469,10 @@ public class DebugMenuStuff : MonoBehaviour
         //     .ThenBy(e => e.enemyType.enemyName)
         //     .ToList();
         
-        var allEnemies = GetEnemies.allEnemies.OrderBy(e => favoriteEnemyNames.Contains(e.enemyName) ? 0 : 1)
-             .ThenBy(e => e.enemyName)
-             .ToList();
+         
+        var allEnemies = GetEnemies.allEnemies.GroupBy(x=>x.enemyName).Select(g=>g.First()).OrderBy(e => favoriteEnemyNames.Contains(e.enemyName) ? 0 : 1)
+            .ThenBy(e => e.enemyName)
+            .ToList();
         
         foreach (var enemy in allEnemies)
         {
@@ -521,7 +530,8 @@ public class DebugMenuStuff : MonoBehaviour
         //     .ToList();
 
         
-        var allEnemies = GetEnemies.allEnemies.OrderBy(e => favoriteEnemyNames.Contains(e.enemyName) ? 0 : 1)
+         
+        var allEnemies = GetEnemies.allEnemies.GroupBy(x=>x.enemyName).Select(g=>g.First()).OrderBy(e => favoriteEnemyNames.Contains(e.enemyName) ? 0 : 1)
             .ThenBy(e => e.enemyName)
             .ToList();
         
@@ -582,7 +592,7 @@ public class DebugMenuStuff : MonoBehaviour
         //     .ToList();
 
         
-        var allEnemies = GetEnemies.allEnemies.OrderBy(e => favoriteEnemyNames.Contains(e.enemyName) ? 0 : 1)
+        var allEnemies = GetEnemies.allEnemies.GroupBy(x=>x.enemyName).Select(g=>g.First()).OrderBy(e => favoriteEnemyNames.Contains(e.enemyName) ? 0 : 1)
             .ThenBy(e => e.enemyName)
             .ToList();
         
@@ -641,7 +651,7 @@ public class DebugMenuStuff : MonoBehaviour
             .GroupBy(x => x.name)
             .Select(g => g.First())
             .ToList();
-        trap trapToSpawn;
+        //trap trapToSpawn;
 
         allTraps = allTraps.OrderBy(t => favoriteTrapNames.Contains(t.name) ? 0 : 1)
             .ThenBy(t => t.name)
@@ -683,7 +693,7 @@ public class DebugMenuStuff : MonoBehaviour
             .GroupBy(x => x.name)
             .Select(g => g.First())
             .ToList();
-        trap trapToSpawn;
+        //trap trapToSpawn;
 
         allTraps = allTraps.OrderBy(t => favoriteTrapNames.Contains(t.name) ? 0 : 1)
             .ThenBy(t => t.name)
@@ -1584,7 +1594,7 @@ public class DebugMenuStuff : MonoBehaviour
                 Cursor.visible = false;
                 Cursor.lockState = CursorLockMode.Locked;
                 GameObject.Destroy(EffectMenu);
-                StartOfRound.Instance.localPlayerController.quickMenuManager.isMenuOpen = false;
+                if(MysteryDice.LockDebugUI.Value) StartOfRound.Instance.localPlayerController.quickMenuManager.isMenuOpen = false;
                 OnSpecialFunctionsAdded = null;
                 OnSpawnFunctionsAdded = null;
                 OnPlayerFunctionsAdded = null;
@@ -1618,7 +1628,7 @@ public class DebugMenuStuff : MonoBehaviour
                 EffectMenu = null;
                 Cursor.visible = false;
                 Cursor.lockState = CursorLockMode.Locked;
-                StartOfRound.Instance.localPlayerController.quickMenuManager.isMenuOpen = false;
+                if(MysteryDice.LockDebugUI.Value) StartOfRound.Instance.localPlayerController.quickMenuManager.isMenuOpen = false;
             }
         }
     }

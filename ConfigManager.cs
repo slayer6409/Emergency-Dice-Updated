@@ -122,6 +122,7 @@ namespace MysteryDice
             var BetterDebugMenuBoolField = new BoolCheckBoxConfigItem(MysteryDice.BetterDebugMenu, false);
             var NewDebugMenuBoolField = new BoolCheckBoxConfigItem(MysteryDice.NewDebugMenu, false);
             var BaldBoolField = new BoolCheckBoxConfigItem(MysteryDice.Bald, false);
+            var LockUIBoolField = new BoolCheckBoxConfigItem(MysteryDice.LockDebugUI, false);
             var BlameGlitchMeteorsBoolField = new BoolCheckBoxConfigItem(BlameGlitch.GlitchedMeteorShower, false);
             var AlarmBoolField = new BoolCheckBoxConfigItem(AlarmCurse.fireAlarm, false);
             var AlarmHorribleBoolField = new BoolCheckBoxConfigItem(AlarmCurse.HorribleVersion, false);
@@ -199,6 +200,7 @@ namespace MysteryDice
             LethalConfigManager.AddConfigItem(doDiceExplosionBoolField);
             LethalConfigManager.AddConfigItem(BlameGlitchMeteorsBoolField);
             LethalConfigManager.AddConfigItem(AlarmBoolField);
+            LethalConfigManager.AddConfigItem(LockUIBoolField);
             LethalConfigManager.AddConfigItem(AlarmHorribleBoolField);
 
             if (MysteryDice.SurfacedPresent)

@@ -53,6 +53,7 @@ namespace MysteryDice.Effects
             obj.GetComponent<GrabbableObject>().fallTime = 0f;
             obj.GetComponent<NetworkObject>().Spawn();
             obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+            obj.GetComponent<GrabbableObject>().EnablePhysics(true);
         }
     }
 }

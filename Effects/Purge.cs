@@ -25,7 +25,12 @@ namespace MysteryDice.Effects
                     enemy.KillEnemy(true);
                     try
                     {
-                        if(!enemy.isEnemyDead) enemy.GetComponent<NetworkObject>().Despawn();
+                        if (!enemy.isEnemyDead)
+                        {
+                            var netObj = enemy.GetComponent<NetworkObject>();
+                            if(netObj.gameObject.name != "Networker") netObj.Despawn();
+                            else MysteryDice.CustomLogger.LogDebug("Wat, why enemy named Networker??");
+                        }
                     }
                     catch (Exception ex) 
                     {
