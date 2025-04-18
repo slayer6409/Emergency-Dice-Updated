@@ -17,21 +17,15 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.SwapPlayersServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
+            Networker.Instance.SwapPlayersServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController));
         }
 
-        public static void SwapPlayers(ulong p1ID, ulong p2ID)
+        public static void SwapPlayers(int p1ID, int p2ID)
         {
 
             PlayerControllerB p1 = null, p2 = null;
-            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
-            {
-                PlayerControllerB player = playerPrefab.GetComponent<PlayerControllerB>();
-                if (player.actualClientId == p1ID)
-                    p1 = player;
-                if (player.actualClientId == p2ID)
-                    p2 = player;
-            }
+            p1 = StartOfRound.Instance.allPlayerScripts[p1ID];
+            p2 = StartOfRound.Instance.allPlayerScripts[p2ID];
             if (p1 == null || p2 == null) return;
 
             Vector3 pos1 = p1.transform.position;

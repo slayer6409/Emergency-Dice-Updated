@@ -19,10 +19,10 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.DrunkServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId,true);
+            Networker.Instance.DrunkServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController),true);
         }
 
-        public static void startDrinking(ulong userID)
+        public static void startDrinking(int userID)
         {
             Drunk.DrunkTimer = UnityEngine.Random.Range(10,30);
         }

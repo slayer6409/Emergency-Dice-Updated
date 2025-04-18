@@ -31,11 +31,11 @@ namespace MysteryDice.Effects
             scavengerModel.transform.Find("LOD3").gameObject.SetActive(!value);
             player.playerBadgeMesh.gameObject.SetActive(value);
         }
-        public static void whereTheyGo(ulong userID)
+        public static void whereTheyGo(int userID)
         {
             if (StartOfRound.Instance == null) return;
             if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
-            if (StartOfRound.Instance.localPlayerController.actualClientId != userID) return;
+            if (StartOfRound.Instance.localPlayerController != StartOfRound.Instance.allPlayerScripts[userID]) return;
             var ipc = StartOfRound.Instance.localPlayerController.gameObject.AddComponent<invisiblePlayerController>();
             foreach (var playerControllerB in StartOfRound.Instance.allPlayerScripts)
             {
@@ -69,10 +69,10 @@ namespace MysteryDice.Effects
                 player.thisPlayerModel.gameObject.SetActive(false);
                 player.playerBadgeMesh.gameObject.SetActive(false);
                 player.playerBetaBadgeMesh.gameObject.SetActive(false);
-                if (MysteryDice.MoreCompanyPresent)
-                {
-                    WhereDidMyFriendsGoPt2.ToggleCosmetics(player.actualClientId, false);
-                }
+                // if (MysteryDice.MoreCompanyPresent)
+                // {
+                //     WhereDidMyFriendsGoPt2.ToggleCosmetics(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player), false);
+                // }
             }
         }
 
@@ -87,7 +87,7 @@ namespace MysteryDice.Effects
                 player.playerBetaBadgeMesh.gameObject.SetActive(true);
                 if (MysteryDice.MoreCompanyPresent)
                 {
-                    WhereDidMyFriendsGoPt2.ToggleCosmetics(player.actualClientId, true);
+                    WhereDidMyFriendsGoPt2.ToggleCosmetics(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player), true);
                 }
             }
             Destroy(this);

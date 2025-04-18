@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 
+namespace MysteryDice;
+
 public class Spinner : MonoBehaviour
 {
     public bool IsBeingUsed = false;
@@ -20,6 +22,7 @@ public class Spinner : MonoBehaviour
 
     public void StartHyperSpinning(float spinTime)
     {
+        if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Started HyperSpinning");
         IsBeingUsed = true;
         SpinVelocity = NormalSpinVelocity;
         SpinAcceleration = 1000f;

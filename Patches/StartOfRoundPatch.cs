@@ -113,7 +113,7 @@ namespace MysteryDice.Patches
             FireExitPatch.AreFireExitsBlocked = false;
             Networker.CoilheadIgnoreStares = false;
             RebeliousCoilHeads.IsEnabled = false;
-            TerminalPatch.hideShowTerminal(false,01);
+            //TerminalPatch.hideShowTerminal(false,01);
             Arachnophobia.IsEnabled = false;
             ModifyPitch.ResetPitch();
             Armageddon.IsEnabled = false;
@@ -162,12 +162,21 @@ namespace MysteryDice.Patches
             //if (Networker.Instance == null) MysteryDice.CustomLogger.LogFatal("Networker is null, this should never happen, what is going on???????");
             //else
             //{
-            
-            Networker.Instance.StopAllCoroutines();
             //}
+            
+            try
+            {
+                Networker.Instance.StopAllCoroutines();
 
-            if (Networker.Instance.IsServer)
-                Networker.Instance.SyncRateClientRPC(StartOfRound.Instance.companyBuyingRate);
+                if (Networker.Instance.IsServer)
+                    Networker.Instance.SyncRateClientRPC(StartOfRound.Instance.companyBuyingRate);
+            }
+            catch (Exception e)
+            {
+                if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("This happened but is nothing to worry about I believe: "+e.Message);
+            }
+            
+           
         }
     }
 }

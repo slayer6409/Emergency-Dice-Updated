@@ -20,20 +20,12 @@ namespace MysteryDice.Effects
             Networker.Instance.BatteryDrainServerRPC();
         }
 
-        public static void removeCharge(ulong userID)
+        public static void removeCharge(int userID)
         {
             PlayerControllerB player = null;
 
-            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
-            {
-                PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
-                if (playerComp.actualClientId == userID)
-                {
-                    player = playerComp;
-                    break;
-                }
-            }
-                
+            player = Misc.GetPlayerByUserID(userID);
+            
             if (player == null) return;
             foreach (var item in player.ItemSlots)
             {

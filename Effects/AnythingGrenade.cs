@@ -20,9 +20,9 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.AnythingGrenadeServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
+            Networker.Instance.AnythingGrenadeServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, GameNetworkManager.Instance.localPlayerController));
         }
-        public static void Grenade(ulong userID)
+        public static void Grenade(int userID)
         {
             PlayerControllerB player = Misc.GetPlayerByUserID(userID);
 

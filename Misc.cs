@@ -153,28 +153,7 @@ namespace MysteryDice
             }
             return validPlayers.Where(x=>x.playerSteamId == steamID).FirstOrDefault();
         }
-        public static int getIntPlayerID(ulong playerID)
-        {
-            int index = -1; 
-
-            for (int i = 0; i < StartOfRound.Instance.allPlayerObjects.Count(); i++)
-            {
-                PlayerControllerB player = StartOfRound.Instance.allPlayerObjects[i].GetComponent<PlayerControllerB>();
-                if (player.isPlayerDead||player.isPlayerControlled)
-                    if (player.actualClientId == playerID)
-                    {
-                        index = i;
-                        break;
-                    }
-            }
-            return index;
-        }
-        public static ulong getPlayerIDFromInt(int playerID)
-        {
-            PlayerControllerB player = StartOfRound.Instance.allPlayerScripts[playerID];
-            return player.actualClientId;
-        }
-        
+       
         public static void SpawnOutsideEnemy(SpawnableEnemyWithRarity enemy)
         {
             RoundManager RM = RoundManager.Instance;
@@ -285,14 +264,9 @@ namespace MysteryDice
             return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
         }
 
-        public static PlayerControllerB GetPlayerByUserID(ulong userID)
+        public static PlayerControllerB GetPlayerByUserID(int userID)
         {
-            foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
-            {
-                if (player.actualClientId == userID)
-                    return player;
-            }
-            return null;
+            return StartOfRound.Instance.allPlayerScripts[userID];
         }
         public static NetworkObjectReference SpawnEnemyOnServer(Vector3 spawnPosition, float yRot, SpawnableEnemyWithRarity enemy)
         {
@@ -347,6 +321,7 @@ namespace MysteryDice
             }
             return allTraps.ToArray();
         }
+
         
         public static void SafeTipMessage(string title, string body)
         {
@@ -369,7 +344,22 @@ namespace MysteryDice
 
         }
 
-        public static PlayerControllerB GetRandomAlivePlayer()
+        public static int TotalAlive()
+        {
+            List<PlayerControllerB> validPlayers = new List<PlayerControllerB>();
+
+            foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
+            {
+                if (IsPlayerAliveAndControlled(player))
+                    validPlayers.Add(player);
+            }
+            return validPlayers.Count;
+        }
+        public static bool isPlayerLocal(int userID)
+        {
+            return StartOfRound.Instance.allPlayerScripts[userID] == StartOfRound.Instance.localPlayerController;
+        }
+        public static PlayerControllerB GetRandomAlivePlayer(int notThisPlayer = -1)
         {
             List<PlayerControllerB> validPlayers = new List<PlayerControllerB>();
 
@@ -381,9 +371,19 @@ namespace MysteryDice
 
             if (validPlayers.Count == 1) return validPlayers[0];
 
-            return validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)];
+            PlayerControllerB toReturn = validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)];
+            if (notThisPlayer != -1)
+            {
+                var count = 0;
+                while (Array.IndexOf(StartOfRound.Instance.allPlayerScripts, toReturn) == notThisPlayer||count>10)
+                {
+                    toReturn = validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)];
+                    count++; // tries 10 times then gives up to avoid infinite loops
+                }
+            }
+            return toReturn;
         }
-        public static ulong GetRandomPlayerID()
+        public static int GetRandomPlayerID()
         {
             List<PlayerControllerB> validPlayers = new List<PlayerControllerB>();
 
@@ -392,9 +392,9 @@ namespace MysteryDice
                 if (IsPlayerAliveAndControlled(player))
                     validPlayers.Add(player);
             }
-            if(validPlayers.Count==1) return validPlayers[0].actualClientId;
-
-            return validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)].actualClientId;
+            
+            return Array.IndexOf(StartOfRound.Instance.allPlayerScripts, validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)]);
+            
         } 
         public static PlayerControllerB GetRandomPlayer()
         {
@@ -438,17 +438,11 @@ namespace MysteryDice
                 .ToList();
             return uniqueEnemies.FirstOrDefault(x => x.enemyType.enemyName == name);
         }
-        public static void AdjustWeight(ulong userID, float factor)
+        public static void AdjustWeight(int userID, float factor)
         {
             PlayerControllerB player = null;
-            foreach (PlayerControllerB playerComp in StartOfRound.Instance.allPlayerScripts)
-            {
-                if (playerComp.actualClientId == userID)
-                {
-                    player = playerComp;
-                    break;
-                }
-            }
+            player = StartOfRound.Instance.allPlayerScripts[userID];
+            
             if (player == null)
             {
                 MysteryDice.CustomLogger.LogError("Player not found.");

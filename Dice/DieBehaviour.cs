@@ -4,10 +4,13 @@ using MysteryDice.Effects;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using Unity.Netcode;
 using UnityEngine;
 using GameNetcodeStuff;
+using KaimiraGames;
 using MysteryDice.Patches;
+using MysteryDice.Visual;
 using Random = UnityEngine.Random;
 
 namespace MysteryDice.Dice
@@ -24,12 +27,14 @@ namespace MysteryDice.Dice
             MixedEffects = new List<IEffect>(), 
             BadEffects = new List<IEffect>();
         public static List<ConfigEntry<bool>> effectConfigs = new List<ConfigEntry<bool>>();
-        protected GameObject DiceModel;
+        public GameObject DiceModel;
         public List<IEffect> Effects = new List<IEffect>();
         private static List<string> surfacedNames = new List<string>();
         public List<IEffect> SurfacedEffects = new List<IEffect>();
         public Dictionary<int, EffectType[]> RollToEffect = new Dictionary<int, EffectType[]>();
         public bool wasEnemy = false;
+        public bool wasGhost = false;
+        public bool isRolling = false;
 
         public PlayerControllerB PlayerUser = null;
         public EnemyAI EnemyUser = null;
@@ -39,7 +44,18 @@ namespace MysteryDice.Dice
             NONE,
             DEFAULT,
             RANDOM
+        } 
+        public enum DiceType
+        {
+            CHRONOS,
+            EMERGENCY,
+            GAMBLER,
+            RUSTY,
+            SACRIFICER,
+            SAINT,
+            SURFACED
         }
+        public DiceType myType;
         public virtual void SetupDiceEffects()
         {
             Effects = new List<IEffect>(AllowedEffects);
@@ -61,8 +77,52 @@ namespace MysteryDice.Dice
             DiceModel.AddComponent<Spinner>();
             SetupDiceEffects();
             SetupRollToEffectMapping();
+            SetupDiceStuff();
+            if (MysteryDice.aprilFoolsConfig.Value)
+            {
+                if (IsHost)
+                {
+                    StartCoroutine(waitResize());
+                }
+                this.gameObject.transform.position = new Vector3(this.gameObject.transform.position.x, this.gameObject.transform.position.y + 1.5f, this.gameObject.transform.position.z);
+                this.targetFloorPosition = new Vector3(this.gameObject.transform.position.x, this.gameObject.transform.position.y + 1.5f, this.gameObject.transform.position.z);
+            }
+        }
+
+        public IEnumerator waitResize()
+        {
+            yield return new WaitForSeconds(1f);
+            var randomSize = new Vector3(Random.Range(0.4f, 1.7f), Random.Range(0.4f, 1.7f), Random.Range(0.4f, 1.7f));
+            Networker.Instance.setDiceSizeClientRPC(this.NetworkObject.NetworkObjectId,randomSize);
         }
         
+        public void SetupDiceStuff()
+        {
+            switch (myType)
+            {
+                case DiceType.CHRONOS:
+                    DiceModel.AddComponent<ColorGradient>();
+                    break;
+                case DiceType.EMERGENCY:
+                    DiceModel.AddComponent<Blinking>();
+                    this.itemProperties.verticalOffset = 0;
+                    break;
+                case DiceType.GAMBLER:
+                    DiceModel.AddComponent<CycleSigns>(); 
+                    break;
+                case DiceType.RUSTY:
+                    break;
+                case DiceType.SACRIFICER:
+                    break;
+                case DiceType.SAINT:
+                    DiceModel.transform.Find("halo").gameObject.AddComponent<HaloSpin>();
+                    break;
+                case DiceType.SURFACED:
+                    DiceModel = gameObject.transform.Find("Model").gameObject;
+                    DiceModel.GetComponent<Spinner>().SurfacedDie = true;
+                    break;
+            }
+        }
         public override void PocketItem()
         {
             if (DiceModel.GetComponent<Renderer>())
@@ -97,33 +157,51 @@ namespace MysteryDice.Dice
             {
                 if (StartOfRound.Instance == null) return;
                 if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
-                if(playerHeldBy == null) return;
+                if (playerHeldBy == null) return;
                 PlayerUser = playerHeldBy;
-
-                ulong dropperID = playerHeldBy.actualClientId;
+                
+                int dropperID = Array.IndexOf(StartOfRound.Instance.allPlayerScripts,playerHeldBy);
                 GameNetworkManager.Instance.localPlayerController.DiscardHeldObject(true, null, GetItemFloorPosition(DiceModel.transform.parent.position), false);
                 SyncDropServerRPC(dropperID, UnityEngine.Random.Range(0, 10));
             }
         }
 
-        public virtual IEnumerator UseTimer(ulong userID, int spinTime)
-        {
-            if (!MysteryDice.randomSpinTime.Value) spinTime = 3;
-            DiceModel.GetComponent<Spinner>().StartHyperSpinning(spinTime);
-
-            yield return new WaitForSeconds(spinTime);
-
-            if(MysteryDice.doDiceExplosion.Value) Landmine.SpawnExplosion(gameObject.transform.position, true, 0, 0, 0, 0, null, false);
+        public virtual IEnumerator UseTimer(int userID, int spinTime)
+        { 
             try
             {
+                if (!MysteryDice.randomSpinTime.Value) spinTime = 3;
+                if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Starting Use Timer with Time: "+spinTime);
+                DiceModel.GetComponent<Spinner>().StartHyperSpinning(spinTime);
+            
+                if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("After Hyperspin");
+            }
+            catch (Exception e)
+            {
+                MysteryDice.CustomLogger.LogError(e);
+            }
+            for (float t = 0; t < spinTime; t += Time.deltaTime)
+            {
+                yield return null;
+            }
+            try
+            {
+                if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("BeforeExplosion");
+                if (MysteryDice.doDiceExplosion.Value) Landmine.SpawnExplosion(gameObject.transform.position, true, 0, 0, 0, 0, null, false);
+
                 if (userID == 6409046)
                 {
                     wasEnemy = true;
-                    Roll();
+                    if(MysteryDice.aprilFoolsConfig.Value) AprilFoolsRoll(); else Roll();
+                }
+                else if (userID == 7510501)
+                {
+                    wasGhost = true;
+                    if(MysteryDice.aprilFoolsConfig.Value) AprilFoolsRoll(); else Roll();
                 }
                 else
                 {
-                    if (GameNetworkManager.Instance.localPlayerController.actualClientId == userID)
+                    if (Misc.isPlayerLocal(userID))
                     {
                         if (StartOfRound.Instance is null) yield break;
                         if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) yield break;
@@ -134,7 +212,9 @@ namespace MysteryDice.Dice
                             doPenalty();
                             yield break;
                         }
-                        Roll();
+                        
+                        if(MysteryDice.aprilFoolsConfig.Value) AprilFoolsRoll(); 
+                        else Roll();
                     }
                 }
                 DestroyObject();
@@ -147,28 +227,36 @@ namespace MysteryDice.Dice
             yield return new WaitForSeconds(0.4f);
             
         }
-        
+
+        public void doGhostRoll(int userID, int Timer)
+        {
+            isRolling = true;
+            SyncDropServerRPC(userID, Timer);
+        }
         
         [ServerRpc(RequireOwnership = false)]
-        public virtual void SyncDropServerRPC(ulong userID, int Timer)
+        public virtual void SyncDropServerRPC(int userID, int Timer)
         {
+            isRolling = true;
             if (!IsHost) DropAndBlock(userID, Timer);
 
             SyncDropClientRPC(userID, Timer);
         }
         [ClientRpc]
-        public virtual void SyncDropClientRPC(ulong userID, int Timer)
+        public virtual void SyncDropClientRPC(int userID, int Timer)
         {
+            isRolling = true;
             DropAndBlock(userID, Timer);
         } 
 
-        public virtual void DropAndBlock(ulong userID, int Timer)
+        public virtual void DropAndBlock(int userID, int Timer)
         {
             if(userID==6409046) wasEnemy = true;
+            if(userID==7510501) wasGhost = true;
             grabbable = false;
             grabbableToEnemies = false;
             DiceModel.SetActive(true);
-            StartCoroutine(UseTimer(userID, Timer));
+            StartOfRound.Instance.StartCoroutine(UseTimer(userID, Timer));
         } 
         public virtual void DestroyObject()
         {
@@ -195,19 +283,27 @@ namespace MysteryDice.Dice
                     ? this.gameObject.transform.parent.gameObject.name
                     : "orphan :(";
 
-                MysteryDice.CustomLogger.LogDebug($"Despawning object: {this.NetworkObject.gameObject.name}\nParent Object: {parentName}");
+                if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug($"Despawning object: {this.NetworkObject.gameObject.name}\nParent Object: {parentName}");
 
                 if (this.NetworkObject.gameObject.name.StartsWith("Networker"))
                 {
                     MysteryDice.CustomLogger.LogDebug("Well there's your issue >:D");
                     return;
                 }
-                
-                this.NetworkObject.Despawn();
+
+                StartCoroutine(waitToDespawn());
             }
         }
+
+        public IEnumerator waitToDespawn()
+        {
+            yield return new WaitForSeconds(1f);
+            this.NetworkObject.Despawn();
+        }
+       
         public virtual void Roll()
         {
+            if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Starting Roll");
             int diceRoll = UnityEngine.Random.Range(1, 7);
 
             IEffect randomEffect = GetRandomEffect(diceRoll, Effects);
@@ -216,11 +312,10 @@ namespace MysteryDice.Dice
 
             PlaySoundBasedOnEffect(randomEffect.Outcome);
             
-            MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
+            if(MysteryDice.DebugLogging.Value)MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
             randomEffect.Use();
 
-            
-            var who = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";
+            var who = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
             Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
             ShowDefaultTooltip(randomEffect, diceRoll);
         }
@@ -347,7 +442,7 @@ namespace MysteryDice.Dice
             MysteryDice.MainRegisterNewEffect(new Fly());
             MysteryDice.MainRegisterNewEffect(new LeverShake());
             MysteryDice.MainRegisterNewEffect(new HyperShake());
-            MysteryDice.MainRegisterNewEffect(new MovingLandmines());
+            //MysteryDice.MainRegisterNewEffect(new MovingLandmines());
             MysteryDice.MainRegisterNewEffect(new OutsideCoilhead());
             MysteryDice.MainRegisterNewEffect(new Arachnophobia());
             MysteryDice.MainRegisterNewEffect(new BrightFlashlight());
@@ -544,7 +639,7 @@ namespace MysteryDice.Dice
                 if(CodeRebirthCheckConfigs.checkFanConfig()) MysteryDice.MainRegisterNewEffect(new MovingFans());
                 if(CodeRebirthCheckConfigs.checkFanConfig()) MysteryDice.MainRegisterNewEffect(new SkyFan(),true); //Need to turn shadows off
                 if(CodeRebirthCheckConfigs.checkFanConfig() && CodeRebirthCheckConfigs.checkFlashConfig()) MysteryDice.MainRegisterNewEffect(new Paparazzi());
-                if(CodeRebirthCheckConfigs.checkBearTrapConfig()) MysteryDice.MainRegisterNewEffect(new MovingBeartraps());
+                //if(CodeRebirthCheckConfigs.checkBearTrapConfig()) MysteryDice.MainRegisterNewEffect(new MovingBeartraps());
                 MysteryDice.MainRegisterNewEffect(new TheRumbling());
                 if(CodeRebirthCheckConfigs.checkFanConfig()) MysteryDice.MainRegisterNewEffect(new FollowerFan());
                 if(CodeRebirthCheckConfigs.checkJanitorConfig()&&CodeRebirthCheckConfigs.checkTransporterConfig()) MysteryDice.MainRegisterNewEffect(new CleaningCrew());
@@ -575,6 +670,454 @@ namespace MysteryDice.Dice
             CompleteEffects = CompleteEffects.OrderBy(o => o.Name).ToList();
             AllEffects = sortedList;
         }
+
+        #region AprilFools
+
+        public void setupChronosRoll()
+        {
+            RollToEffect.Clear();
+            RollToEffect.Add(1, new EffectType[] { EffectType.Awful });
+            RollToEffect.Add(2, new EffectType[] { EffectType.Awful, EffectType.Bad });
+            RollToEffect.Add(3, new EffectType[] { EffectType.Mixed, EffectType.Bad });
+            RollToEffect.Add(4, new EffectType[] { EffectType.Bad, EffectType.Good, EffectType.Great });
+            RollToEffect.Add(5, new EffectType[] { EffectType.Good, EffectType.Great });
+            RollToEffect.Add(6, new EffectType[] { EffectType.Great });
+            doChronosRoll();
+        }
+        public void doChronosRoll()
+        {
+            try
+            {
+            float offset = TimeOfDay.Instance.normalizedTimeOfDay;
+            WeightedList<int> weightedRolls = new WeightedList<int>();
+            if (!MysteryDice.chronosUpdatedTimeOfDay.Value) 
+            {
+                weightedRolls.Add(1, 1 + (int)(offset * 10f));
+                weightedRolls.Add(2, 1 + (int)(offset * 8f));
+                weightedRolls.Add(3, 1 + (int)(offset * 6f));
+                weightedRolls.Add(4, 1 + (int)(offset * 3f));
+                weightedRolls.Add(5, 1 + (int)(offset * 1f));
+                weightedRolls.Add(6, 1);
+            }
+            else if (MysteryDice.chronosUpdatedTimeOfDay.Value)
+            {
+                if(offset < .5f)
+                {
+
+                    weightedRolls.Add(1, 1 + (int)((1 - offset) * 10f));
+                    weightedRolls.Add(2, 1 + (int)((1 - offset) * 8f));
+                    weightedRolls.Add(3, 1 + (int)((1 - offset) * 6f));
+                    weightedRolls.Add(4, 1 + (int)(offset * 4f));
+                    weightedRolls.Add(5, 1 + (int)(offset * 2f));
+                    weightedRolls.Add(6, 1 + (int)offset);
+                }
+                else if(offset >= .5f)
+                {
+                    weightedRolls.Add(1, 1 + (int)(offset * 4f));
+                    weightedRolls.Add(2, 1 + (int)(offset * 2f));
+                    weightedRolls.Add(3, 1 + (int)offset);
+                    weightedRolls.Add(4, 1 + (int)((1 - offset) * 6f));
+                    weightedRolls.Add(5, 1 + (int)((1 - offset) * 8f));
+                    weightedRolls.Add(6, 1 + (int)((1 - offset) * 10f));
+                }
+            }
+
+            bool isOutside = !GameNetworkManager.Instance.localPlayerController.isInsideFactory;
+
+            int diceRoll = weightedRolls.Next();
+
+            if (isOutside && !MysteryDice.useDiceOutside.Value) diceRoll = 1;
+
+            IEffect randomEffect = GetRandomEffect(diceRoll, Effects);
+
+            if (randomEffect == null) return;
+
+            PlaySoundBasedOnEffect(randomEffect.Outcome);
+            if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
+            randomEffect.Use();
+
+            
+            var who = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
+            Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
+            if (isOutside && !MysteryDice.useDiceOutside.Value)
+            {
+                Misc.SafeTipMessage($"Penalty", "Next time roll it inside :)");
+                return;
+            }
+            ShowDefaultTooltip(randomEffect, diceRoll);
+
+            }
+            catch (Exception e)
+            {
+                MysteryDice.CustomLogger.LogError("Roll error: "+ e);
+            }
+        }
+
+        public void setupEmergencyRoll()
+        {
+            RollToEffect.Clear();
+            RollToEffect.Add(1, new EffectType[] { EffectType.Awful });
+            RollToEffect.Add(2, new EffectType[] { EffectType.Bad });
+            RollToEffect.Add(3, new EffectType[] { EffectType.Mixed });
+            RollToEffect.Add(4, new EffectType[] { EffectType.Good });
+            RollToEffect.Add(5, new EffectType[] { EffectType.Good });
+            RollToEffect.Add(6, new EffectType[] { EffectType.Great });
+            doEmergencyRoll();
+        }
+        public void doEmergencyRoll()
+        {
+            try
+            {
+                int diceRoll = UnityEngine.Random.Range(1, 7);
+
+                IEffect randomEffect = GetRandomEffect(diceRoll, Effects);
+
+                if (randomEffect == null) return;
+
+            
+                PlaySoundBasedOnEffect(randomEffect.Outcome);
+
+                if (diceRoll > 2) randomEffect = new ReturnToShip();
+                if (diceRoll == 6) randomEffect = new ReturnToShipTogether();
+
+                if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
+                randomEffect.Use();
+                var who = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
+                Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
+            
+                ShowDefaultTooltip(randomEffect, diceRoll);
+
+            }
+            catch (Exception e)
+            {
+                MysteryDice.CustomLogger.LogError("Roll error: "+ e);
+                (new ReturnToShip()).Use();
+            }
+        }
+
+        public void setupGamblerRoll()
+        {
+            RollToEffect.Clear();
+            RollToEffect.Add(1, new EffectType[] { EffectType.Awful });
+            RollToEffect.Add(2, new EffectType[] { EffectType.Awful, EffectType.Bad });
+            RollToEffect.Add(3, new EffectType[] { EffectType.Bad, EffectType.Mixed });
+            RollToEffect.Add(4, new EffectType[] { EffectType.Mixed, EffectType.Good });
+            RollToEffect.Add(5, new EffectType[] { EffectType.Good });
+            RollToEffect.Add(6, new EffectType[] { EffectType.Great });
+            doGamblerRoll();
+        }
+        public void doGamblerRoll()
+        {
+            try
+            {
+                bool isOutside = !GameNetworkManager.Instance.localPlayerController.isInsideFactory;
+
+                int diceRoll = UnityEngine.Random.Range(1, 7);
+
+                if (isOutside && !MysteryDice.useDiceOutside.Value) diceRoll = 1;
+
+                IEffect randomEffect = GetRandomEffect(diceRoll, Effects);
+
+                if (randomEffect == null) return;
+
+                PlaySoundBasedOnEffect(randomEffect.Outcome);
+                if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
+                randomEffect.Use();
+            
+                var who = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
+                Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
+                if (isOutside && !MysteryDice.useDiceOutside.Value)
+                {
+                    Misc.SafeTipMessage($"Penalty", "Next time roll it inside :)");
+                    return;
+                }
+                ShowDefaultTooltip(randomEffect, diceRoll);
+
+            }
+            catch (Exception e)
+            {
+                MysteryDice.CustomLogger.LogError("Roll error: "+ e);
+            }
+        }
+
+        public void setupRustyRoll()
+        {
+            RollToEffect.Clear();
+            RollToEffect.Add(1, new EffectType[] { EffectType.Awful });
+            RollToEffect.Add(2, new EffectType[] { EffectType.Bad, EffectType.Mixed });
+            RollToEffect.Add(3, new EffectType[] { });
+            RollToEffect.Add(4, new EffectType[] { });
+            RollToEffect.Add(5, new EffectType[] { });
+            RollToEffect.Add(6, new EffectType[] { });
+            doRustyRoll();
+            
+        }
+        public void doRustyRoll()
+        {
+            try
+            {
+            int diceRoll = UnityEngine.Random.Range(1,7);
+            int diceRoll2 = UnityEngine.Random.Range(1,15);
+
+            IEffect randomEffect = GetRandomEffect(diceRoll, Effects);
+
+            if(randomEffect==null) 
+            {
+                switch (diceRoll)
+                {
+                    case 3:
+                        if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: Rusty 3");
+                        Networker.Instance.JackpotServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, PlayerUser), UnityEngine.Random.Range(1, 2));
+                        Misc.SafeTipMessage($"Rolled 3", "Spawning some scrap");
+                        break;
+                    case 4:
+                        if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: Rusty 4");
+                        Networker.Instance.JackpotServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, PlayerUser), UnityEngine.Random.Range(3, 4));
+                        Misc.SafeTipMessage($"Rolled 4", "Spawning scrap");
+                        break;
+                    case 5:
+                        if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: Rusty 5");
+                        Networker.Instance.JackpotServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, PlayerUser), UnityEngine.Random.Range(5, 6));
+                        Misc.SafeTipMessage($"Rolled 5", "Spawning more scrap");
+                        break;
+                    case 6:
+                        RoundManager RM = RoundManager.Instance;
+                        List<int> weightList = new List<int>(RM.currentLevel.spawnableScrap.Count);
+                        for (int j = 0; j < RM.currentLevel.spawnableScrap.Count; j++)
+                        {
+                            weightList.Add(RM.currentLevel.spawnableScrap[j].rarity);
+                        }
+                        int[] weights = weightList.ToArray();
+                        switch (diceRoll2)
+                        {
+                            case 1:
+                                if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: Rusty 6 Eggs");
+                                Networker.Instance.SameScrapServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, PlayerUser), UnityEngine.Random.Range(4, 6), "Easter egg");
+                                Misc.SafeTipMessage($"Hop Hop", "Explosive Eggs?");
+                                break;
+                            case 2:
+                                if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: Rusty 6 Christmas");
+                                Networker.Instance.SameScrapServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, PlayerUser), UnityEngine.Random.Range(4, 7),"Gift");
+                                Misc.SafeTipMessage($"HO HO HO", "Christmas Time!");
+                                break;
+                            case 3:
+                                if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: Rusty 6 SSDD");
+                                var item = RM.currentLevel.spawnableScrap[RM.GetRandomWeightedIndex(weights)].spawnableItem;
+                                Networker.Instance.SameScrapServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, PlayerUser), UnityEngine.Random.Range(6, 8),item.itemName);
+                                Misc.SafeTipMessage($"Wat?", "It's all the same?!?");
+                                break;
+                            default:
+                                if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: Rusty 6 Normal");
+                                Networker.Instance.JackpotServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, PlayerUser), UnityEngine.Random.Range(7, 8));
+                                Misc.SafeTipMessage($"Rolled 6", "Spawning a lot of scrap!");
+                                break;
+                        }
+                       
+                        break;
+                }
+            }
+            else
+            {
+                PlaySoundBasedOnEffect(randomEffect.Outcome);
+                if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
+                randomEffect.Use();
+                
+                var who = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
+                Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
+                ShowDefaultTooltip(randomEffect, diceRoll);
+            }
+
+            }
+            catch (Exception e)
+            {
+                MysteryDice.CustomLogger.LogError("Roll error: "+ e);
+            }
+            
+        }
+
+        public void setupSaintRoll()
+        {
+            RollToEffect.Clear();
+            RollToEffect.Add(1, new EffectType[] { });
+            RollToEffect.Add(2, new EffectType[] { EffectType.Good });
+            RollToEffect.Add(3, new EffectType[] { EffectType.Good });
+            RollToEffect.Add(4, new EffectType[] { EffectType.Good });
+            RollToEffect.Add(5, new EffectType[] { EffectType.Great });
+            RollToEffect.Add(6, new EffectType[] { EffectType.Great });
+            doSaintRoll();
+        }
+        public void doSaintRoll()
+        {
+            try
+            {
+                int diceRoll = UnityEngine.Random.Range(1,7);
+
+                if (diceRoll == 1)
+                {
+                    Misc.SafeTipMessage($"Rolled 1", "Nothing happened");
+                    return;
+                }
+
+                IEffect randomEffect = GetRandomEffect(diceRoll, Effects);
+
+                PlaySoundBasedOnEffect(randomEffect.Outcome);
+
+                if(diceRoll == 6)
+                {
+                    if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: Saint 6");
+                    if(MysteryDice.NewDebugMenu.Value) DebugMenuStuff.ShowSelectEffectMenu();
+                    else SelectEffect.ShowSelectMenu(false,false,fromSaint:true);
+                    Misc.SafeTipMessage($"Rolled 6", "Choose an effect");
+                    var who2 = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
+                    Networker.Instance.LogEffectsToOwnerServerRPC(who2, randomEffect.Name, diceRoll);
+                    return;
+                }
+
+                if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
+                randomEffect.Use();
+            
+                var who = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
+                Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
+                Misc.SafeTipMessage($"Rolled {diceRoll}", randomEffect.Tooltip);
+
+            }
+            catch (Exception e)
+            {
+                MysteryDice.CustomLogger.LogError("Roll error: "+ e);
+            }
+        }
+
+        
+        public void setupSurfacedRoll()
+        {
+            RollToEffect.Clear();
+            RollToEffect.Add(1, [EffectType.Awful, EffectType.Bad,EffectType.Mixed]);
+            RollToEffect.Add(2, [EffectType.Bad, EffectType.Awful,EffectType.Mixed]);
+            RollToEffect.Add(3, [EffectType.Mixed, EffectType.Bad, EffectType.Good]);
+            RollToEffect.Add(4, [EffectType.Good, EffectType.Mixed, EffectType.Bad]);
+            RollToEffect.Add(5, [EffectType.Good, EffectType.Great,EffectType.Mixed]);
+            RollToEffect.Add(6, [EffectType.Great, EffectType.Good,EffectType.Mixed]);
+            doSurfacedRoll();
+        }
+        public void doSurfacedRoll()
+        {
+            try
+            {
+                var isOutside = !GameNetworkManager.Instance.localPlayerController.isInsideFactory;
+
+                var diceRoll = UnityEngine.Random.Range(1, 7);
+
+                if (isOutside && !MysteryDice.useDiceOutside.Value) diceRoll = 1;
+
+                var randomEffect = GetRandomEffect(diceRoll, MysteryDice.SurfacedPresent? SurfacedEffects : Effects);
+
+                if (randomEffect == null) return;
+
+                PlaySoundBasedOnEffect(randomEffect.Outcome);
+                if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
+                randomEffect.Use();
+            
+                var who = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
+                Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
+                if (isOutside && !MysteryDice.useDiceOutside.Value)
+                {
+                    Misc.SafeTipMessage($"Penalty", "Next time roll it inside :)");
+                    return;
+                }
+                ShowDefaultTooltip(randomEffect, diceRoll);
+            }
+            catch (Exception e)
+            {
+                MysteryDice.CustomLogger.LogError("Roll error: "+ e);
+            }
+            
+        }
+
+        public void setupSacrificerRoll()
+        {
+            RollToEffect.Clear();
+            RollToEffect.Add(1, new EffectType[] { EffectType.Awful });
+            RollToEffect.Add(2, new EffectType[] { EffectType.Awful });
+            RollToEffect.Add(3, new EffectType[] { EffectType.Awful, EffectType.Bad });
+            RollToEffect.Add(4, new EffectType[] { EffectType.Bad });
+            RollToEffect.Add(5, new EffectType[] { EffectType.Bad });
+            RollToEffect.Add(6, new EffectType[] { EffectType.Mixed, EffectType.Bad });
+            doSacrificerRoll();
+        }
+        public void doSacrificerRoll()
+        {
+            try
+            {
+                int diceRoll = UnityEngine.Random.Range(1,7);
+
+                IEffect randomEffect = GetRandomEffect(diceRoll, Effects);
+
+                if (randomEffect == null) return;
+
+                PlaySoundBasedOnEffect(randomEffect.Outcome);
+                if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
+                randomEffect.Use();
+           
+                var who = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
+                Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
+
+                if (diceRoll == 1)
+                {
+                    Misc.SafeTipMessage($"Rolled 1...", "Run");
+                    randomEffect = GetRandomEffect(diceRoll, Effects);
+                    if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
+                    randomEffect.Use();
+                
+                    who = PlayerUser != null ? PlayerUser.playerUsername : "An Enemy";
+                    Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
+                }
+                else
+                    Misc.SafeTipMessage($"Rolled {diceRoll}", randomEffect.Outcome==EffectType.Bad ? "This could have been worse":"Awful");
+
+            }
+            catch (Exception e)
+            {
+                MysteryDice.CustomLogger.LogError("Roll error: "+ e);
+            }
+            new ReturnToShip().Use();
+        }
+        public void AprilFoolsRoll()
+        {
+            var diceRoll = Random.Range(0, 7);
+            switch (diceRoll)
+            {
+                case 0:
+                    setupChronosRoll();
+                    break;
+                case 1:
+                    setupEmergencyRoll();
+                    break;
+                case 2:
+                    setupSacrificerRoll();
+                    break;
+                case 3:
+                    setupSaintRoll();
+                    break;
+                case 4:
+                    setupGamblerRoll();
+                    break;
+                case 5:
+                    setupSurfacedRoll();
+                    break;
+                case 6:
+                    setupRustyRoll();
+                    break;
+                default:
+                    RollToEffect.Clear();
+                    SetupRollToEffectMapping();
+                    Roll();
+                    break;
+            }
+            RollToEffect.Clear();
+            SetupRollToEffectMapping();
+        }
+
+        #endregion
     }
    
 

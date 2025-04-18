@@ -17,10 +17,10 @@ namespace MysteryDice.Effects
         public string Tooltip => "Returns you to the ship and places a zombie in your original position";
         public void Use()
         {
-            Networker.Instance.ZombieToShipServerRPC(StartOfRound.Instance.localPlayerController.actualClientId);
+            Networker.Instance.ZombieToShipServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,StartOfRound.Instance.localPlayerController));
         }
 
-        public static void ZombieUseServer(ulong clientID)
+        public static void ZombieUseServer(int clientID)
         {
             //RoundManager RM = RoundManager.Instance;
             PlayerControllerB player = Misc.GetPlayerByUserID(clientID);

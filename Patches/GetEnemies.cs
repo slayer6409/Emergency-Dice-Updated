@@ -125,6 +125,8 @@ namespace MysteryDice.Patches
 
                 foreach (var item in level.spawnableMapObjects)
                 {
+                    if (item == null) continue;
+                    if (item.prefabToSpawn == null) continue;
                     if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogInfo("Spawnable Map Object Found: " + item.prefabToSpawn.name);
                     if (item.prefabToSpawn.name == "Landmine" && SpawnableLandmine == null)
                         SpawnableLandmine = item;
@@ -153,6 +155,42 @@ namespace MysteryDice.Patches
                     if (item.prefabToSpawn.name == "FlashTurretUpdated" && FlashTurret == null)
                         FlashTurret = item;
 
+                    try
+                    {
+                        if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogInfo("Spawnable Map Object Found: " + item.prefabToSpawn.name);
+                        if (item.prefabToSpawn.name == "Landmine" && SpawnableLandmine == null)
+                            SpawnableLandmine = item;
+
+                        if (item.prefabToSpawn.name == "TurretContainer" && SpawnableTurret == null)
+                            SpawnableTurret = item;
+
+                        if (item.prefabToSpawn.name == "SpikeRoofTrapHazard" && SpawnableSpikeTrap == null)
+                            SpawnableSpikeTrap = item;
+
+                        if (item.prefabToSpawn.name == "TeleporterTrap" && SpawnableTP == null)
+                            SpawnableTP = item;
+
+                        if (item.prefabToSpawn.name == "Seamine" && Seamine == null)
+                            Seamine = item;
+
+                        if (item.prefabToSpawn.name == "Bertha" && Bertha == null)
+                            Bertha = item;
+
+                        if (item.prefabToSpawn.name == "FunctionalMicrowave" && Microwave == null)
+                            Microwave = item;
+
+                        if (item.prefabToSpawn.name == "FanTrapAnimated" && Fan == null)
+                            Fan = item;
+
+                        if (item.prefabToSpawn.name == "FlashTurretUpdated" && FlashTurret == null)
+                            FlashTurret = item;
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        MysteryDice.CustomLogger.LogWarning("Wat "+ e.Message);
+                    }
                 }
                 foreach (var item in level.spawnableOutsideObjects)
                 {

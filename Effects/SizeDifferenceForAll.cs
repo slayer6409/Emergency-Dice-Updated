@@ -24,14 +24,14 @@
 //             Networker.Instance.AllPlayerUseServerRPC();
 //         }
 //
-//         public static void BecomeSmall(ulong userID)
+//         public static void BecomeSmall(int userID)
 //         {
 //             PlayerControllerB player = Misc.GetPlayerByUserID(userID);
 //             if (player == null) return;
 //             if (player.transform.localScale != Vector3.one)
 //             {
 //                 Misc.SafeTipMessage("Fixed your size", ":D");
-//                 Networker.Instance.fixSizeServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
+//                 Networker.Instance.fixSizeServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController));
 //                 return;
 //             }
 //             else

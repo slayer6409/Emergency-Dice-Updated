@@ -16,9 +16,9 @@ namespace MysteryDice.Effects
         public string Tooltip => "Many random store items for you!";
         public void Use()
         {
-            Networker.Instance.RandomStoreItemsServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, UnityEngine.Random.Range(2,5));
+            Networker.Instance.RandomStoreItemsServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController), UnityEngine.Random.Range(2,5));
         }
-        public static void SpawnItem(ulong playerID, int icount)
+        public static void SpawnItem(int playerID, int icount)
         {
             Terminal terminal = GameObject.FindObjectOfType<Terminal>();
             List<Item> items = new List<Item>();

@@ -41,7 +41,7 @@ namespace MysteryDice.Patches
             
             var i = __instance;
             string InfoLogging = "Picked up Item: ";
-            if (i.playerHeldBy.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId) return;
+            if (!Misc.isPlayerLocal(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,i.playerHeldBy))) return; //Idk if I did this right
             if (i == null)
             {
                 MysteryDice.CustomLogger.LogError($"Item is null.");

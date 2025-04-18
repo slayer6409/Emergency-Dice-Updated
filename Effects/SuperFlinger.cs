@@ -19,10 +19,10 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.SuperFlingerServerRPC(Misc.GetRandomAlivePlayer().actualClientId);
+            Networker.Instance.SuperFlingerServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,Misc.GetRandomAlivePlayer()));
         }
 
-        public static void spawnFlinger(ulong playerId)
+        public static void spawnFlinger(int playerId)
         {
             var player = Misc.GetPlayerByUserID(playerId);
             GameObject enemyObject = UnityEngine.Object.Instantiate(

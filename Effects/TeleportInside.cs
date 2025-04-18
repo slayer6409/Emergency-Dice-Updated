@@ -19,10 +19,10 @@ namespace MysteryDice.Effects
         public void Use()
         {
             Vector3 randomInsidePos = RoundManager.Instance.insideAINodes[UnityEngine.Random.Range(0, RoundManager.Instance.insideAINodes.Length)].transform.position;
-            Networker.Instance.TeleportInsideServerRPC(StartOfRound.Instance.localPlayerController.actualClientId, randomInsidePos);
+            Networker.Instance.TeleportInsideServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,StartOfRound.Instance.localPlayerController), randomInsidePos);
         }
 
-        public static void TeleportPlayerInside(ulong clientID, Vector3 teleportPos)
+        public static void TeleportPlayerInside(int clientID, Vector3 teleportPos)
         {
             PlayerControllerB player = null;
 

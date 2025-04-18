@@ -22,10 +22,10 @@ namespace MysteryDice.Effects
         }
 
 
-        public static void DelayedReaction(ulong userID)
+        public static void DelayedReaction(int userID)
         {
             PlayerControllerB player = GameNetworkManager.Instance.localPlayerController;
-            if (player.actualClientId != userID) return;
+            if (player != StartOfRound.Instance.allPlayerScripts[userID]) return;
             int e = UnityEngine.Random.Range(0, 7);
             IEffect randomEffect = GetRandomEffect(e); 
             PlaySoundBasedOnEffect(randomEffect.Outcome);

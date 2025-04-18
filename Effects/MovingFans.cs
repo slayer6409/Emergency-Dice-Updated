@@ -28,7 +28,7 @@ namespace MysteryDice.Effects
         {
             Networker.Instance.MovingFansServerRPC();
         }
-        public static IEnumerator WaitForTrapInit(string trapName, bool follower = false, ulong followerID=0)
+        public static IEnumerator WaitForTrapInit(string trapName, bool follower = false, int followerID=0)
         {
             yield return new WaitForSeconds(5f);
             if (!RoundManager.Instance.IsHost) yield break;

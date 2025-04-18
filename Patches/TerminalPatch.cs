@@ -22,20 +22,19 @@ namespace MysteryDice.Patches
             AddDiceSynonym("edie");
         }
 
-        public static void hideShowTerminal(bool hide, ulong player)
-        {
-            GameObject terminalObject = GameObject.Find("Environment/HangarShip/Terminal");
-            Terminal terminal = GameObject.Find("Environment/HangarShip/Terminal/TerminalTrigger/TerminalScript").GetComponent<Terminal>();
-            if (terminal.terminalInUse)
-            {
-                if (terminal.OwnerClientId == player)
-                {
-                    terminal.BeginUsingTerminal();
-                }
-            }
-            if (terminalObject != null) terminalObject.SetActive(!hide);
-
-        }
+        // public static void hideShowTerminal(bool hide, int player)
+        // {
+        //     GameObject terminalObject = GameObject.Find("Environment/HangarShip/Terminal");
+        //     Terminal terminal = GameObject.Find("Environment/HangarShip/Terminal/TerminalTrigger/TerminalScript").GetComponent<Terminal>();
+        //     if (terminal.terminalInUse)
+        //     {
+        //         if (terminal.OwnerClientId == StartOfRound.Instance.allPlayerScripts[player].OwnerClientId)
+        //         {
+        //             terminal.BeginUsingTerminal();
+        //         }
+        //     }
+        //     if (terminalObject != null) terminalObject.SetActive(!hide);
+        // }
         public static void AddDiceSynonym(string synonym)
         {
             TerminalKeyword diceWord = GetKeyword("emergency-die");

@@ -20,9 +20,9 @@ namespace MysteryDice.Effects
         {
             if (GetEnemies.Horse == null)
                 return;
-            Networker.Instance.spawnFlingerServerRPC(StartOfRound.Instance.localPlayerController.actualClientId);
+            Networker.Instance.spawnFlingerServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,StartOfRound.Instance.localPlayerController));
         }
-        public static void spawnHorseshoe(ulong userID)
+        public static void spawnHorseshoe(int userID)
         {
             var player = Misc.GetPlayerByUserID(userID);
             GameObject enemyObject = UnityEngine.Object.Instantiate(

@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 using MysteryDice.Effects;
 using GameNetcodeStuff;
 using UnityEngine;
@@ -161,7 +162,7 @@ namespace MysteryDice.Patches
             if(!EggBoots.eggBootsEnabled) return;
             if(!EggBoots.canSpawnAnother) return;
             EggBoots.canSpawnAnother = false;
-            Networker.Instance.spawnExplodeEggServerRpc(StartOfRound.Instance.localPlayerController.actualClientId);
+            Networker.Instance.spawnExplodeEggServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,StartOfRound.Instance.localPlayerController));
         }
     }
     

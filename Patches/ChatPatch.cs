@@ -28,7 +28,7 @@ namespace MysteryDice.Patches
             }
             // if((txt == "/size" || txt == "\\size") && SizeDifferenceSwitcher.canSwitch)
             // {
-            //     SizeDifferenceSwitcher.BecomeSmall(GameNetworkManager.Instance.localPlayerController.actualClientId);
+            //     SizeDifferenceSwitcher.BecomeSmall(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController));
             //     Misc.SafeTipMessage("Size Switched", "Run the command again to toggle it back");
             // }
 

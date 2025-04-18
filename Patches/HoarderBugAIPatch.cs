@@ -63,6 +63,7 @@ public class HoarderBugCache : MonoBehaviour
                 {
                     timeSince = 0f;
                     int rnum = UnityEngine.Random.Range(0, 100);
+                    if (MysteryDice.aprilFoolsConfig.Value) rnum -= 10;
                     if (rnum <= 20)
                     {
                         die?.SyncDropServerRPC(6409046, UnityEngine.Random.Range(0, 10));

@@ -30,19 +30,19 @@ namespace MysteryDice.Effects
             var playerScripts = new List<PlayerControllerB>(StartOfRound.Instance.allPlayerScripts);
             playerScripts = playerScripts.Where(x => !x.isPlayerDead && x.isActiveAndEnabled && x.isPlayerControlled).OrderBy(x => Random.value).ToList();
 
-            ulong p1 = playerScripts[0].actualClientId;
-            ulong p2 = playerScripts[1].actualClientId;
+            int p1 = Array.IndexOf(StartOfRound.Instance.allPlayerScripts,playerScripts[0]);
+            int p2 = Array.IndexOf(StartOfRound.Instance.allPlayerScripts,playerScripts[1]);
 
             Networker.Instance.makeLoverServerRPC(p1,p2);
         }
-        public static void makeLovers(ulong p1, ulong p2)
+        public static void makeLovers(int p1, int p2)
         {
             var localPlayer = StartOfRound.Instance.localPlayerController;
-            if (localPlayer.actualClientId == p1 || localPlayer.actualClientId == p2)
+            if (localPlayer == StartOfRound.Instance.allPlayerScripts[p1] || localPlayer == StartOfRound.Instance.allPlayerScripts[p2])
             {
                 loverScript ls = localPlayer.gameObject.AddComponent<loverScript>();
                 ls.me = localPlayer;
-                var lover = localPlayer.actualClientId == p1 ? Misc.GetPlayerByUserID(p2) : Misc.GetPlayerByUserID(p1);
+                var lover = localPlayer == StartOfRound.Instance.allPlayerScripts[p1] ? Misc.GetPlayerByUserID(p2) : Misc.GetPlayerByUserID(p1);
                 ls.lover = lover;
                 Misc.SafeTipMessage("Lovers!",$"You are now in love with {lover.playerUsername}");
             }

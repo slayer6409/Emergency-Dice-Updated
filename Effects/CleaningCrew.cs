@@ -21,16 +21,16 @@ namespace MysteryDice.Effects
             var cross = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(x => x.playerSteamId == 76561199092131418);
             if (cross != null)
             {
-                if (!cross.isPlayerDead) Networker.Instance.CleaningCrewServerRPC(cross.actualClientId);
-                else Networker.Instance.CleaningCrewServerRPC(Misc.GetRandomAlivePlayer().actualClientId);
+                if (!cross.isPlayerDead) Networker.Instance.CleaningCrewServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,cross));
+                else Networker.Instance.CleaningCrewServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,Misc.GetRandomAlivePlayer()));
             }
             else
             {
-                Networker.Instance.CleaningCrewServerRPC(Misc.GetRandomAlivePlayer().actualClientId);
+                Networker.Instance.CleaningCrewServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,Misc.GetRandomAlivePlayer()));
             }
         }
 
-        public static void spawnCrew(ulong playerId)
+        public static void spawnCrew(int playerId)
         {
             var player = Misc.GetPlayerByUserID(playerId);
             var toSpawn = Random.Range(3, 6);

@@ -14,10 +14,10 @@ namespace MysteryDice.Effects
         public string Tooltip => "Spawning a shotgun!";
         public void Use()
         {
-            Networker.Instance.ShotgunServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
+            Networker.Instance.ShotgunServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController));
         }
 
-        public static void SpawnShotgun(ulong playerID)
+        public static void SpawnShotgun(int playerID)
         {
             try
             {

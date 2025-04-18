@@ -30,7 +30,7 @@ namespace MysteryDice.Effects
         public void addLife()
         {
             livesRemaining++;
-            Networker.Instance.SendMessageServerRPC(player.actualClientId,"Extra Life!", "You got an extra life! You now have " + livesRemaining + " lives remaining.");
+            Networker.Instance.SendMessageServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player),"Extra Life!", "You got an extra life! You now have " + livesRemaining + " lives remaining.");
         }
         private void FixedUpdate()
         {
@@ -49,8 +49,8 @@ namespace MysteryDice.Effects
         {
             livesRemaining--;
             yield return new WaitForSeconds(0.25f);
-            Networker.Instance.RevivePlayerServerRpc(player.actualClientId, StartOfRound.Instance.middleOfShipNode.position);
-            Networker.Instance.SendMessageServerRPC(player.actualClientId,"Revived!", "You used an extra life! You now have " + livesRemaining + " lives remaining.");
+            Networker.Instance.RevivePlayerServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player), StartOfRound.Instance.middleOfShipNode.position);
+            Networker.Instance.SendMessageServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player),"Revived!", "You used an extra life! You now have " + livesRemaining + " lives remaining.");
             StartCoroutine(wait2());
             
         }

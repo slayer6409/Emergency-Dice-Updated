@@ -28,7 +28,7 @@ namespace MysteryDice.Effects
             var playerScripts = new List<PlayerControllerB>(StartOfRound.Instance.allPlayerScripts);
             playerScripts = playerScripts.Where(x => !x.isPlayerDead && x.isActiveAndEnabled && x.isPlayerControlled).OrderBy(x => Random.value).ToList();
 
-            ulong p1 = playerScripts[0].actualClientId;
+            int p1 = Array.IndexOf(StartOfRound.Instance.allPlayerScripts, playerScripts[0]);
             var enemiesAlive = RoundManager.Instance.SpawnedEnemies.Where(x => !x.isEnemyDead).ToList();
             if (enemiesAlive.Any())
             {
@@ -39,10 +39,10 @@ namespace MysteryDice.Effects
             }
             
         } 
-        public static void makeLovers(ulong p1, ulong enemyAI)
+        public static void makeLovers(int p1, ulong enemyAI)
         {
             var localPlayer = StartOfRound.Instance.localPlayerController;
-            if (localPlayer.actualClientId == p1)
+            if (StartOfRound.Instance.allPlayerScripts[p1]==localPlayer)
             {
                 if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(enemyAI, out var networkObj))
                 {

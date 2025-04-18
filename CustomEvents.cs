@@ -318,7 +318,7 @@ namespace MysteryDice
         public string Tooltip => config.customTooltip;
         public void Use()
         {
-            Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, UnityEngine.Random.Range(1, config.AmountMax+1), config.itemName);
+            Networker.Instance.SameScrapServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController), UnityEngine.Random.Range(1, config.AmountMax+1), config.itemName);
         }
     }
     internal class DynamicTrapEffect : IEffect

@@ -1,16 +1,10 @@
-﻿using MysteryDice.Effects;
+﻿using System;
+using MysteryDice.Effects;
 
 namespace MysteryDice.Dice
 {
     public class SurfacedDie : DieBehaviour
     {
-        public override void Start()
-        {
-            base.Start(); 
-            DiceModel = gameObject.transform.Find("Model").gameObject;
-            DiceModel.GetComponent<Spinner>().SurfacedDie = true;
-
-        }
         public override void SetupRollToEffectMapping()
         {
             RollToEffect.Add(1, [EffectType.Awful, EffectType.Bad,EffectType.Mixed]);
@@ -24,28 +18,37 @@ namespace MysteryDice.Dice
         // ReSharper disable Unity.PerformanceAnalysis
         public override void Roll()
         {
-            var isOutside = !GameNetworkManager.Instance.localPlayerController.isInsideFactory;
-
-            var diceRoll = UnityEngine.Random.Range(1, 7);
-
-            if (isOutside && !MysteryDice.useDiceOutside.Value) diceRoll = 1;
-
-            var randomEffect = GetRandomEffect(diceRoll, MysteryDice.SurfacedPresent? SurfacedEffects : Effects);
-
-            if (randomEffect == null) return;
-
-            PlaySoundBasedOnEffect(randomEffect.Outcome);
-            MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
-            randomEffect.Use();
-            
-            var who = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";
-            Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
-            if (isOutside && !MysteryDice.useDiceOutside.Value)
+            if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Roll Surfaced");
+            try
             {
-                Misc.SafeTipMessage($"Penalty", "Next time roll it inside :)");
-                return;
+                var isOutside = !GameNetworkManager.Instance.localPlayerController.isInsideFactory;
+
+                var diceRoll = UnityEngine.Random.Range(1, 7);
+
+                if (isOutside && !MysteryDice.useDiceOutside.Value) diceRoll = 1;
+
+                var randomEffect = GetRandomEffect(diceRoll, MysteryDice.SurfacedPresent? SurfacedEffects : Effects);
+
+                if (randomEffect == null) return;
+
+                PlaySoundBasedOnEffect(randomEffect.Outcome);
+                MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
+                randomEffect.Use();
+            
+                var who = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
+                Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
+                if (isOutside && !MysteryDice.useDiceOutside.Value)
+                {
+                    Misc.SafeTipMessage($"Penalty", "Next time roll it inside :)");
+                    return;
+                }
+                ShowDefaultTooltip(randomEffect, diceRoll);
             }
-            ShowDefaultTooltip(randomEffect, diceRoll);
+            catch (Exception e)
+            {
+                MysteryDice.CustomLogger.LogError("Roll error: "+ e);
+            }
+            
         }
     }
 }

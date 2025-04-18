@@ -20,9 +20,9 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.forcedFriendshipServerRPC(StartOfRound.Instance.localPlayerController.actualClientId);
+            Networker.Instance.forcedFriendshipServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, StartOfRound.Instance.localPlayerController));
         }
-        public static void spawnCollars(ulong playerID, bool stuck = false, int min = 2, int max = 4)
+        public static void spawnCollars(int playerID, bool stuck = false, int min = 2, int max = 4)
         {
             //glitch = 76561198984467725
             //me = 76561198077184650
@@ -59,7 +59,7 @@ namespace MysteryDice.Effects
                     obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
                     obj.GetComponent<GrabbableObject>().EnablePhysics(true);
                     component.FallToGround(true);
-                    EggFountain.teleport(netObj,StartOfRound.Instance.localPlayerController.actualClientId,component.transform.position+new Vector3(0,.25f,0));
+                    EggFountain.teleport(netObj,Array.IndexOf(StartOfRound.Instance.allPlayerScripts, StartOfRound.Instance.localPlayerController),component.transform.position+new Vector3(0,.25f,0));
                     BombCollarProp bcp = obj.GetComponent<BombCollarProp>();
                     BombCollar.BombCollarBase.Instance.AllBombCollars.Add(bcp);
                     netObjs.Add(netObj);
@@ -70,14 +70,14 @@ namespace MysteryDice.Effects
                             if (bcp != null)
                                 if (Misc.IsPlayerAliveAndControlled(glitch)) 
                                 {
-                                    bcp.AttachToPlayerServerRpc(Misc.getIntPlayerID(glitch.actualClientId));
-                                    Networker.Instance.TeleportToPlayerServerRPC(glitch.actualClientId, player.actualClientId);
+                                    bcp.AttachToPlayerServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,glitch));
+                                    Networker.Instance.TeleportToPlayerServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,glitch), Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player));
                                 } 
                         }
                         else if (stuck)
                         {
                             if (bcp != null)
-                                if (Misc.IsPlayerAliveAndControlled(player)) bcp.AttachToPlayerServerRpc(Misc.getIntPlayerID(player.actualClientId));
+                                if (Misc.IsPlayerAliveAndControlled(player)) bcp.AttachToPlayerServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player));
                         }
                     }
                 }
@@ -126,12 +126,12 @@ namespace MysteryDice.Effects
                     netObj.Spawn();
                     component.FallToGround(true);
                     netObjs.Add(netObj);
-                    EggFountain.teleport(netObj,StartOfRound.Instance.localPlayerController.actualClientId,component.transform.position+new Vector3(0,.25f,0));
+                    EggFountain.teleport(netObj,Array.IndexOf(StartOfRound.Instance.allPlayerScripts, StartOfRound.Instance.localPlayerController),component.transform.position+new Vector3(0,.25f,0));
                     BombCollarProp bcp = obj.GetComponent<BombCollarProp>();
                     BombCollar.BombCollarBase.Instance.AllBombCollars.Add(bcp);
                     
                     if (obj.GetComponent<BombCollarProp>() != null)
-                        if (Misc.IsPlayerAliveAndControlled(player)) bcp.AttachToPlayerServerRpc(Misc.getIntPlayerID(player.actualClientId));
+                        if (Misc.IsPlayerAliveAndControlled(player)) bcp.AttachToPlayerServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player));
                         
                     
                 }

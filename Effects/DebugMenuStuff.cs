@@ -3,6 +3,7 @@ using GameNetcodeStuff;
 using MysteryDice.Dice;
 using System.Collections.Generic;
 using System.Linq;
+using LethalLib.Modules;
 using MysteryDice.Patches;
 using TMPro;
 using UnityEngine;
@@ -184,7 +185,7 @@ public class DebugMenuStuff : MonoBehaviour
         InputAction escAction = new InputAction(binding: "<Keyboard>/escape");
         escAction.performed += ctx => CloseSelectMenu();
         escAction.Enable();
-
+        var localPlayer = StartOfRound.Instance.localPlayerController;
         TMP_InputField searchInput = EffectMenu.transform.Find("DebugMenu/Background/SearchField").GetComponent<TMP_InputField>();
         searchInput.onValueChanged.AddListener(FilterItems);
         Button ClearButton = EffectMenu.transform.Find("DebugMenu/Background/ClearButton").GetComponent<Button>();
@@ -198,7 +199,7 @@ public class DebugMenuStuff : MonoBehaviour
 
         if (!SelectEffect.isSpecial())
         {
-            if (!MysteryDice.superDebugMode.Value)
+            if (!MysteryDice.superDebugMode.Value && !StartOfRound.Instance.IsHost)
             {
                 full = false;
                 complete = false;
@@ -313,7 +314,7 @@ public class DebugMenuStuff : MonoBehaviour
         
         
         Button adminButton = EffectMenu.transform.Find("DebugMenu/Grant Admin").GetComponent<Button>();
-        if (su)
+        if (su || StartOfRound.Instance.localPlayerController.IsHost)
         {
             TMP_Text adminText = EffectMenu.transform.Find("DebugMenu/Grant Admin/Text (TMP)").GetComponent<TMP_Text>();
             adminButton.onClick.AddListener(() =>
@@ -489,15 +490,24 @@ public class DebugMenuStuff : MonoBehaviour
             {
                 CloseSelectMenu();
 
-                if (StartOfRound.Instance.localPlayerController.isPlayerDead)
+                if (StartOfRound.Instance.localPlayerController.isPlayerDead )
                 {
                     Networker.Instance.SpawnEnemyAtPosServerRPC(enemy.enemyName,
                         StartOfRound.Instance.spectateCamera.transform.position);
                 }
                 else
                 {
-                    Networker.Instance.CustomMonsterServerRPC(enemy.enemyName, 1, 1,
-                        StartOfRound.Instance.localPlayerController.isInsideFactory);
+                    if (MysteryDice.debugSpawnOnPlayer.Value)
+                    {
+                        Networker.Instance.SpawnEnemyAtPosServerRPC(enemy.enemyName,
+                            StartOfRound.Instance.localPlayerController.transform.position);
+                    }
+                    else
+                    {
+                        Networker.Instance.CustomMonsterServerRPC(enemy.enemyName, 1, 1,
+                            StartOfRound.Instance.localPlayerController.isInsideFactory);
+                    }
+                   
                 }
 
                 string outsideInside =
@@ -631,6 +641,7 @@ public class DebugMenuStuff : MonoBehaviour
                     {
                         position = randomVent.floorNode.position;
                     }
+                    if(MysteryDice.debugSpawnOnPlayer.Value) position = StartOfRound.Instance.localPlayerController.transform.position;
                     Networker.Instance.SpawnFreebirdEnemyServerRPC(enemy.enemyName, position);
                 }
             });
@@ -728,7 +739,7 @@ public class DebugMenuStuff : MonoBehaviour
 
                 Networker.Instance.spawnTrapOnServerRPC(trap.name, 1,
                     StartOfRound.Instance.localPlayerController.isInsideFactory,
-                    StartOfRound.Instance.localPlayerController.actualClientId,
+                    Array.IndexOf(StartOfRound.Instance.allPlayerScripts, StartOfRound.Instance.localPlayerController),
                     StartOfRound.Instance.localPlayerController.isPlayerDead,
                     spawnPosition);
                 Misc.SafeTipMessage($"Spawned {trap.name}", $"Spawned at {spawnPosition}");
@@ -785,7 +796,7 @@ public class DebugMenuStuff : MonoBehaviour
                         StartOfRound.Instance.localPlayerController.transform.position; // ✅ Normal Player Spawn
                 }
 
-                Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId,
+                Networker.Instance.SameScrapServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, GameNetworkManager.Instance.localPlayerController),
                     1, scrap.spawnableItem.itemName, StartOfRound.Instance.localPlayerController.isPlayerDead,
                     spawnPosition);
                 Misc.SafeTipMessage($"Spawned {scrap.spawnableItem.name}", $"Spawned at {spawnPosition}");
@@ -827,14 +838,14 @@ public class DebugMenuStuff : MonoBehaviour
                 Vector3 spawnPosition;
                 if (StartOfRound.Instance.localPlayerController.isPlayerDead)
                 {
-                    spawnPosition = StartOfRound.Instance.spectateCamera.transform.position; // ✅ Spectator Fix
+                    spawnPosition = StartOfRound.Instance.spectateCamera.transform.position;
                 }
                 else
                 {
                     spawnPosition =
-                        StartOfRound.Instance.localPlayerController.transform.position; // ✅ Normal Player Spawn
+                        StartOfRound.Instance.localPlayerController.transform.position; 
                 }
-                Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId,
+                Networker.Instance.SameScrapServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, GameNetworkManager.Instance.localPlayerController),
                     1, scrap.itemName, StartOfRound.Instance.localPlayerController.isPlayerDead,
                     spawnPosition);
                 Misc.SafeTipMessage($"Spawned {scrap.name}", $"Spawned at {spawnPosition}");
@@ -877,7 +888,7 @@ public class DebugMenuStuff : MonoBehaviour
             {
                 CloseSelectMenu();
                 Networker.Instance.SpawnObjectServerRPC(
-                    GameNetworkManager.Instance.localPlayerController.actualClientId, 1, scrap.spawnableObject.name);
+                    Array.IndexOf(StartOfRound.Instance.allPlayerScripts, GameNetworkManager.Instance.localPlayerController), 1, scrap.spawnableObject.name);
                 string txtToSay = "";
                 txtToSay = $"Spawned {scrap.spawnableObject.name}";
                 Misc.SafeTipMessage($"Object Spawned", txtToSay);
@@ -924,7 +935,7 @@ public class DebugMenuStuff : MonoBehaviour
                 }
 
                 Networker.Instance.spawnStoreItemServerRPC(
-                    GameNetworkManager.Instance.localPlayerController.actualClientId,
+                    Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController),
                     item.itemName, spawnPosition);
             });
 
@@ -954,7 +965,7 @@ public class DebugMenuStuff : MonoBehaviour
             button.onClick.AddListener(() =>
             {
                 CloseSelectMenu();
-                Networker.Instance.becomeAdminServerRPC(player.actualClientId, grant);
+                Networker.Instance.becomeAdminServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player), grant);
                 string txtToSay = "";
                 txtToSay = $"Made {player.playerUsername} an admin"; 
             });
@@ -1129,10 +1140,8 @@ public class DebugMenuStuff : MonoBehaviour
         Button button1 = effectObj1.GetComponent<Button>();
         button1.onClick.AddListener(() =>
         {
-            Networker.Instance.TeleportOrBringPlayerToPosServerRPC(StartOfRound.Instance.middleOfShipNode.position, StartOfRound.Instance
-                .localPlayerController
-                .playerSteamId,StartOfRound.Instance
-                .localPlayerController.actualClientId);
+            Networker.Instance.TeleportOrBringPlayerToPosServerRPC(StartOfRound.Instance.middleOfShipNode.position,Array.IndexOf(StartOfRound.Instance.allPlayerScripts,StartOfRound.Instance
+                .localPlayerController));
             GameNetworkManager.Instance.localPlayerController.isInHangarShipRoom = true;
             GameNetworkManager.Instance.localPlayerController.isInsideFactory = false;
             GameNetworkManager.Instance.localPlayerController.isInElevator = false;
@@ -1166,10 +1175,8 @@ public class DebugMenuStuff : MonoBehaviour
             button8.onClick.AddListener(() =>
             {
                 
-                Networker.Instance.TeleportOrBringPlayerToPosServerRPC(enemy.transform.position, StartOfRound.Instance
-                    .localPlayerController
-                    .playerSteamId,StartOfRound.Instance
-                    .localPlayerController.actualClientId);
+                Networker.Instance.TeleportOrBringPlayerToPosServerRPC(enemy.transform.position, Array.IndexOf(StartOfRound.Instance.allPlayerScripts,StartOfRound.Instance
+                    .localPlayerController));
                 CloseSelectMenu();
                 GameNetworkManager.Instance.localPlayerController.isInsideFactory = !enemy.isOutside;
                 });
@@ -1283,12 +1290,12 @@ public class DebugMenuStuff : MonoBehaviour
                 if (player2.isPlayerDead && bring)
                 {
                     Networker.Instance.TeleportOrBringPlayerToPosServerRPC(
-                        StartOfRound.Instance.spectateCamera.transform.position, player.playerSteamId, player.actualClientId);
+                        StartOfRound.Instance.spectateCamera.transform.position, Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player));
                 }
                 else
                 {
                     Networker.Instance.TeleportOrBringPlayerServerRPC(
-                        StartOfRound.Instance.localPlayerController.actualClientId, player.actualClientId, bring);
+                        Array.IndexOf(StartOfRound.Instance.allPlayerScripts,StartOfRound.Instance.localPlayerController), Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player), bring);
                 }
 
                 string txtToSay = "";
@@ -1386,7 +1393,7 @@ public class DebugMenuStuff : MonoBehaviour
             Button button = effectObj.GetComponent<Button>();
             button.onClick.AddListener(() =>
             {
-                Networker.Instance.suitStuffServerRPC(players.actualClientId, suit.syncedSuitID.Value);
+                Networker.Instance.suitStuffServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,players), suit.syncedSuitID.Value);
                 CloseSelectMenu();
             });
         }
@@ -1450,7 +1457,7 @@ public class DebugMenuStuff : MonoBehaviour
                 clearMainViewport();
                 CloseSelectMenu();
                 RevivePlayer();
-                Networker.Instance.RevivePlayerServerRpc(player.actualClientId,
+                Networker.Instance.RevivePlayerServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player),
                     StartOfRound.Instance.middleOfShipNode.position);
                 string txtToSay = "";
                 txtToSay = $"Revived {player.playerUsername}";

@@ -6,7 +6,7 @@ namespace MysteryDice.Effects;
 
 public class WhereDidMyFriendsGoPt2 
 {
-    public static void ToggleCosmetics(ulong playerID, bool value)
+    public static void ToggleCosmetics(int playerID, bool value)
     {
         var player = Misc.GetPlayerByUserID(playerID);
         CosmeticApplication cosmeticApplication = player.gameObject.GetComponentInChildren<CosmeticApplication>();

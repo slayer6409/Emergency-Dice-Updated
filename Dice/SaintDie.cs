@@ -13,11 +13,6 @@ namespace MysteryDice.Dice
 {
     public class SaintDie : DieBehaviour
     {
-        public override void Start()
-        {
-            base.Start();
-            DiceModel.transform.Find("halo").gameObject.AddComponent<HaloSpin>();
-        }
         public override void SetupRollToEffectMapping()
         {
             RollToEffect.Add(1, new EffectType[] { });
@@ -30,35 +25,43 @@ namespace MysteryDice.Dice
 
         public override void Roll()
         {
-            int diceRoll = UnityEngine.Random.Range(1,7);
-
-            if (diceRoll == 1)
+            try
             {
-                Misc.SafeTipMessage($"Rolled 1", "Nothing happened");
-                return;
+                int diceRoll = UnityEngine.Random.Range(1,7);
+
+                if (diceRoll == 1)
+                {
+                    Misc.SafeTipMessage($"Rolled 1", "Nothing happened");
+                    return;
+                }
+
+                IEffect randomEffect = GetRandomEffect(diceRoll, Effects);
+
+                PlaySoundBasedOnEffect(randomEffect.Outcome);
+
+                if(diceRoll == 6)
+                {
+                    if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: Saint 6");
+                    if(MysteryDice.NewDebugMenu.Value) DebugMenuStuff.ShowSelectEffectMenu();
+                    else SelectEffect.ShowSelectMenu(false,false,fromSaint:true);
+                    Misc.SafeTipMessage($"Rolled 6", "Choose an effect");
+                    var who2 = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
+                    Networker.Instance.LogEffectsToOwnerServerRPC(who2, randomEffect.Name, diceRoll);
+                    return;
+                }
+
+                if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
+                randomEffect.Use();
+                
+                var who = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
+                Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
+                Misc.SafeTipMessage($"Rolled {diceRoll}", randomEffect.Tooltip);
             }
-
-            IEffect randomEffect = GetRandomEffect(diceRoll, Effects);
-
-            PlaySoundBasedOnEffect(randomEffect.Outcome);
-
-            if(diceRoll == 6)
+            catch (Exception e)
             {
-                MysteryDice.CustomLogger.LogDebug("Rolling Effect: Saint 6");
-                if(MysteryDice.NewDebugMenu.Value) DebugMenuStuff.ShowSelectEffectMenu();
-                else SelectEffect.ShowSelectMenu(false,false,fromSaint:true);
-                Misc.SafeTipMessage($"Rolled 6", "Choose an effect");
-                var who2 = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";
-                Networker.Instance.LogEffectsToOwnerServerRPC(who2, randomEffect.Name, diceRoll);
-                return;
+                MysteryDice.CustomLogger.LogError("Roll error: "+ e);
             }
-
-            MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
-            randomEffect.Use();
-            
-            var who = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";
-            Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
-            Misc.SafeTipMessage($"Rolled {diceRoll}", randomEffect.Tooltip);
+           
         }
     }
 }

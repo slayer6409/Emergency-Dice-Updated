@@ -27,10 +27,10 @@ namespace MysteryDice.Effects
             }
             int[] weights = weightList.ToArray();
             var item = RM.currentLevel.spawnableScrap[RM.GetRandomWeightedIndex(weights)].spawnableItem;
-            Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, UnityEngine.Random.Range(3, 5), item.itemName);
+            Networker.Instance.SameScrapServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, GameNetworkManager.Instance.localPlayerController), UnityEngine.Random.Range(3, 5), item.itemName);
         }
 
-        public static void SameScrap(ulong userID, int amount, string scrapSpawns, bool usePos = true, Vector3 spawnPos = default)
+        public static void SameScrap(int userID, int amount, string scrapSpawns, bool usePos = true, Vector3 spawnPos = default)
         {
             var scrapToSpawn = scrapSpawns.Split(',');
             foreach (var scrapSpawn in scrapToSpawn)
@@ -142,12 +142,12 @@ namespace MysteryDice.Effects
         public static IEnumerator DelayedSyncAndTeleport(RoundManager RM, NetworkObjectReference[] netObjs, int[] scrapValues, float[] scrapWeights, PlayerControllerB player, bool usePos, Vector3 spawnPos)
         {
             yield return new WaitForSeconds(1f);
-            Networker.Instance.AllOfOneTPServerRPC(netObjs, player.actualClientId, usePos, spawnPos);
+            Networker.Instance.AllOfOneTPServerRPC(netObjs, Array.IndexOf(StartOfRound.Instance.allPlayerScripts, player), usePos, spawnPos);
             yield return new WaitForSeconds(2f);
             RM.SyncScrapValuesClientRpc(netObjs, scrapValues);
             Networker.Instance.SyncItemWeightsClientRPC(netObjs, scrapWeights);
         }
-        public static void teleport(NetworkObjectReference[] netObjs, ulong userID, bool usePos, Vector3 pos)
+        public static void teleport(NetworkObjectReference[] netObjs, int userID, bool usePos, Vector3 pos)
         {
             PlayerControllerB player = Misc.GetPlayerByUserID(userID);
             foreach (var netObjRef in netObjs)
@@ -180,7 +180,7 @@ namespace MysteryDice.Effects
             }
         }
 
-        public static void spawnObject(ulong userID, int amount, string name)
+        public static void spawnObject(int userID, int amount, string name)
         {
             try
             {

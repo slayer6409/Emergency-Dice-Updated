@@ -14,10 +14,10 @@ namespace MysteryDice.Effects
         public string Tooltip => "Go Catch Em All!";
         public void Use()
         {
-            Networker.Instance.PokeballsServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
+            Networker.Instance.PokeballsServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController));
         }
 
-        public static void SpawnPokeballs(ulong playerID)
+        public static void SpawnPokeballs(int playerID)
         {
             List<Item> items = UnityEngine.Resources.FindObjectsOfTypeAll<Item>().ToList();
             Item pokeball = items.FirstOrDefault(item => item.name.Equals("Pokeball"));

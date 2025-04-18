@@ -17,12 +17,11 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.JackpotServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, UnityEngine.Random.Range(3, 9));
+            Networker.Instance.JackpotServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, GameNetworkManager.Instance.localPlayerController), UnityEngine.Random.Range(3, 9));
         }
+        
 
-
-
-        public static void JackpotScrap(ulong userID, int amount)
+        public static void JackpotScrap(int userID, int amount)
         {
             PlayerControllerB player = Misc.GetPlayerByUserID(userID);
 

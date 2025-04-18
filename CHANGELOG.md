@@ -1,3 +1,44 @@
+-	**1.9.25**
+    - Another small bug fix
+
+- 	**1.9.24**
+    - Potential fix for a few poltergeist issues
+    - And for an error that shouldn't be showing up :D
+    - >:D 
+
+- 	**1.9.23**
+    - Removed April fools stuff
+    - Moved some logging to debug log so not to spam now that **most** of the problems are resolved (I believe)
+    - Fixed Poltergeist Compat rolling an effect for everyone in the lobby with only 1 use
+
+-	**1.9.22**
+    - Fix for dice not rolling for clients
+      - Apparently the dice was despawning on the host before it could roll on clients
+      - Could still happen if the client is particually laggy
+
+-	**1.9.21**
+    - Fix for a NRE with a null spawnable map object prefab
+
+-	**1.9.20 - A totally _normal, stable, balanced_ "update".**
+    - "Fixed" the floating dice issue by leveling the playing field
+    - Haha things go brrrrr
+    - Do these look a bit off to you?
+    - What does this thing do again???
+    - Added 10% more bugs
+    - The dice have been feeling _lucky_ lately
+    - Wait, I added a real thing? …Do ghosts count?
+    - Have fun >:D
+
+-   **1.9.20 - Actual patch notes**
+    - Disabled a few things to see if those were the causes of issues
+    - Possibly fixed dice effect not showing up when rolled
+    
+-	**1.9.19**
+    - Very Big Refactor for handling clients correctly especially for late joining and leaving
+    - If something breaks please lmk
+    - I am 100% sure at least 1 event will be overlooked and possibly error cuz I had to change a TON of events
+    - If I somehow did this entire thing at 5 am without errors I will be amazed lol
+
 -	**1.9.18**
     - Reverted some code
     - Added some changes to check for certain errors

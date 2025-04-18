@@ -1,16 +1,11 @@
-﻿using MysteryDice.Effects;
+﻿using System;
+using MysteryDice.Effects;
 using System.Collections;
 
 namespace MysteryDice.Dice
 {
     public class EmergencyDie : DieBehaviour
     {
-        public override void Start()
-        {
-            base.Start();
-            DiceModel.AddComponent<Blinking>();
-            this.itemProperties.verticalOffset = 0;
-        }
         public override void SetupRollToEffectMapping()
         {
             RollToEffect.Add(1, new EffectType[] { EffectType.Awful });
@@ -21,7 +16,7 @@ namespace MysteryDice.Dice
             RollToEffect.Add(6, new EffectType[] { EffectType.Great });
         }
 
-        public override IEnumerator UseTimer(ulong userID, int time)
+        public override IEnumerator UseTimer(int userID, int time)
         {
             DiceModel.GetComponent<Blinking>().BlinkingTime = 0.1f;
             return base.UseTimer(userID, time);
@@ -35,24 +30,34 @@ namespace MysteryDice.Dice
 
         public override void Roll()
         {
+            
+            if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Roll Emergency");
             int diceRoll = UnityEngine.Random.Range(1, 7);
+            try
+            {
 
-            IEffect randomEffect = GetRandomEffect(diceRoll, Effects);
+                IEffect randomEffect = GetRandomEffect(diceRoll, Effects);
 
-            if (randomEffect == null) return;
+                if (randomEffect == null) return;
 
             
-            PlaySoundBasedOnEffect(randomEffect.Outcome);
+                if (diceRoll > 2) randomEffect = new ReturnToShip();
+                if (diceRoll == 6) randomEffect = new ReturnToShipTogether();
+                
+                PlaySoundBasedOnEffect(randomEffect.Outcome);
 
-            if (diceRoll > 3) randomEffect = new ReturnToShip();
-            if (diceRoll == 6) randomEffect = new ReturnToShipTogether();
-
-            MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
-            randomEffect.Use();
-            var who = !wasEnemy ? PlayerUser.playerUsername : "An Enemy";
-            Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
+                if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
+                randomEffect.Use();
+                var who = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
+                Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
             
-            ShowDefaultTooltip(randomEffect, diceRoll);
+                ShowDefaultTooltip(randomEffect, diceRoll);
+            }
+            catch (Exception e)
+            {
+                MysteryDice.CustomLogger.LogError("Roll error: "+ e);
+            }
+           
         }
     }
 }

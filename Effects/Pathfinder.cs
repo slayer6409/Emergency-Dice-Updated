@@ -1,4 +1,5 @@
-﻿using GameNetcodeStuff;
+﻿using System;
+using GameNetcodeStuff;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
@@ -13,10 +14,10 @@ namespace MysteryDice.Effects
         public string Tooltip => "You've got a pathfinder!";
         public void Use()
         {
-            Networker.Instance.PathfinderGiveSpawnerServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
+            Networker.Instance.PathfinderGiveSpawnerServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController));
         }
 
-        public static void GiveBlobItem(ulong userID)
+        public static void GiveBlobItem(int userID)
         {
 
             GameObject obj = UnityEngine.Object.Instantiate(MysteryDice.PathfinderSpawner.spawnPrefab,

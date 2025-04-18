@@ -43,32 +43,14 @@ namespace MysteryDice.Effects
 
         }
 
-        public static void itemSwap(ulong p1, ulong p2)
+        public static void itemSwap(int p1, int p2)
         {
             PlayerControllerB player1 = null;
             PlayerControllerB player2 = null;
 
-            // Find both players in the list
-            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
-            {
-                PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
-                if (playerComp.actualClientId == p1)
-                {
-                    player1 = playerComp;
-                }
-                else if (playerComp.actualClientId == p2)
-                {
-                    player2 = playerComp;
-                }
+            player1 = StartOfRound.Instance.allPlayerScripts[p1];
+            player2 = StartOfRound.Instance.allPlayerScripts[p2];
 
-                // Exit the loop early if both players are found
-                if (player1 != null && player2 != null)
-                {
-                    break;
-                }
-            }
-
-            // Ensure both players are found
             if (player1 == null || player2 == null)
             {
                 Debug.LogError("One or both players not found.");

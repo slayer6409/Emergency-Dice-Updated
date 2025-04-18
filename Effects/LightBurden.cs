@@ -21,7 +21,7 @@ namespace MysteryDice.Effects
         }
 
 
-        public static void lessenWeight(ulong userID)
+        public static void lessenWeight(int userID)
         {
             Misc.AdjustWeight(userID, .5f);
         }

@@ -19,7 +19,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.TerminalLockoutServerRPC();
+            //Networker.Instance.TerminalLockoutServerRPC();
         }
     }
 }

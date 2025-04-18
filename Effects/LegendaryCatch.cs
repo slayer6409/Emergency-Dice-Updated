@@ -14,10 +14,10 @@ namespace MysteryDice.Effects
         public string Tooltip => "Go Catch a Legendary!";
         public void Use()
         {
-            Networker.Instance.MasterballServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
+            Networker.Instance.MasterballServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController));
         }
 
-        public static void SpawnMasterball(ulong playerID)
+        public static void SpawnMasterball(int playerID)
         {
             List<Item> items = UnityEngine.Resources.FindObjectsOfTypeAll<Item>().ToList();
             Item masterball = items.FirstOrDefault(item => item.name.Equals("Masterball"));

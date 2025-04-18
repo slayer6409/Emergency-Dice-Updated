@@ -18,7 +18,7 @@ namespace MysteryDice.Effects
         {
 	        foreach (var player in StartOfRound.Instance.allPlayerScripts)
 	        {
-		        if(player.isPlayerDead) Networker.Instance.RevivePlayerServerRpc(player.actualClientId, StartOfRound.Instance.middleOfShipNode.position);
+		        if(player.isPlayerDead) Networker.Instance.RevivePlayerServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player), StartOfRound.Instance.middleOfShipNode.position);
 	        }
         }
         public static void revivePlayer(int playerID, Vector3 SpawnPosition)
@@ -117,7 +117,7 @@ namespace MysteryDice.Effects
 				}
 			}
 			PlayerControllerB localPlayerController = GameNetworkManager.Instance.localPlayerController;
-			if (localPlayerController.actualClientId == playerControllerB.actualClientId)
+			if (localPlayerController == playerControllerB)
 			{
 				localPlayerController.bleedingHeavily = false;
 				localPlayerController.criticallyInjured = false;

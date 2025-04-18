@@ -20,7 +20,7 @@ namespace MysteryDice.Effects
         
         public void Use()
         {
-            Networker.Instance.NeckBreakRandomPlayerServerRpc(GameNetworkManager.Instance.localPlayerController.actualClientId);
+            Networker.Instance.NeckBreakRandomPlayerServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController));
         }
 
         public static void BreakNeck()

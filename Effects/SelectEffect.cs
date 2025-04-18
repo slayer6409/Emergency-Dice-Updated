@@ -365,7 +365,7 @@ namespace MysteryDice.Effects
 
                     Networker.Instance.spawnTrapOnServerRPC(trap.prefabToSpawn.name, 1, 
                         StartOfRound.Instance.localPlayerController.isInsideFactory,
-                        StartOfRound.Instance.localPlayerController.actualClientId,
+                        Array.IndexOf(StartOfRound.Instance.allPlayerScripts,StartOfRound.Instance.localPlayerController),
                         StartOfRound.Instance.localPlayerController.isPlayerDead,
                         spawnPosition);
                     Misc.SafeTipMessage($"Spawned {trap.prefabToSpawn.name}", $"Spawned at {spawnPosition}");
@@ -442,7 +442,7 @@ namespace MysteryDice.Effects
                         spawnPosition = StartOfRound.Instance.localPlayerController.transform.position; // ✅ Normal Player Spawn
                     }
 
-                    Networker.Instance.SameScrapServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, 
+                    Networker.Instance.SameScrapServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController), 
                         1, scrap.spawnableItem.itemName, StartOfRound.Instance.localPlayerController.isPlayerDead, 
                         spawnPosition);
                     Misc.SafeTipMessage($"Spawned {scrap.spawnableItem.name}", $"Spawned at {spawnPosition}");
@@ -503,7 +503,7 @@ namespace MysteryDice.Effects
                 button.onClick.AddListener(() =>
                 {
                     if(MysteryDice.DebugMenuClosesAfter.Value) CloseSelectMenu();
-                    Networker.Instance.SpawnObjectServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, 1, scrap.spawnableObject.name);
+                    Networker.Instance.SpawnObjectServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController), 1, scrap.spawnableObject.name);
                     string txtToSay = "";
                     txtToSay = $"Spawned {scrap.spawnableObject.name}";
                     Misc.SafeTipMessage($"Object Spawned", txtToSay);
@@ -573,7 +573,7 @@ namespace MysteryDice.Effects
                         spawnPosition = StartOfRound.Instance.localPlayerController.transform.position; 
                     }
 
-                    Networker.Instance.spawnStoreItemServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, 
+                    Networker.Instance.spawnStoreItemServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController), 
                         item.itemName,spawnPosition);
                 });
 
@@ -626,7 +626,7 @@ namespace MysteryDice.Effects
                 button.onClick.AddListener(() =>
                 {
                     CloseSelectMenu();
-                    Networker.Instance.becomeAdminServerRPC(player.actualClientId, false, false);
+                    Networker.Instance.becomeAdminServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player), false, false);
                     string txtToSay = "";
                     txtToSay = $"Made {player.playerUsername} an admin"; 
                     Networker.Instance.MessageToHostServerRPC($"Admin", txtToSay);
@@ -876,11 +876,11 @@ namespace MysteryDice.Effects
                     var player2 = StartOfRound.Instance.localPlayerController;
                     if (player2.isPlayerDead && bring)
                     {
-                        Networker.Instance.TeleportOrBringPlayerToPosServerRPC(StartOfRound.Instance.spectateCamera.transform.position, player.playerSteamId, player.actualClientId);
+                        Networker.Instance.TeleportOrBringPlayerToPosServerRPC(StartOfRound.Instance.spectateCamera.transform.position, Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player));
                     }
                     else
                     {
-                        Networker.Instance.TeleportOrBringPlayerServerRPC(StartOfRound.Instance.localPlayerController.playerSteamId, player.playerSteamId, bring);
+                        Networker.Instance.TeleportOrBringPlayerServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,StartOfRound.Instance.localPlayerController), Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player), bring);
                     }
                     
                     string txtToSay = "";
@@ -991,7 +991,7 @@ namespace MysteryDice.Effects
                 Button button = effectObj.GetComponent<Button>();
                 button.onClick.AddListener(() =>
                 {
-                    Networker.Instance.suitStuffServerRPC(players.actualClientId, suit.syncedSuitID.Value);
+                    Networker.Instance.suitStuffServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,players), suit.syncedSuitID.Value);
                 });
             }
             GameObject effectObj2 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
@@ -1083,7 +1083,7 @@ namespace MysteryDice.Effects
                         CloseSelectMenu();
                         RevivePlayer(full, complete, su);
                     }
-                    Networker.Instance.RevivePlayerServerRpc(player.actualClientId, StartOfRound.Instance.middleOfShipNode.position);
+                    Networker.Instance.RevivePlayerServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player), StartOfRound.Instance.middleOfShipNode.position);
                     string txtToSay = "";
                     txtToSay = $"Revived {player.playerUsername}"; 
                     Misc.SafeTipMessage($"Revival", txtToSay);

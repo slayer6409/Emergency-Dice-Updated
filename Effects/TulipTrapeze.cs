@@ -28,7 +28,7 @@ namespace MysteryDice.Effects
             if (GetEnemies.Tulip == null)
                 return;
             var player = Misc.GetRandomAlivePlayer();
-            Networker.Instance.TulipTrapeezeMessageServerRPC(player.actualClientId);
+            Networker.Instance.TulipTrapeezeMessageServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player));
             player.DropAllHeldItemsAndSync();
             float radius = 2;
             if (!RoundManager.Instance.currentLevel.Enemies.Contains(GetEnemies.Tulip))

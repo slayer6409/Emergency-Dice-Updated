@@ -22,12 +22,12 @@ namespace MysteryDice.Effects
         }
 
 
-        public static int GetRandomItem(ulong userID)
+        public static int GetRandomItem(int userID)
         {
             PlayerControllerB player = null;
 
             // Find the player by userID
-            player = Misc.GetRandomAlivePlayer();
+            player = Misc.GetPlayerByUserID(userID);
 
             if (player == null)
             {

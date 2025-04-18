@@ -19,7 +19,7 @@ namespace MysteryDice.Effects
         {
             Networker.Instance.HeavyBurdenServerRPC();
         }
-        public static void increaseWeight(ulong userID)
+        public static void increaseWeight(int userID)
         {
             Misc.AdjustWeight(userID, 2f);
         }

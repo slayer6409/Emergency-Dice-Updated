@@ -43,13 +43,13 @@ namespace MysteryDice.Effects
         }
         public static void TeleportEveryoneToShip()
         {
-            List<ulong> playersToTeleport = new List<ulong>();
+            List<int> playersToTeleport = new List<int>();
             foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
             {
                 PlayerControllerB player = playerPrefab.GetComponent<PlayerControllerB>();
                 if (Misc.IsPlayerAliveAndControlled(player))
                 {
-                    playersToTeleport.Add(player.actualClientId);
+                    playersToTeleport.Add(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player));
                 }
             }
 
@@ -60,24 +60,11 @@ namespace MysteryDice.Effects
                 Networker.Instance.TeleportPlayerToShipServerRPC(ply);
             }
         }
-        public static void TeleportPlayerToShip(ulong who)
+        public static void TeleportPlayerToShip(int who)
         {
             PlayerControllerB player = null;
 
-            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
-            {
-                PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
-                if (playerComp == null) continue;
-
-                if (playerComp.actualClientId == who)
-                {
-                    player = playerComp;
-                }
-                if (player != null)
-                {
-                    break;
-                }
-            }
+            player = StartOfRound.Instance.allPlayerScripts[who];
 
             if (player == null) return;
 

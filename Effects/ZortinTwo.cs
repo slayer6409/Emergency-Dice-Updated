@@ -17,10 +17,10 @@ namespace MysteryDice.Effects
         public string Tooltip => "Zort 2";
         public void Use()
         {
-            Networker.Instance.doZortServerRpc(StartOfRound.Instance.localPlayerController.actualClientId);
+            Networker.Instance.doZortServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,StartOfRound.Instance.localPlayerController));
         }
 
-        public static void spawnZort(ulong playerid)
+        public static void spawnZort(int playerid)
         { 
             RoundManager RM = RoundManager.Instance;
 

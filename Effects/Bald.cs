@@ -27,16 +27,16 @@ namespace MysteryDice.Effects
             var glitch = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(x => x.playerSteamId == 76561198984467725);
             if (glitch != null)
             {
-                if (!glitch.isPlayerDead) Networker.Instance.BaldServerRpc(glitch.actualClientId);
-                else Networker.Instance.BaldServerRpc(Misc.GetRandomAlivePlayer().actualClientId);
+                if (!glitch.isPlayerDead) Networker.Instance.BaldServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, glitch));
+                else Networker.Instance.BaldServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, Misc.GetRandomAlivePlayer()));
             }
             else
             {
-                Networker.Instance.BaldServerRpc(Misc.GetRandomAlivePlayer().actualClientId);
+                Networker.Instance.BaldServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, Misc.GetRandomAlivePlayer()));
             }
         }
 
-        public static void SpawnBald(ulong playerID)
+        public static void SpawnBald(int playerID)
         {
             var player = Misc.GetPlayerByUserID(playerID);
             GameObject gameObject = UnityEngine.Object.Instantiate(
@@ -49,7 +49,7 @@ namespace MysteryDice.Effects
             Networker.Instance.FixBaldClientRpc(playerID, netobj.NetworkObjectId);
         }
 
-        public static void FixBald(ulong playerID, GameObject bald)
+        public static void FixBald(int playerID, GameObject bald)
         {
             var bh = bald.AddComponent<baldHandler>();
             bh.player = Misc.GetPlayerByUserID(playerID);

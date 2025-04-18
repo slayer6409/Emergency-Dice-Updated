@@ -15,7 +15,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            DiversityRemastered.Misc.StartOfRoundRevamp.Instance.KidnapServerRpc(Misc.GetRandomPlayerID());
+            DiversityRemastered.Misc.StartOfRoundRevamp.Instance.KidnapServerRpc((ulong)Misc.GetRandomPlayerID());
         }
         public static bool checkConfigs()
         {

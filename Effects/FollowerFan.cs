@@ -17,21 +17,21 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.DoFollowerFanServerRpc(Misc.GetRandomAlivePlayer().actualClientId);
+            Networker.Instance.DoFollowerFanServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,Misc.GetRandomAlivePlayer()));
         }
 
-        public static void giveFriend(ulong playerID)
+        public static void giveFriend(int playerID)
         {
             var player = Misc.GetPlayerByUserID(playerID);
             var fan = GameObject.Instantiate(GetEnemies.Fan.prefabToSpawn,
                 player.transform.position - player.transform.forward * 3f, Quaternion.identity);
-            fan.name = "FollowerFan"+player.actualClientId;
+            fan.name = "FollowerFan"+Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player);
             var netObj = fan.GetComponent<NetworkObject>();
             fan.GetComponentInChildren<IndustrialFanBackCollider>().gameObject.SetActive(false);
             fan.GetComponentInChildren<IndustrialFanFrontCollider>().industrialFan.pushForce *= -1;
             netObj.Spawn();
             Networker.Instance.setSizeClientRPC(netObj.NetworkObjectId,new Vector3(0.4f,0.4f,0.4f));
-            Networker.Instance.AddMovingTrapClientRPC(fan.name,true,player.actualClientId);
+            Networker.Instance.AddMovingTrapClientRPC(fan.name,true,Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player));
         }
         public static void fixFan(GameObject fan)
         {

@@ -54,7 +54,7 @@ namespace MysteryDice.Effects
 
                     bracken.allAINodes = GameObject.FindGameObjectsWithTag("OutsideAINode");
                     bracken.isOutside = true;
-                    bracken.ChangeOwnershipOfEnemy(GameNetworkManager.Instance.localPlayerController.actualClientId);
+                    bracken.ChangeOwnershipOfEnemy(StartOfRound.Instance.allPlayerScripts[0].playerClientId); // change to actual client id after
                     bracken.serverPosition = mainEntrance.entrancePoint.position;
                     bracken.transform.position = bracken.serverPosition;
                     bracken.agent.Warp(bracken.serverPosition);

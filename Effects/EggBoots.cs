@@ -1,4 +1,5 @@
-﻿using GameNetcodeStuff;
+﻿using System;
+using GameNetcodeStuff;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
@@ -18,9 +19,9 @@ namespace MysteryDice.Effects
         public static bool canSpawnAnother = true;
         public void Use()
         {
-            Networker.Instance.EggBootsServerRpc(GameNetworkManager.Instance.localPlayerController.actualClientId);
+            Networker.Instance.EggBootsServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController));
         }
-        public static void SpawnAndExplodeEgg(ulong playerid)
+        public static void SpawnAndExplodeEgg(int playerid)
         {
 
             var item = Misc.GetItemByName("Easter egg", false);

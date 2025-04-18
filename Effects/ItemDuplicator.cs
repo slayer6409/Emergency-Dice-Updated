@@ -20,10 +20,10 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.ItemDuplicatorServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
+            Networker.Instance.ItemDuplicatorServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController));
         }
 
-        public static void duplicateItems(ulong userID)
+        public static void duplicateItems(int userID)
         {
             List<Item> scrapToSpawn = new List<Item>();
             RoundManager RM = RoundManager.Instance;
@@ -32,15 +32,8 @@ namespace MysteryDice.Effects
             List<float> scrapWeights = new List<float>();
             PlayerControllerB player = null;
 
-            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
-            {
-                PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
-                if (playerComp.actualClientId == userID)
-                {
-                    player = playerComp;
-                    break;
-                }
-            }
+            player = StartOfRound.Instance.allPlayerScripts[userID];
+            
             if (player == null) return;
             foreach (var i in player.ItemSlots)
             {

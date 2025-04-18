@@ -15,6 +15,7 @@ using System.Linq;
 using BepInEx.Bootstrap;
 using LethalLib.Extras;
 using LethalThings;
+using UnityEngine.AI;
 //using MysteryDice.Gal;
 using UnityEngine.InputSystem;
 using Utilities = LethalLib.Modules.Utilities;
@@ -52,7 +53,7 @@ namespace MysteryDice
         public enum chatDebug { Host, Everyone, None};
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.9.18";
+        private const string modVersion = "1.9.25";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -102,8 +103,10 @@ namespace MysteryDice
         public static Assembly LCOfficeAssembly;
         public static bool terminalLockout = false;
         public static CustomConfigs customCfg;
+        //public static bool aprilFoolsMode = true;
         
         #region configEntry
+        public static ConfigEntry<bool> aprilFoolsConfig;
         public static ConfigEntry<bool> pussyMode;
         public static ConfigEntry<float> minHyperShake;
         public static ConfigEntry<float> maxHyperShake;
@@ -148,6 +151,7 @@ namespace MysteryDice
         public static ConfigEntry<float> SoundVolume;
         //public static ConfigEntry<string> adminKeybind;
         public static ConfigEntry<bool> debugButton;
+        public static ConfigEntry<bool> debugSpawnOnPlayer;
         public static ConfigEntry<bool> superDebugMode;
         public static ConfigEntry<bool> DebugLogging;
         public static ConfigEntry<bool> BetterDebugMenu;
@@ -242,6 +246,12 @@ namespace MysteryDice
                 100,
                 "Sets the text alpha of the Debug Menu.");
             
+             debugSpawnOnPlayer = BepInExConfig.Bind<bool>(
+                "New Debug",
+                "debugSpawnOnPlayer",
+                true,
+                "Spawn Enemy On Player with the Debug Menu.");
+            
             DebugMenuFavoriteTextColor = BepInExConfig.Bind<string>(
                 "New Debug",
                 "Favorite Text Color",
@@ -316,7 +326,13 @@ namespace MysteryDice
                 "Misc",
                 "Lovers On Start",
                 false,
-                "Assigns New Lovers on each round (will be moved to a separate mod eventually after the next major update)");
+                "Assigns New Lovers on each round");
+            
+            aprilFoolsConfig = BepInExConfig.Bind<bool>(
+                "Misc",
+                "April Fools",
+                false,
+                "Toggles april fools mode");
             
             CopyrightFree = BepInExConfig.Bind<bool>(
                 "Clientside",
@@ -589,7 +605,7 @@ namespace MysteryDice
             CodeRebirthPresent = IsModPresent("CodeRebirth", "CodeRebirth compatibility enabled!");
             DiversityPresent = IsModPresent("Chaos.Diversity", "Diversity: Remastered compatibility enabled!");
             BombCollarPresent = IsModPresent("Jordo.BombCollar", "Bomb Collar compatibility enabled! >:)");
-            MoreCompanyPresent = IsModPresent("me.swipez.melonloader.morecompany", "MoreCompany compatibility enabled!");
+            //MoreCompanyPresent = IsModPresent("me.swipez.melonloader.morecompany", "MoreCompany compatibility enabled!");
             NavMeshInCompanyPresent = IsModPresent("dev.kittenji.NavMeshInCompany", "Nav Mesh In Company compatibility enabled! >:)");
             NightOfTheLivingMimicPresent = IsModPresent("Slayer6409.NightOfTheLivingMimic", ">:)");
             if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("ainavt.lc.lethalconfig"))
@@ -649,9 +665,11 @@ namespace MysteryDice
             // diceGalUnlockable = LoadedAssets2.LoadAsset<UnlockableItemDef>("DiceGalUnlockable"); //gal commented
             
             NetworkerPrefab = LoadedAssets.LoadAsset<GameObject>("Networker");
+            NetworkerPrefab.name = "DiceNetworker";
             NetworkerPrefab.AddComponent<Networker>();
             
             AgentObjectPrefab = LoadedAssets2.LoadAsset<GameObject>("AgentObject");
+            if (aprilFoolsConfig.Value) AgentObjectPrefab.GetComponent<NavMeshAgent>().speed = 9;
             //AgentObjectPrefab.AddComponent<SmartAgentNavigator>();
 
             EffectMenuPrefab = LoadedAssets.LoadAsset<GameObject>("Choose Effect");
@@ -800,7 +818,6 @@ namespace MysteryDice
                         break;
                 }
             }
-            
         }
         
         private void db()
@@ -815,61 +832,61 @@ namespace MysteryDice
         {
             var localPlayer = GameNetworkManager.Instance.localPlayerController;
             bool isSlayer = localPlayer.playerSteamId == slayerSteamID;
-            bool isHost = localPlayer.IsHost;
+            bool isHost = GameNetworkManager.Instance.localPlayerController.IsHost;
             bool hasDebugAccess = Networker.Instance != null && (isHost || isSlayer || isAdmin || (admins.Contains(GameNetworkManager.Instance.localPlayerController.playerSteamId) && forcedAdmin));
             bool debugModeEnabled = superDebugMode.Value || isSlayer;
 
-            if (!NewDebugMenu.Value)
+            // if (!NewDebugMenu.Value)
+            // {
+            //     if (superDebugMode.Value && !isSlayer && !isHost)
+            //     {
+            //         SelectEffect.showDebugMenu(true, true);
+            //         return;
+            //     }
+            //
+            //     if (hasDebugAccess && ( debugButton.Value || bypassButton || isSlayer))
+            //     {
+            //         if (isSlayer||isHost)
+            //         {
+            //             SelectEffect.showDebugMenu(BetterDebugMenu.Value, debugModeEnabled, true);
+            //         }
+            //         else if (BetterDebugMenu.Value)
+            //         {
+            //             SelectEffect.showDebugMenu(true, false);
+            //         }
+            //         else
+            //         {
+            //             SelectEffect.ShowSelectMenu(false, false);
+            //         }
+            //     }
+            // }
+            // else
+            // {
+            if (superDebugMode.Value && !isSlayer && !isHost)
             {
-                if (superDebugMode.Value && !isSlayer && !isHost)
+                DebugMenuStuff.showDebugMenu(true, true);
+                return;
+            }
+            if (hasDebugAccess && ( debugButton.Value || bypassButton || isSlayer))
+            {
+                if (isSlayer||isHost)
                 {
-                    SelectEffect.showDebugMenu(true, true);
-                    return;
+                    if(isSlayer)
+                        DebugMenuStuff.showDebugMenu(true, true, true);
+                    else 
+                        DebugMenuStuff.showDebugMenu(BetterDebugMenu.Value, debugModeEnabled, true);
+                    
                 }
-        
-                if (hasDebugAccess && ( debugButton.Value || bypassButton || isSlayer))
+                else if (BetterDebugMenu.Value)
                 {
-                    if (isSlayer||isHost)
-                    {
-                        SelectEffect.showDebugMenu(BetterDebugMenu.Value, debugModeEnabled, true);
-                    }
-                    else if (BetterDebugMenu.Value)
-                    {
-                        SelectEffect.showDebugMenu(true, false);
-                    }
-                    else
-                    {
-                        SelectEffect.ShowSelectMenu(false, false);
-                    }
+                    DebugMenuStuff.showDebugMenu(true, false, isHost);
+                }
+                else
+                {
+                    DebugMenuStuff.showDebugMenu(false, false, isHost);
                 }
             }
-            else
-            {
-                if (superDebugMode.Value && !isSlayer && !isHost)
-                {
-                    DebugMenuStuff.showDebugMenu(true, true);
-                    return;
-                }
-                if (hasDebugAccess && ( debugButton.Value || bypassButton || isSlayer))
-                {
-                    if (isSlayer||isHost)
-                    {
-                        if(isSlayer)
-                            DebugMenuStuff.showDebugMenu(true, true, true);
-                        else 
-                            DebugMenuStuff.showDebugMenu(BetterDebugMenu.Value, debugModeEnabled, true);
-                        
-                    }
-                    else if (BetterDebugMenu.Value)
-                    {
-                        DebugMenuStuff.showDebugMenu(true, false);
-                    }
-                    else
-                    {
-                        DebugMenuStuff.showDebugMenu(false, false);
-                    }
-                }
-            }
+           // }
         }
         
         public static Assembly GetAssembly(string name)
@@ -937,6 +954,11 @@ namespace MysteryDice
             DieSurfaced.minValue = 150;
             DieSurfaced.maxValue = 210;
             DieSurfaced.canBeGrabbedBeforeGameStart = true;
+            SurfacedDie scriptSurfaced = DieSurfaced.spawnPrefab.AddComponent<SurfacedDie>();
+            scriptSurfaced.myType = DieBehaviour.DiceType.SURFACED;
+            scriptSurfaced.grabbable = true;
+            scriptSurfaced.grabbableToEnemies = true;
+            scriptSurfaced.itemProperties = DieSurfaced;
             RegisteredDice.Add(DieSurfaced);
             
             ///
@@ -946,6 +968,7 @@ namespace MysteryDice
 
             DieEmergency.canBeGrabbedBeforeGameStart = true;
             EmergencyDie scriptEmergency = DieEmergency.spawnPrefab.AddComponent<EmergencyDie>();
+            scriptEmergency.myType = DieBehaviour.DiceType.EMERGENCY;
             scriptEmergency.grabbable = true;
             scriptEmergency.grabbableToEnemies = true;
             scriptEmergency.itemProperties = DieEmergency;
@@ -957,9 +980,10 @@ namespace MysteryDice
             DieChronos = LoadedAssets.LoadAsset<Item>("Chronos");
             DieChronos.minValue = 120;
             DieChronos.maxValue = 140;
-
             DieChronos.canBeGrabbedBeforeGameStart = true;
+            
             ChronosDie scriptChronos = DieChronos.spawnPrefab.AddComponent<ChronosDie>();
+            scriptChronos.myType = DieBehaviour.DiceType.CHRONOS;
             scriptChronos.grabbable = true;
             scriptChronos.grabbableToEnemies = true;
             scriptChronos.itemProperties = DieChronos;
@@ -974,6 +998,11 @@ namespace MysteryDice
             DieGambler.maxValue = 130;
             DieGambler.canBeGrabbedBeforeGameStart = true;
             
+            GamblerDie scriptGambler = DieGambler.spawnPrefab.AddComponent<GamblerDie>();
+            scriptGambler.myType = DieBehaviour.DiceType.GAMBLER;
+            scriptGambler.grabbable = true;
+            scriptGambler.grabbableToEnemies = true;
+            scriptGambler.itemProperties = DieGambler;
             RegisteredDice.Add(DieGambler);
             
             ///
@@ -985,6 +1014,7 @@ namespace MysteryDice
 
 
             SacrificerDie scriptSacrificer = DieSacrificer.spawnPrefab.AddComponent<SacrificerDie>();
+            scriptSacrificer.myType = DieBehaviour.DiceType.SACRIFICER;
             scriptSacrificer.grabbable = true;
             scriptSacrificer.grabbableToEnemies = true;
             scriptSacrificer.itemProperties = DieSacrificer;
@@ -999,6 +1029,7 @@ namespace MysteryDice
             DieSaint.canBeGrabbedBeforeGameStart = true;
 
             SaintDie scriptSaint = DieSaint.spawnPrefab.AddComponent<SaintDie>();
+            scriptSaint.myType = DieBehaviour.DiceType.SAINT;
             scriptSaint.grabbable = true;
             scriptSaint.grabbableToEnemies = true;
             scriptSaint.itemProperties = DieSaint;
@@ -1013,6 +1044,7 @@ namespace MysteryDice
             DieRusty.canBeGrabbedBeforeGameStart = true;
 
             RustyDie scriptRusty = DieRusty.spawnPrefab.AddComponent<RustyDie>();
+            scriptRusty.myType = DieBehaviour.DiceType.RUSTY;
             scriptRusty.grabbable = true;
             scriptRusty.grabbableToEnemies = true;
             scriptRusty.itemProperties = DieRusty;
@@ -1020,8 +1052,7 @@ namespace MysteryDice
             RegisteredDice.Add(DieRusty);
 
             ///
-
-
+            
             if (EmergencyDiePrice.Value >= 0)
             {
                 TerminalNode node = ScriptableObject.CreateInstance<TerminalNode>();
@@ -1157,9 +1188,13 @@ namespace MysteryDice
                         DefaultSpawnRates[(die.itemName, level.Key)],
                         "Sets how often this item spawns on this level. 0-10 is very rare, 10-25 is rare, 25+ is common. This is only from my observations. -Theronguard (These numbers are with no modded scrap from my observations - Slayer)"
                     );
-                    Items.RegisterScrap(die, rate.Value, level.Value);
+                    int rateToBe = rate.Value;
+                    if (aprilFoolsConfig.Value) rateToBe *= 2; 
+                    Items.RegisterScrap(die, rateToBe, level.Value);
                 }
-                Items.RegisterScrap(die, defaultRate.Value, Levels.LevelTypes.All);
+                var defaltRateToBe = defaultRate.Value;
+                if (aprilFoolsConfig.Value) defaltRateToBe *= 2; 
+                Items.RegisterScrap(die, defaltRateToBe, Levels.LevelTypes.All);
             }
         }
     }

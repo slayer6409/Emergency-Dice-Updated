@@ -1,6 +1,8 @@
-﻿using GameNetcodeStuff;
+﻿using System;
+using GameNetcodeStuff;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace MysteryDice.Effects
 {
@@ -22,7 +24,7 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.NeckSpinRandomPlayerServerRpc(GameNetworkManager.Instance.localPlayerController.actualClientId);
+            Networker.Instance.NeckSpinRandomPlayerServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController));
         }
 
         public static void SpinNeck()

@@ -30,15 +30,15 @@ namespace MysteryDice.Effects
     //
     //     public void Use()
     //     {
-    //         Networker.Instance.BecomeSmallServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
+    //         Networker.Instance.BecomeSmallServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController));
     //     }
     //
-    //     public static void fixSize(ulong userID) 
+    //     public static void fixSize(int userID) 
     //     {
     //         PlayerControllerB player = Misc.GetPlayerByUserID(userID);
     //         player.transform.localScale = Vector3.one; 
     //     }
-    //     public static void BecomeSmall(ulong userID)
+    //     public static void BecomeSmall(int userID)
     //     {
     //         PlayerControllerB player = Misc.GetPlayerByUserID(userID);
     //         if (player == null) return;

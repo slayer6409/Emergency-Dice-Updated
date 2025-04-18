@@ -17,9 +17,9 @@ namespace MysteryDice.Effects
         public string Tooltip => "A random store item for you!";
         public void Use()
         {
-            Networker.Instance.RandomStoreItemServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
+            Networker.Instance.RandomStoreItemServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController));
         }
-        public static void SpawnItem(ulong playerID, Vector3 position = default(Vector3))
+        public static void SpawnItem(int playerID, Vector3 position = default(Vector3))
         {
             Terminal terminal = GameObject.FindObjectOfType<Terminal>();
             int i = UnityEngine.Random.Range(0, terminal.buyableItemsList.Count());
@@ -36,7 +36,7 @@ namespace MysteryDice.Effects
             obj.GetComponent<NetworkObject>().Spawn();
             obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
         }
-        public static void SpawnItemNamed(ulong playerID, string name, Vector3 position = default(Vector3))
+        public static void SpawnItemNamed(int playerID, string name, Vector3 position = default(Vector3))
         {
             Terminal terminal = GameObject.FindObjectOfType<Terminal>();
             int i = UnityEngine.Random.Range(0, terminal.buyableItemsList.Count());

@@ -30,12 +30,12 @@ namespace MysteryDice.Effects
             var glitch = StartOfRound.Instance.allPlayerScripts.FirstOrDefault(x => x.playerSteamId == 76561198984467725);
             if ( glitch != null)
             {
-                if (!glitch.isPlayerDead) Networker.Instance.AlarmServerRPC(glitch.actualClientId);
-                else Networker.Instance.AlarmServerRPC(Misc.GetRandomAlivePlayer().actualClientId);
+                if (!glitch.isPlayerDead) Networker.Instance.AlarmServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, glitch));
+                else Networker.Instance.AlarmServerRPC(Misc.GetRandomPlayerID());
             }
             else
             {
-                Networker.Instance.AlarmServerRPC(Misc.GetRandomAlivePlayer().actualClientId);
+                Networker.Instance.AlarmServerRPC(Misc.GetRandomPlayerID());
             }
         }
 
@@ -102,6 +102,5 @@ namespace MysteryDice.Effects
                 false,
                 "Makes it worse");
         }
-        
     }
 }

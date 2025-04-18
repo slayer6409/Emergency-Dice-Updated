@@ -19,9 +19,9 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.TarotServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId);
+            Networker.Instance.TarotServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController));
         }
-        public static void TarotScrap(ulong userID)
+        public static void TarotScrap(int userID)
         {
             PlayerControllerB player = Misc.GetPlayerByUserID(userID);
 

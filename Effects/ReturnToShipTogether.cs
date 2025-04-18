@@ -18,30 +18,17 @@ namespace MysteryDice.Effects
         public static float DistanceToCaller = 8f;
         public void Use()
         {
-            TeleportToShipTogether(StartOfRound.Instance.localPlayerController.actualClientId);
-            //Networker.Instance.TeleportToShipTogetherServerRPC(StartOfRound.Instance.localPlayerController.actualClientId);
+            TeleportToShipTogether(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,StartOfRound.Instance.localPlayerController));
         }
 
-        public static void TeleportToShipTogether(ulong callerID)
+        public static void TeleportToShipTogether(int callerID)
         {
             PlayerControllerB caller = null;
-            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
-            {
-                PlayerControllerB player = playerPrefab.GetComponent<PlayerControllerB>();
-
-                if (player == null) continue;
-                if (!Misc.IsPlayerAliveAndControlled(player)) continue;
-
-                if (callerID == player.actualClientId)
-                {
-                    caller = player;
-                    break;
-                }
-            }
+            caller = StartOfRound.Instance.allPlayerScripts[callerID];
 
             if (caller == null) return;
 
-            List<ulong> playersToTeleport = new List<ulong>();
+            List<int> playersToTeleport = new List<int>();
 
             foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
             {
@@ -52,7 +39,7 @@ namespace MysteryDice.Effects
 
                 if (Vector3.Distance(player.transform.position, caller.transform.position) < DistanceToCaller)
                 {
-                    playersToTeleport.Add(player.actualClientId);
+                    playersToTeleport.Add(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player));
                 }
             }
             foreach(var ply in playersToTeleport)

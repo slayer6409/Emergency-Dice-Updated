@@ -131,6 +131,7 @@ namespace MysteryDice
             var DebugMenuClosesAfterBoolField = new BoolCheckBoxConfigItem(MysteryDice.DebugMenuClosesAfter, false);
             var BrutalBoolField = new BoolCheckBoxConfigItem(MysteryDice.BrutalMode, false);
             var BrutalChatBoolField = new BoolCheckBoxConfigItem(MysteryDice.BrutalChat, false);
+            var debugSpawnOnPlayerBoolField = new BoolCheckBoxConfigItem(MysteryDice.debugSpawnOnPlayer, false);
             var SuperBrutalBoolField = new BoolCheckBoxConfigItem(MysteryDice.SuperBrutalMode, false);
             var yippeeUseBoolField = new BoolCheckBoxConfigItem(MysteryDice.yippeeUse, false);
             
@@ -190,6 +191,7 @@ namespace MysteryDice
             LethalConfigManager.AddConfigItem(BlameGlitchMaxIntField);
             LethalConfigManager.AddConfigItem(debugMenuShowsAllBoolField);
             LethalConfigManager.AddConfigItem(DebugButtonBoolField);
+            LethalConfigManager.AddConfigItem(debugSpawnOnPlayerBoolField);
             LethalConfigManager.AddConfigItem(DebugChatEnumField);
             LethalConfigManager.AddConfigItem(TwitchEnabledBoolField);
             LethalConfigManager.AddConfigItem(GrabDebugBoolField);

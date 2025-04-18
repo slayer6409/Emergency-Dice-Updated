@@ -19,9 +19,9 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.GiveAllDiceServerRPC(GameNetworkManager.Instance.localPlayerController.actualClientId, UnityEngine.Random.Range(0, MysteryDice.RegisteredDice.Count()));
+            Networker.Instance.GiveAllDiceServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController), UnityEngine.Random.Range(0, MysteryDice.RegisteredDice.Count()));
         }
-        public static void DiceScrap(ulong userID)
+        public static void DiceScrap(int userID)
         {
             PlayerControllerB player = Misc.GetPlayerByUserID(userID);
 

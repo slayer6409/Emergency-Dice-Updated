@@ -16,18 +16,18 @@ namespace MysteryDice.Effects
         public string Tooltip => "Sending Everyone to Someone!";
         public void Use()
         {
-            TeleportEveryoneToSomeone(StartOfRound.Instance.localPlayerController.actualClientId);
+            TeleportEveryoneToSomeone(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,StartOfRound.Instance.localPlayerController));
         }
 
-        public static void TeleportEveryoneToSomeone(ulong callerID)
+        public static void TeleportEveryoneToSomeone(int callerID)
         {
-            List<ulong> playersToTeleport = new List<ulong>();
+            List<int> playersToTeleport = new List<int>();
             foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
             {
                 PlayerControllerB player = playerPrefab.GetComponent<PlayerControllerB>();
                 if (Misc.IsPlayerAliveAndControlled(player))
                 {
-                    playersToTeleport.Add(player.actualClientId);
+                    playersToTeleport.Add(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player));
                 }
             }
 
@@ -36,7 +36,7 @@ namespace MysteryDice.Effects
             PlayerControllerB randomPlayer = Misc.GetRandomAlivePlayer();
             if (randomPlayer == null) return;
 
-            ulong toTpTo = randomPlayer.actualClientId;
+            int toTpTo = Array.IndexOf(StartOfRound.Instance.allPlayerScripts,randomPlayer);
 
             foreach (var ply in playersToTeleport)
             {
@@ -47,30 +47,13 @@ namespace MysteryDice.Effects
             }
         }
 
-        public static void TeleportPlayerToPlayer(ulong who, ulong toWhom)
+        public static void TeleportPlayerToPlayer(int who, int toWhom)
         {
             PlayerControllerB player = null;
             PlayerControllerB player2 = null;
 
-            foreach (GameObject playerPrefab in StartOfRound.Instance.allPlayerObjects)
-            {
-                PlayerControllerB playerComp = playerPrefab.GetComponent<PlayerControllerB>();
-                if (playerComp == null) continue;
-
-                if (playerComp.actualClientId == who)
-                {
-                    player = playerComp;
-                }
-                else if (playerComp.actualClientId == toWhom)
-                {
-                    player2 = playerComp;
-                }
-
-                if (player != null && player2 != null)
-                {
-                    break;
-                }
-            }
+            player = StartOfRound.Instance.allPlayerScripts[who];
+            player2 = StartOfRound.Instance.allPlayerScripts[toWhom];
 
             if (player == null || player2 == null) return;
 
