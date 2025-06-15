@@ -42,10 +42,9 @@ namespace MysteryDice.Dice
                 if(diceRoll == 6)
                 {
                     if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: Saint 6");
-                    if(MysteryDice.NewDebugMenu.Value) DebugMenuStuff.ShowSelectEffectMenu();
-                    else SelectEffect.ShowSelectMenu(false,false,fromSaint:true);
+                    DebugMenuStuff.ShowSelectEffectMenu();
                     Misc.SafeTipMessage($"Rolled 6", "Choose an effect");
-                    var who2 = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
+                    var who2 = wasCurse ? "A Cursed Player" : wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
                     Networker.Instance.LogEffectsToOwnerServerRPC(who2, randomEffect.Name, diceRoll);
                     return;
                 }
@@ -53,7 +52,7 @@ namespace MysteryDice.Dice
                 if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
                 randomEffect.Use();
                 
-                var who = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
+                var who = wasCurse ? "A Cursed Player" : wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
                 Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
                 Misc.SafeTipMessage($"Rolled {diceRoll}", randomEffect.Tooltip);
             }

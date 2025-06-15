@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BombCollar;
+using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
 using static UnityEngine.EventSystems.EventTrigger;
@@ -348,7 +349,7 @@ namespace MysteryDice
             return trap;
             
         }
-        public static void spawnTrap(int max, string trapNames, bool inside, float positionOffsetRadius = 5f, bool moving = false)
+        public static void spawnTrap(int max, string trapNames, bool inside, float positionOffsetRadius = 5f, bool moving = false, bool useScale = false, Vector3 scale = default)
         {
             var traps = trapNames.Split(',');
             foreach (var trapName in traps)
@@ -406,8 +407,10 @@ namespace MysteryDice
 
                                     allPositions.Add(groundPosition);
                                     gameObject.transform.eulerAngles = new Vector3(gameObject.transform.eulerAngles.x, UnityEngine.Random.Range(0, 360), gameObject.transform.eulerAngles.z);
-                                    gameObject.GetComponent<NetworkObject>().Spawn(destroyWithScene: true);
+                                    var netobj = gameObject.GetComponent<NetworkObject>();
+                                    netobj.Spawn(destroyWithScene: true);
                                     spawnedMines++;
+                                    if(useScale) Networker.Instance.setSizeClientRPC(netobj.NetworkObjectId, scale, Quaternion.identity);
                                 }
                             }
                         }

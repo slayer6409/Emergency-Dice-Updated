@@ -2,6 +2,7 @@
 using MysteryDice.Dice;
 using MysteryDice.Effects;
 using System;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -31,6 +32,16 @@ namespace MysteryDice.Patches
             //     SizeDifferenceSwitcher.BecomeSmall(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController));
             //     Misc.SafeTipMessage("Size Switched", "Run the command again to toggle it back");
             // }
+            if (SelectEffect.isSpecial() || StartOfRound.Instance.IsHost)
+            {
+                
+                if (txt == "/listcurse")
+                {
+                    string cursedPlayers = string.Join(", ", Networker.Instance.cursedPeople
+                        .Select(id => Misc.getPlayerBySteamID(id)?.playerUsername ?? "Unknown"));
+                    Misc.SafeTipMessage("Current Cursed Players:", cursedPlayers);
+                }
+            }
 
             if (!MysteryDice.allowChatCommands.Value) return;
 
@@ -81,8 +92,8 @@ namespace MysteryDice.Patches
                     );
 
                     obj.GetComponent<GrabbableObject>().fallTime = 0f;
-                    obj.GetComponent<NetworkObject>().Spawn();
-                    obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+                    obj.GetComponent<NetworkObject>().Spawn(); 
+                    CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj.GetComponent<GrabbableObject>());
                     obj.GetComponent<GrabbableObject>().EnablePhysics(true);
                 }
             }

@@ -54,7 +54,7 @@ namespace MysteryDice.Effects
             NetworkObject netObj = obj.GetComponent<NetworkObject>();
             netObj.Spawn();
 
-            component.FallToGround(true);
+            //component.FallToGround(true);
             netObjs.Add(netObj);
 
             if (!obj.TryGetComponent<StunGrenadeItem>(out var newStunGrenadeItem))

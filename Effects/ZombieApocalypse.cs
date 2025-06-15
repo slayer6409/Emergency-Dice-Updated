@@ -13,7 +13,7 @@ namespace MysteryDice.Effects
         public string Tooltip => "Zombie apocalypse!";
         public void Use()
         {
-            int amountToSpawn = UnityEngine.Random.Range(8, 15);
+            int amountToSpawn = UnityEngine.Random.Range(8, 10);
             if(GetEnemies.Masked == null)
                 return;
 

@@ -8,6 +8,7 @@ using Unity.Netcode;
 using UnityEngine;
 using CodeRebirth.src.Content.Maps;
 using CodeRebirth.src.Util.Extensions;
+using UnityEngine.SceneManagement;
 using Random = System.Random;
 
 namespace MysteryDice.Effects
@@ -29,7 +30,7 @@ namespace MysteryDice.Effects
 
         public static void SpawnCratesOutside(int MinesToSpawn, float positionOffsetRadius = 5f)
         {
-            MapObjectHandler handler = new MapObjectHandler();
+            MapObjectHandler handler = CodeRebirth.src.Content.Maps.MapObjectHandler.Instance;
             GameObject metalCrate = handler.Crate.MetalCratePrefab;
             GameObject metalMimicCrate = handler.Crate.MimicMetalCratePrefab;
             GameObject woodenCrate = handler.Crate.WoodenCratePrefab;
@@ -64,19 +65,15 @@ namespace MysteryDice.Effects
                         GameObject spawnedCrate = GameObject.Instantiate(crate, spawnPoint, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
                         spawnedCrate.transform.up = hit.normal;
                         spawnedCrate.GetComponent<NetworkObject>().Spawn();
+                        SceneManager.MoveGameObjectToScene(spawnedCrate, RoundManager.Instance.mapPropsContainer.scene);
                         spawnedMines++;
                     }
-
-
-
                 }
-
-
             }
         }
         public static void SpawnCratesInside(int MinesToSpawn, float positionOffsetRadius = 5f)
         {
-            MapObjectHandler handler = new MapObjectHandler();
+            MapObjectHandler handler = CodeRebirth.src.Content.Maps.MapObjectHandler.Instance;
             GameObject metalCrate = handler.Crate.MetalCratePrefab;
             GameObject metalMimicCrate = handler.Crate.MimicMetalCratePrefab;
             GameObject woodenCrate = handler.Crate.WoodenCratePrefab;
@@ -109,14 +106,10 @@ namespace MysteryDice.Effects
                         GameObject spawnedCrate = GameObject.Instantiate(crate, spawnPoint, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
                         spawnedCrate.transform.up = hit.normal;
                         spawnedCrate.GetComponent<NetworkObject>().Spawn();
+                        SceneManager.MoveGameObjectToScene(spawnedCrate, RoundManager.Instance.mapPropsContainer.scene);
                         spawnedMines++;
                     }
-
-
-
                 }
-
-
             }
         }
 

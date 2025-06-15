@@ -28,11 +28,14 @@ namespace MysteryDice.Patches
         public static List<SpawnableOutsideObjectWithRarity> trees = new List<SpawnableOutsideObjectWithRarity>();
         private static readonly string teleporterTrapId = "TeleporterTrap";
         public static List<EnemyType> allEnemies = new List<EnemyType>();
+        public static List<SpawnableOutsideObject> allObjects = new List<SpawnableOutsideObject>();
         [HarmonyPatch("Start")]
         [HarmonyPostfix]
         private static void GetEnemy(Terminal __instance)
         {
             if(allEnemies.Count==0) allEnemies = Resources.FindObjectsOfTypeAll<EnemyType>().ToList();
+            if (allObjects.Count == 0)
+                allObjects = Resources.FindObjectsOfTypeAll<SpawnableOutsideObject>().ToList();
             if (MysteryDice.DebugLogging.Value)
             {
                 MysteryDice.CustomLogger.LogInfo("AllEnemies: " + allEnemies.Count);

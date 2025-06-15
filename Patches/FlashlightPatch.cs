@@ -15,10 +15,11 @@ namespace MysteryDice.Patches
         [HarmonyPostfix]
         public static void BrightFlashlightUpdate(FlashlightItem __instance)
         {
+            if(__instance.gameObject.name.Contains("Laser"))return;
             if(BrightFlashlight.IsEnabled)
             {
-                __instance.flashlightBulb.intensity *= 1.1f;
-                __instance.flashlightBulb.spotAngle = 140f;
+                __instance.flashlightBulb.intensity *= 1.2f;
+                __instance.flashlightBulb.spotAngle = 160f;
             } 
         }
     }

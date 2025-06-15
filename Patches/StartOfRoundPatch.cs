@@ -33,6 +33,7 @@ namespace MysteryDice.Patches
                 {
                     GameObject go = GameObject.Instantiate(MysteryDice.NetworkerPrefab,Vector3.zero,Quaternion.identity);
                     go.GetComponent<NetworkObject>().Spawn(false);
+                    
                 }
                 else
                 {
@@ -105,9 +106,33 @@ namespace MysteryDice.Patches
         public static void OnEndShipHasLeft(StartOfRound __instance)
         {
             ResetSettingsShared();
+            CursedStuff();
         }
 
-
+        public static void CursedStuff()
+        {
+            if (MysteryDice.cursedRandomly.Value && TimeOfDay.Instance.daysUntilDeadline == 0)
+            {
+                string cursedPlayers = string.Join(", ", Networker.Instance.cursedPeople
+                    .Select(id => Misc.getPlayerBySteamID(id)?.playerUsername ?? "Unknown"));
+                Misc.SafeTipMessage("Cursed Players last round:", cursedPlayers);
+            
+                if (StartOfRound.Instance.IsHost)
+                {
+                    Networker.Instance.cursedPeople.Clear();
+            
+                    foreach (var player in StartOfRound.Instance.allPlayerScripts)
+                    {
+                        if (Misc.IsPlayerReal(player) && Random.value < 0.25f)
+                        {
+                            Networker.Instance.cursedPeople.Add(player.playerSteamId);
+                        }
+                    }
+            
+                    Networker.Instance.SyncCursedPlayersClientRpc(Networker.Instance.cursedPeople.ToArray());
+                }
+            }
+        }
         public static void ResetSettingsShared()
         {
             FireExitPatch.AreFireExitsBlocked = false;
@@ -124,7 +149,8 @@ namespace MysteryDice.Patches
             HyperShake.ShakingData = null;
             EggBoots.eggBootsEnabled = false;
             Martyrdom.doMinesDrop = false;
-            
+
+          
             
             if (LeverShake.IsShaking)
             {

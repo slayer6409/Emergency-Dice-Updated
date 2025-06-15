@@ -17,8 +17,9 @@ namespace MysteryDice.Effects
             int maneatersToSpawn = UnityEngine.Random.Range(2, 7);
             if (GetEnemies.Maneater == null)
                 return;
-
+    
             Misc.SpawnEnemyForced(GetEnemies.Maneater, maneatersToSpawn, true);
         }
+
     }
 }

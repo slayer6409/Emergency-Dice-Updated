@@ -41,7 +41,6 @@ namespace MysteryDice.Effects
 			playerControllerB.thisController.enabled = true;
 			if (playerControllerB.isPlayerDead)
 			{
-				MonoBehaviour.print("player is dead, reviving them.");
 				playerControllerB.thisController.enabled = true;
 				playerControllerB.isPlayerDead = false;
 				playerControllerB.isPlayerControlled = true;

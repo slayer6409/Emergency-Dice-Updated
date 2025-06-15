@@ -12,6 +12,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using Color = UnityEngine.Color;
 using Image = UnityEngine.UI.Image;
+using Random = UnityEngine.Random;
 
 namespace MysteryDice.Effects;
 
@@ -25,6 +26,7 @@ public class DebugMenuStuff : MonoBehaviour
     public static bool full, complete, su, ReviveOpen;
     public static GameObject EffectMenu = null!;
 
+    public static TMP_InputField searchInput;
     public static List<Image> backgroundImages = new List<Image>();
     public static List<Image> accentImages = new List<Image>();
     public static List<Image> buttonImages = new List<Image>();
@@ -186,7 +188,7 @@ public class DebugMenuStuff : MonoBehaviour
         escAction.performed += ctx => CloseSelectMenu();
         escAction.Enable();
         var localPlayer = StartOfRound.Instance.localPlayerController;
-        TMP_InputField searchInput = EffectMenu.transform.Find("DebugMenu/Background/SearchField").GetComponent<TMP_InputField>();
+        searchInput = EffectMenu.transform.Find("DebugMenu/Background/SearchField").GetComponent<TMP_InputField>();
         searchInput.onValueChanged.AddListener(FilterItems);
         Button ClearButton = EffectMenu.transform.Find("DebugMenu/Background/ClearButton").GetComponent<Button>();
         ClearButton.onClick.AddListener(() =>
@@ -289,6 +291,7 @@ public class DebugMenuStuff : MonoBehaviour
         {
             clearMainViewport();
             ShowSelectMenu();
+            FilterItems(searchInput.text);
         });
         Button spawnMenuButton = EffectMenu.transform.Find("DebugMenu/Spawn Menu").GetComponent<Button>();
         TMP_Text spawnMenuText = EffectMenu.transform.Find("DebugMenu/Spawn Menu/Text (TMP)").GetComponent<TMP_Text>();
@@ -296,6 +299,7 @@ public class DebugMenuStuff : MonoBehaviour
         {
             clearSubViewport();
             spawnFunctions();
+            FilterItems(searchInput.text);
         });
         Button PlayerButton = EffectMenu.transform.Find("DebugMenu/Player Functions").GetComponent<Button>();
         TMP_Text PlayerText = EffectMenu.transform.Find("DebugMenu/Player Functions/Text (TMP)").GetComponent<TMP_Text>();
@@ -303,12 +307,14 @@ public class DebugMenuStuff : MonoBehaviour
         {
             clearSubViewport();
             playerFunctions();
+            FilterItems(searchInput.text);
         });
         Button SpecialButton = EffectMenu.transform.Find("DebugMenu/Special Functions").GetComponent<Button>();
         SpecialButton.onClick.AddListener(() =>
         {
             clearSubViewport();
             specialFunctions(SelectEffect.isSpecial());
+            FilterItems(searchInput.text);
         });
       
         
@@ -321,6 +327,7 @@ public class DebugMenuStuff : MonoBehaviour
             {
                 clearSubViewport();
                 AdminFunctions();
+                FilterItems(searchInput.text);
             });
         }
         else
@@ -332,6 +339,7 @@ public class DebugMenuStuff : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
 
     }
+    
     public static void ShowSelectEffectMenu()
     {   
         SetupColors();
@@ -460,17 +468,6 @@ public class DebugMenuStuff : MonoBehaviour
         FavoriteEffectManager.FavoriteData favoritesData = FavoriteEffectManager.LoadFavorites();
         List<string> favoriteEnemyNames = favoritesData.FavoriteEnemies;
         
-        // List<SpawnableEnemyWithRarity> allEnemies = StartOfRound.Instance.levels
-        //     .SelectMany(level => level.Enemies.Union(level.OutsideEnemies).Union(level.DaytimeEnemies))
-        //     .GroupBy(x => x.enemyType.enemyName)
-        //     .Select(g => g.First())
-        //     .ToList();
-        //
-        // allEnemies = allEnemies.OrderBy(e => favoriteEnemyNames.Contains(e.enemyType.enemyName) ? 0 : 1)
-        //     .ThenBy(e => e.enemyType.enemyName)
-        //     .ToList();
-        
-         
         var allEnemies = GetEnemies.allEnemies.GroupBy(x=>x.enemyName).Select(g=>g.First()).OrderBy(e => favoriteEnemyNames.Contains(e.enemyName) ? 0 : 1)
             .ThenBy(e => e.enemyName)
             .ToList();
@@ -522,7 +519,7 @@ public class DebugMenuStuff : MonoBehaviour
             rightClickHandler.full = full;
             rightClickHandler.complete = complete;
         }
-    } //
+    } 
 
     public static void spawnMiniEnemy()
     {
@@ -623,7 +620,7 @@ public class DebugMenuStuff : MonoBehaviour
 
                 if (StartOfRound.Instance.localPlayerController.isPlayerDead)
                 {
-                    Networker.Instance.SpawnFreebirdEnemyServerRPC(enemy.enemyName, StartOfRound.Instance.spectateCamera.transform.position);
+                    Networker.Instance.SpawnFreebirdEnemyServerRPC(enemy.enemyName,true, true, StartOfRound.Instance.spectateCamera.transform.position);
                 }
                 else
                 {
@@ -631,18 +628,13 @@ public class DebugMenuStuff : MonoBehaviour
                     
                     Vector3 position = Vector3.zero;
             
-                    EnemyVent randomVent = RM.allEnemyVents[UnityEngine.Random.Range(0, RM.allEnemyVents.Length)];
-            
-                    if (enemy.isOutsideEnemy || enemy.isDaytimeEnemy)
+                    bool usePos = false;
+                    if(MysteryDice.debugSpawnOnPlayer.Value)
                     {
-                        position = RM.outsideAINodes[UnityEngine.Random.Range(0, RM.outsideAINodes.Length)].transform.position;
+                        usePos = true;
+                        position = StartOfRound.Instance.localPlayerController.transform.position;
                     }
-                    else
-                    {
-                        position = randomVent.floorNode.position;
-                    }
-                    if(MysteryDice.debugSpawnOnPlayer.Value) position = StartOfRound.Instance.localPlayerController.transform.position;
-                    Networker.Instance.SpawnFreebirdEnemyServerRPC(enemy.enemyName, position);
+                    Networker.Instance.SpawnFreebirdEnemyServerRPC(enemy.enemyName, enemy.isDaytimeEnemy||enemy.isOutsideEnemy, usePos ,position);
                 }
             });
 
@@ -698,7 +690,6 @@ public class DebugMenuStuff : MonoBehaviour
     {
         FavoriteEffectManager.FavoriteData favoritesData = FavoriteEffectManager.LoadFavorites();
         List<string> favoriteTrapNames = favoritesData.FavoriteTraps;
-
        
         var allTraps = Misc.getAllTraps()
             .GroupBy(x => x.name)
@@ -740,7 +731,7 @@ public class DebugMenuStuff : MonoBehaviour
                 Networker.Instance.spawnTrapOnServerRPC(trap.name, 1,
                     StartOfRound.Instance.localPlayerController.isInsideFactory,
                     Array.IndexOf(StartOfRound.Instance.allPlayerScripts, StartOfRound.Instance.localPlayerController),
-                    StartOfRound.Instance.localPlayerController.isPlayerDead,
+                    StartOfRound.Instance.localPlayerController.isPlayerDead||StartOfRound.Instance.inShipPhase,
                     spawnPosition);
                 Misc.SafeTipMessage($"Spawned {trap.name}", $"Spawned at {spawnPosition}");
             });
@@ -851,7 +842,6 @@ public class DebugMenuStuff : MonoBehaviour
                 Misc.SafeTipMessage($"Spawned {scrap.name}", $"Spawned at {spawnPosition}");
             });
 
-            // ✅ Right-click handler for favoriting
             RightClickHandler2 rightClickHandler = effectObj.AddComponent<RightClickHandler2>();
             rightClickHandler.effectName = scrap.itemName;
             rightClickHandler.category = "FavoriteItems";
@@ -859,42 +849,92 @@ public class DebugMenuStuff : MonoBehaviour
             rightClickHandler.complete = complete;
         }
     } 
+    
+    
+    public static void AdAnyItem()
+    {
+        FavoriteEffectManager.FavoriteData favoritesData = FavoriteEffectManager.LoadFavorites();
+        List<string> favoriteItemsNames = favoritesData.FavoriteItems;
+
+        var allScraps = StartOfRound.Instance.allItemsList.itemsList.ToList().OrderBy(s => favoriteItemsNames.Contains(s.itemName) ? 0 : 1)
+            .ThenBy(s => s.itemName)
+            .ToList();
+        foreach (Item scrap in allScraps)
+        {
+            
+            GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, mainScrollContent);
+            TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
+
+            bool isFavorite = favoriteItemsNames.Contains(scrap.itemName);
+            string favoriteMarker = isFavorite ? "*" : "";
+            buttonText.text = $"{favoriteMarker} {scrap.itemName}";
+            buttonText.color = isFavorite ? FavoriteTextColor : TextColor;
+
+            Button button = effectObj.GetComponent<Button>();
+            button.onClick.AddListener(() =>
+            {
+                CloseSelectMenu();
+                Networker.Instance.AdServerRPC(true, scrap.itemName, ManyAds.getTopText(), ManyAds.getBottomText());
+            });
+
+            RightClickHandler2 rightClickHandler = effectObj.AddComponent<RightClickHandler2>();
+            rightClickHandler.effectName = scrap.itemName;
+            rightClickHandler.category = "FavoriteAdItems";
+            rightClickHandler.full = full;
+            rightClickHandler.complete = complete;
+        }
+    } 
+    
+    public static void AdUnlockable()
+    {
+        Transform scrollContent = EffectMenu.transform.Find("DebugMenu/Background/Scroll View/Viewport/Content");
+
+        foreach (var item in StartOfRound.Instance.unlockablesList.unlockables)
+        {
+            if(item.prefabObject==null)continue;
+            
+            GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
+            TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
+
+            buttonText.text = item.unlockableName;
+            Button button = effectObj.GetComponent<Button>();
+            button.onClick.AddListener(() =>
+            {
+                Networker.Instance.AdServerRPC(false, item.unlockableName, ManyAds.getTopText(), ManyAds.getBottomText());
+                CloseSelectMenu();
+            });
+        }
+    }
 
     public static void spawnWorldObject()
     {
-        List<SpawnableOutsideObjectWithRarity> allObjects = new List<SpawnableOutsideObjectWithRarity>();
-
-        foreach (var level in StartOfRound.Instance.levels)
-        {
-            allObjects = allObjects
-                .Union(level.spawnableOutsideObjects)
-                .ToList();
-        }
-
-        allObjects = allObjects
-            .GroupBy(x => x.spawnableObject.name)
+        
+        List<SpawnableOutsideObject> allObjects = new List<SpawnableOutsideObject>();
+        allObjects = GetEnemies.allObjects.ToList();
+        allObjects = allObjects.GroupBy(x => x.name)
             .Select(g => g.First())
-            .OrderBy(x => x.spawnableObject.name)
+            .OrderBy(x => x.name)
             .ToList();
-
+        
         foreach (var scrap in allObjects)
         {
             GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, mainScrollContent);
             TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
-            buttonText.text = $"{scrap.spawnableObject.name}";
+            buttonText.text = $"{scrap.name}";
 
             Button button = effectObj.GetComponent<Button>();
             button.onClick.AddListener(() =>
             {
                 CloseSelectMenu();
                 Networker.Instance.SpawnObjectServerRPC(
-                    Array.IndexOf(StartOfRound.Instance.allPlayerScripts, GameNetworkManager.Instance.localPlayerController), 1, scrap.spawnableObject.name);
+                    Array.IndexOf(StartOfRound.Instance.allPlayerScripts, GameNetworkManager.Instance.localPlayerController), 1, scrap.name);
                 string txtToSay = "";
-                txtToSay = $"Spawned {scrap.spawnableObject.name}";
+                txtToSay = $"Spawned {scrap.name}";
                 Misc.SafeTipMessage($"Object Spawned", txtToSay);
             });
         }
     } 
+   
     public static void spawnShopItems()
     {
         FavoriteEffectManager.FavoriteData favoritesData = FavoriteEffectManager.LoadFavorites();
@@ -982,6 +1022,7 @@ public class DebugMenuStuff : MonoBehaviour
         {
             clearMainViewport();
             spawnEnemy();
+            FilterItems(searchInput.text);
         });
         GameObject effectObj7 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
         TMP_Text buttonText7 = effectObj7.transform.GetChild(0).GetComponent<TMP_Text>();
@@ -992,29 +1033,32 @@ public class DebugMenuStuff : MonoBehaviour
         {
             clearMainViewport();
             spawnAnyItem();
+            FilterItems(searchInput.text);
         });
         
-        GameObject effectObj3 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
-        TMP_Text buttonText3 = effectObj3.transform.GetChild(0).GetComponent<TMP_Text>();
-        buttonText3.text = $"Spawn Scrap";
+        // GameObject effectObj3 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
+        // TMP_Text buttonText3 = effectObj3.transform.GetChild(0).GetComponent<TMP_Text>();
+        // buttonText3.text = $"Spawn Scrap";
+        //
+        // Button button3 = effectObj3.GetComponent<Button>();
+        // button3.onClick.AddListener(() =>
+        // {
+        //     clearMainViewport();
+        //     spawnScrap();
+        //     FilterItems(searchInput.text);
+        // });
 
-        Button button3 = effectObj3.GetComponent<Button>();
-        button3.onClick.AddListener(() =>
-        {
-            clearMainViewport();
-            spawnScrap();
-        });
-
-        GameObject effectObj5 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
-        TMP_Text buttonText5 = effectObj5.transform.GetChild(0).GetComponent<TMP_Text>();
-        buttonText5.text = $"Spawn Shop Items";
-
-        Button button5 = effectObj5.GetComponent<Button>();
-        button5.onClick.AddListener(() =>
-        {
-            clearMainViewport();
-            spawnShopItems();
-        });
+        // GameObject effectObj5 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
+        // TMP_Text buttonText5 = effectObj5.transform.GetChild(0).GetComponent<TMP_Text>();
+        // buttonText5.text = $"Spawn Shop Items";
+        //
+        // Button button5 = effectObj5.GetComponent<Button>();
+        // button5.onClick.AddListener(() =>
+        // {
+        //     clearMainViewport();
+        //     spawnShopItems();
+        //     FilterItems(searchInput.text);
+        // });
 
         GameObject effectObj4 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
         TMP_Text buttonText4 = effectObj4.transform.GetChild(0).GetComponent<TMP_Text>();
@@ -1025,6 +1069,7 @@ public class DebugMenuStuff : MonoBehaviour
         {
             clearMainViewport();
             spawnTrap();
+            FilterItems(searchInput.text);
         });
 
         if (SelectEffect.isSpecial() || StartOfRound.Instance.localPlayerController.IsHost)
@@ -1038,6 +1083,7 @@ public class DebugMenuStuff : MonoBehaviour
             {
                 clearMainViewport();
                 spawnWorldObject();
+                FilterItems(searchInput.text);
             });
             
             GameObject effectObj9 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
@@ -1049,9 +1095,10 @@ public class DebugMenuStuff : MonoBehaviour
             {
                 clearMainViewport();
                 spawnMiniEnemy();
+                FilterItems(searchInput.text);
             });
             
-            if (StartOfRound.Instance.localPlayerController.playerSteamId == MysteryDice.slayerSteamID || StartOfRound.Instance.localPlayerController.IsHost)
+            if (StartOfRound.Instance.localPlayerController.playerSteamId == MysteryDice.slayerSteamID || StartOfRound.Instance.localPlayerController.IsHost || GameNetworkManager.Instance.disableSteam)
             {
                 GameObject effectObj8 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
                 TMP_Text buttonText8 = effectObj8.transform.GetChild(0).GetComponent<TMP_Text>();
@@ -1062,6 +1109,7 @@ public class DebugMenuStuff : MonoBehaviour
                 {
                     clearMainViewport();
                     spawnFreebirdEnemy();
+                    FilterItems(searchInput.text);
                 });
                 GameObject effectObj10 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
                 TMP_Text buttonText10 = effectObj10.transform.GetChild(0).GetComponent<TMP_Text>();
@@ -1072,6 +1120,7 @@ public class DebugMenuStuff : MonoBehaviour
                 {
                     clearMainViewport();
                     spawnFreebirdTrap();
+                    FilterItems(searchInput.text);
                 });
             }
         }
@@ -1090,7 +1139,22 @@ public class DebugMenuStuff : MonoBehaviour
             {
                 clearMainViewport();
                 ShowSoundMenu();
+                FilterItems(searchInput.text);
             });
+            
+            GameObject effectObj9 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
+            TMP_Text buttonText9 = effectObj9.transform.GetChild(0).GetComponent<TMP_Text>();
+            buttonText9.text = $"Jumpscare";
+
+            Button button9 = effectObj9.GetComponent<Button>();
+            button9.onClick.AddListener(() =>
+            {
+                clearMainViewport();
+                ShowJumpscareMenu();
+                FilterItems(searchInput.text);
+            });
+            
+
         }
 
         if (StartOfRound.Instance.localPlayerController.IsHost || special)
@@ -1104,10 +1168,37 @@ public class DebugMenuStuff : MonoBehaviour
             {
                 clearMainViewport();
                 UnlockSomething();
+                FilterItems(searchInput.text);
             });
             
-            OnSpecialFunctionsAdded?.Invoke(subScrollContent);
+            
         }
+        
+        
+        GameObject effectObj10 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
+        TMP_Text buttonText10 = effectObj10.transform.GetChild(0).GetComponent<TMP_Text>();
+        buttonText10.text = $"AdItem";
+
+        Button button10 = effectObj10.GetComponent<Button>();
+        button10.onClick.AddListener(() =>
+        {
+            clearMainViewport();
+            AdAnyItem();
+            FilterItems(searchInput.text);
+        });
+            
+        GameObject effectObj11 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
+        TMP_Text buttonText11 = effectObj11.transform.GetChild(0).GetComponent<TMP_Text>();
+        buttonText11.text = $"Ad Unlockable";
+
+        Button button11 = effectObj11.GetComponent<Button>();
+        button11.onClick.AddListener(() =>
+        {
+            clearMainViewport();
+            AdUnlockable();
+            FilterItems(searchInput.text);
+        });
+
         
         GameObject effectObj2 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
         TMP_Text buttonText2 = effectObj2.transform.GetChild(0).GetComponent<TMP_Text>();
@@ -1118,6 +1209,7 @@ public class DebugMenuStuff : MonoBehaviour
         {
             clearMainViewport();
             poiTeleports();
+            FilterItems(searchInput.text);
         });
         
         GameObject effectObj3 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
@@ -1129,7 +1221,10 @@ public class DebugMenuStuff : MonoBehaviour
         {
             clearMainViewport();
             enemyTeleports();
+            FilterItems(searchInput.text);
         });
+        
+        OnSpecialFunctionsAdded?.Invoke(subScrollContent);
     }
     public static void poiTeleports()
     {
@@ -1196,6 +1291,7 @@ public class DebugMenuStuff : MonoBehaviour
         {
             clearMainViewport();
             grantAdmin(true);
+            FilterItems(searchInput.text);
         });
 
         GameObject effectObj9 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, scrollContent);
@@ -1207,6 +1303,7 @@ public class DebugMenuStuff : MonoBehaviour
         {
             clearMainViewport();
             grantAdmin(false);
+            FilterItems(searchInput.text);
         });
     }
     public static void playerFunctions()
@@ -1222,6 +1319,7 @@ public class DebugMenuStuff : MonoBehaviour
         {
             clearMainViewport();
             RevivePlayer();
+            FilterItems(searchInput.text);
         });
         GameObject effectObj2 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, scrollContent);
         TMP_Text buttonText2 = effectObj2.transform.GetChild(0).GetComponent<TMP_Text>();
@@ -1232,6 +1330,7 @@ public class DebugMenuStuff : MonoBehaviour
         {
             clearMainViewport();
             TeleportPlayer();
+            FilterItems(searchInput.text);
         });
 
         GameObject effectObj3 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, scrollContent);
@@ -1243,6 +1342,7 @@ public class DebugMenuStuff : MonoBehaviour
         {
             clearMainViewport();
             TeleportPlayer(bring: true);
+            FilterItems(searchInput.text);
         });
 
         if (SelectEffect.isSpecial())
@@ -1256,6 +1356,7 @@ public class DebugMenuStuff : MonoBehaviour
             {
                 clearMainViewport();
                 ForceSuitPlayerSelector();
+                FilterItems(searchInput.text);
             });
         }
         OnPlayerFunctionsAdded?.Invoke(subScrollContent);
@@ -1365,6 +1466,7 @@ public class DebugMenuStuff : MonoBehaviour
             {
                 clearMainViewport();
                 ForceSuitSuitSelector(player);
+                FilterItems(searchInput.text);
             });
         }
     }
@@ -1416,6 +1518,7 @@ public class DebugMenuStuff : MonoBehaviour
                 .ToList();
             clearMainViewport();
             ForceSuitSuitSelector(players);
+            FilterItems(searchInput.text);
         });
     }
 
@@ -1423,6 +1526,7 @@ public class DebugMenuStuff : MonoBehaviour
     {
         clearMainViewport();
         RevivePlayer();
+        FilterItems(searchInput.text);
     }
 
     public static void RevivePlayer()
@@ -1457,6 +1561,7 @@ public class DebugMenuStuff : MonoBehaviour
                 clearMainViewport();
                 CloseSelectMenu();
                 RevivePlayer();
+                FilterItems(searchInput.text);
                 Networker.Instance.RevivePlayerServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player),
                     StartOfRound.Instance.middleOfShipNode.position);
                 string txtToSay = "";
@@ -1574,6 +1679,31 @@ public class DebugMenuStuff : MonoBehaviour
                 Networker.Instance.PlaySoundServerRPC(entry.Key);
             });
         }
+    }  
+    public static void ShowJumpscareMenu()
+    {
+        Transform scrollContent = EffectMenu.transform.Find("DebugMenu/Background/Scroll View/Viewport/Content");
+
+        for (int i = 0; i < MysteryDice.JumpscareScript.scarePairs.Count; i++)
+        {
+            var entry = MysteryDice.JumpscareScript.scarePairs[i];
+
+            GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
+            TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
+
+            buttonText.text = entry.Key != null ? entry.Key.name : "(null)";
+            buttonText.outlineWidth = 1;
+
+            buttonText.fontSize = buttonText.text.Length > 20 ? 12 : 16;
+
+            int index = i;
+            Button button = effectObj.GetComponent<Button>();
+            button.onClick.AddListener(() =>
+            {
+                CloseSelectMenu();
+                Networker.Instance.JumpscareAllServerRPC(index);
+            });
+        }
     } 
     
     public static void ToggleFavorite(IEffect effect)
@@ -1673,6 +1803,9 @@ public class DebugMenuStuff : MonoBehaviour
                 case "FavoriteItems":
                     ToggleFavorite(effectName, favorites.FavoriteItems);
                     break;
+                case "FavoriteAdItems":
+                    ToggleFavorite(effectName, favorites.FavoriteItems);
+                    break;
             }
 
             FavoriteEffectManager.SaveFavorites(favorites);
@@ -1697,6 +1830,9 @@ public class DebugMenuStuff : MonoBehaviour
                     spawnShopItems();
                     break;
                 case "FavoriteItems":
+                    spawnAnyItem();
+                    break;
+                case "FavoriteAdItems":
                     spawnAnyItem();
                     break;
             }

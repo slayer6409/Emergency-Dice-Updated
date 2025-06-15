@@ -72,7 +72,7 @@ namespace MysteryDice.Effects
                 obj.GetComponent<GrabbableObject>().fallTime = 0f;
                 var netob = obj.GetComponent<NetworkObject>();
                 netob.Spawn();
-                obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+                CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj.GetComponent<GrabbableObject>());
                 obj.GetComponent<GrabbableObject>().EnablePhysics(true);
                 int ammoAmount = UnityEngine.Random.Range(2, 6);
                 for (int i = 0; i < ammoAmount; i++)
@@ -85,8 +85,7 @@ namespace MysteryDice.Effects
 
                     obj2.GetComponent<GrabbableObject>().fallTime = 0f;
                     NetworkObject netob2 = obj2.GetComponent<NetworkObject>();
-                    netob2.Spawn();
-                    obj2.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+                    netob2.Spawn();CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj2.GetComponent<GrabbableObject>());
                     obj.GetComponent<GrabbableObject>().EnablePhysics(true);
                 }
             }

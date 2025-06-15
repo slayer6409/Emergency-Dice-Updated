@@ -46,7 +46,7 @@ namespace MysteryDice.Dice
                 if(MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Rolling Effect: "+ randomEffect.Name);
                 randomEffect.Use();
             
-                var who = wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
+                var who = wasCurse ? "A Cursed Player" : wasEnemy ? "An Enemy" : wasGhost ? "A ghost" : PlayerUser.playerUsername;
                 Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
                 if (isOutside && !MysteryDice.useDiceOutside.Value)
                 {

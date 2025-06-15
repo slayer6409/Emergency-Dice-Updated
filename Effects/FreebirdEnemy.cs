@@ -1,6 +1,7 @@
 ﻿using MysteryDice.Patches;
 using System;
 using System.Collections;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
@@ -84,12 +85,12 @@ namespace MysteryDice.Effects
         }
     }
     
-
     public class freebirdMaker : MonoBehaviour
     {
         public NavMeshAgent agent;
         private AudioSource audiosrc;
         private EnemyAI _enemyAI;
+        public bool isEvil = false;
 
         public void Start()
         {
@@ -135,12 +136,26 @@ namespace MysteryDice.Effects
             agent.acceleration = 999;
             agent.angularSpeed = 360;
             agent.speed = 20;
+            if (isEvil)
+            {
+                var target = Misc.GetRandomAlivePlayer();
+                if (target != null && agent.isOnNavMesh)
+                {
+                    Debug.Log($"Setting destination to {target.name} at {target.transform.position}");
+                    agent.destination = target.transform.position;
+                }
+                else
+                {
+                    Debug.LogWarning("No valid target or agent not on NavMesh.");
+                }
+            }
         }
     }
     public class freebirdTrapMaker : MonoBehaviour
     {
         public NavMeshAgent agent;
         private AudioSource audiosrc;
+        public bool isEvil = false;
         public void Start()
         {
             if (agent == null) agent = gameObject.GetComponent<NavMeshAgent>();
@@ -153,7 +168,15 @@ namespace MysteryDice.Effects
             audiosrc.rolloffMode = AudioRolloffMode.Custom;
             audiosrc.spatialBlend = 1;
             audiosrc.dopplerLevel = 0;
-            audiosrc.clip = MysteryDice.LoadedAssets2.LoadAsset<AudioClip>("Freebird");
+            if (MysteryDice.CopyrightFree.Value)
+            {
+                audiosrc.volume -= 0.08f;
+                audiosrc.clip = MysteryDice.LoadedAssets2.LoadAsset<AudioClip>("SpazzmaticaPolka");
+            }
+            else
+            {
+                audiosrc.clip = MysteryDice.LoadedAssets2.LoadAsset<AudioClip>("Freebird");
+            }
             audiosrc.Play();
         }
 
@@ -163,6 +186,11 @@ namespace MysteryDice.Effects
             agent.acceleration = 999;
             agent.angularSpeed = 360;
             agent.speed = 20;
+            if (isEvil)
+            {
+                agent.destination = Misc.GetRandomAlivePlayer().transform.position;
+            }
+            
         }
     }
 }

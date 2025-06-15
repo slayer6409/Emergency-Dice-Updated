@@ -120,7 +120,7 @@ namespace MysteryDice
             var DebugButtonBoolField = new BoolCheckBoxConfigItem(MysteryDice.debugButton, true);
             //var DisableSizeBasedBoolField = new BoolCheckBoxConfigItem(MysteryDice.DisableSizeBased, true);
             var BetterDebugMenuBoolField = new BoolCheckBoxConfigItem(MysteryDice.BetterDebugMenu, false);
-            var NewDebugMenuBoolField = new BoolCheckBoxConfigItem(MysteryDice.NewDebugMenu, false);
+            //var NewDebugMenuBoolField = new BoolCheckBoxConfigItem(MysteryDice.NewDebugMenu, false);
             var BaldBoolField = new BoolCheckBoxConfigItem(MysteryDice.Bald, false);
             var LockUIBoolField = new BoolCheckBoxConfigItem(MysteryDice.LockDebugUI, false);
             var BlameGlitchMeteorsBoolField = new BoolCheckBoxConfigItem(BlameGlitch.GlitchedMeteorShower, false);
@@ -128,6 +128,7 @@ namespace MysteryDice
             var AlarmHorribleBoolField = new BoolCheckBoxConfigItem(AlarmCurse.HorribleVersion, false);
             var doDiceExplosionBoolField = new BoolCheckBoxConfigItem(MysteryDice.doDiceExplosion, false);
             var LoversStartBoolField = new BoolCheckBoxConfigItem(MysteryDice.LoversOnStart, false);
+            var insideJokeBoolField = new BoolCheckBoxConfigItem(MysteryDice.insideJoke, false);
             var DebugMenuClosesAfterBoolField = new BoolCheckBoxConfigItem(MysteryDice.DebugMenuClosesAfter, false);
             var BrutalBoolField = new BoolCheckBoxConfigItem(MysteryDice.BrutalMode, false);
             var BrutalChatBoolField = new BoolCheckBoxConfigItem(MysteryDice.BrutalChat, false);
@@ -144,7 +145,7 @@ namespace MysteryDice
             //var adminKeybindStringField = new TextInputFieldConfigItem(MysteryDice.adminKeybind, false);
 
             LethalConfigManager.AddConfigItem(debugDiceBoolField);
-            LethalConfigManager.AddConfigItem(NewDebugMenuBoolField);
+            //LethalConfigManager.AddConfigItem(NewDebugMenuBoolField);
             //LethalConfigManager.AddConfigItem(adminKeybindStringField);
             LethalConfigManager.AddConfigItem(useDiceOutsideBoolField);
             LethalConfigManager.AddConfigItem(BrutalBoolField);
@@ -160,6 +161,7 @@ namespace MysteryDice
             LethalConfigManager.AddConfigItem(bgColorHexField);
             LethalConfigManager.AddConfigItem(DebugMenuBackgroundAlphaSlider);
             LethalConfigManager.AddConfigItem(accColorHexField);
+            LethalConfigManager.AddConfigItem(insideJokeBoolField);
             LethalConfigManager.AddConfigItem(DebugMenuAccentAlphaSlider);
             LethalConfigManager.AddConfigItem(buttonColorHexField);
             LethalConfigManager.AddConfigItem(DebugButtonAlphaSlider);

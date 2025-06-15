@@ -1,3 +1,58 @@
+-	**1.11.4**
+    - Quality of life things with the debug menu
+    - Balanced some events out
+    - Made bright flashlights not effect Laser Pointers 
+    - Possibly Fixed Oops All *  
+
+-	**1.11.3**
+    - Fixed a few issues with clients rolling certain events
+
+-	**1.11.2**
+    - Optimized a few of the dice Thanks to Rodrigo (If I can get the shader for some of the others I will do those too) 
+    - Fixed the Icons for Steve Le Dice and The Code Rebirth Dice
+    - Accidentally didn't update the version number on the changelog (woops)
+
+-	**1.11.1**
+    - Accidentally fucked up the ads a little bit 
+
+-	**1.11.0**
+    - Steve, le (Poiiiiiiiiiiiiiiiiiiiiiiiii)
+    - Le poisson Steve (Poisson Steve)
+    - Il est orannnnnnnnnnnnnnge (Orange, ooh-ooh)
+    - Il a des bras, 
+    - et des jambes
+    - Le poisson Steve
+    - ~~~~~~~~~~~~~~~~~~
+    - Too Many Emotes Compat
+    - Fixes
+    - Mad Science has Occured >:D (Sorry)
+    - >:D 
+    - Maybe I don't know how version numbers are supposed to go D:
+
+-	**1.10.1**
+    - Fixed Jumpscare sometimes being null (I think)
+    - Fixed other issues
+    - Ads
+    - ???
+
+-	**1.10.0**
+    - Fixed Crates from Code Rebirth Spawning
+    - Fixed some other issues
+    - Added curses (maybe)
+    - Added tree
+    - Fixed Hard Dependency on Cull Factory
+    - Maybe Poltergeist fixes? 
+    - Tiny Things
+    - Some Berthas now properly Despawn upon orbiting 
+    - >:D 
+
+-	**1.9.27**
+    - Recompiled for v70
+
+-	**1.9.26**
+    - Fixed Cull Factory Compat
+    - Poltergeist compat is still a work in progress
+
 -	**1.9.25**
     - Another small bug fix
 

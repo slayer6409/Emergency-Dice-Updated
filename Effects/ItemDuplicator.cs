@@ -50,9 +50,9 @@ namespace MysteryDice.Effects
 
                 NetworkObject netObj = obj.GetComponent<NetworkObject>();
                 netObj.Spawn();
-                obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+                CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj.GetComponent<GrabbableObject>());
                 obj.GetComponent<GrabbableObject>().EnablePhysics(true);
-                component.FallToGround(true);
+                //component.FallToGround(true);
                 netObjs.Add(netObj);
             }
             RM.StartCoroutine(ScrapJackpot.DelayedSync(RM, netObjs.ToArray(), scrapValues.ToArray(), scrapWeights.ToArray()));

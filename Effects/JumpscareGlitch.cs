@@ -3,8 +3,10 @@ using LethalLib.Modules;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MysteryDice.Visual;
 using Unity.Netcode;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace MysteryDice.Effects
 {
@@ -19,7 +21,16 @@ namespace MysteryDice.Effects
 
         public void Use()
         {
-            Networker.Instance.StartCoroutine(Networker.Instance.DelayJumpscare());
+            if (MysteryDice.JumpscareScript != null)
+            {
+                int index = MysteryDice.JumpscareScript.getIntNonScary();
+                if (!MysteryDice.pussyMode.Value) index = MysteryDice.JumpscareScript.getIntScary();
+                Networker.Instance.StartCoroutine(Networker.Instance.DelayJumpscare(index));
+            }
+            else
+            {
+                MysteryDice.CustomLogger.LogError("JumpscareScript is null when trying to use a scare index!");
+            }
         }
     }
 }

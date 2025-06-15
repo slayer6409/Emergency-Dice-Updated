@@ -3,7 +3,7 @@ using MysteryDice.Effects;
 
 namespace MysteryDice.Dice
 {
-    public class SurfacedDie : DieBehaviour
+    public class CodeRebirthDie : DieBehaviour
     {
         public override void SetupRollToEffectMapping()
         {
@@ -18,7 +18,7 @@ namespace MysteryDice.Dice
         // ReSharper disable Unity.PerformanceAnalysis
         public override void Roll()
         {
-            if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Roll Surfaced");
+            if (MysteryDice.DebugLogging.Value) MysteryDice.CustomLogger.LogDebug("Roll Code Rebirth");
             try
             {
                 var isOutside = !GameNetworkManager.Instance.localPlayerController.isInsideFactory;
@@ -27,7 +27,7 @@ namespace MysteryDice.Dice
 
                 if (isOutside && !MysteryDice.useDiceOutside.Value) diceRoll = 1;
 
-                var randomEffect = GetRandomEffect(diceRoll, MysteryDice.SurfacedPresent? SurfacedEffects : Effects);
+                var randomEffect = GetRandomEffect(diceRoll, MysteryDice.CodeRebirthPresent? CodeRebirthEffects : Effects);
 
                 if (randomEffect == null) return;
 

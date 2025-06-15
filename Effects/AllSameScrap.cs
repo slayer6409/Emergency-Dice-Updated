@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using MysteryDice.Patches;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -121,9 +122,9 @@ namespace MysteryDice.Effects
 
                         NetworkObject netObj = obj.GetComponent<NetworkObject>();
                         netObj.Spawn();
-                        obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+                        CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj.GetComponent<GrabbableObject>());
                         obj.GetComponent<GrabbableObject>().EnablePhysics(true);
-                        component.FallToGround(true);
+                        //component.FallToGround(true);
                         netObjs.Add(netObj);
 
                     }
@@ -166,12 +167,19 @@ namespace MysteryDice.Effects
                     if (usePos) PlayerPos = pos;
                     Vector3 targetPosition = PlayerPos + new Vector3(0, 0.1f, 0);
                     RaycastHit hit;
-                    if (Physics.Raycast(targetPosition + Vector3.up, Vector3.down, out hit))
+                    if (Physics.Raycast(
+                            targetPosition + Vector3.up * 1.5f,
+                            Vector3.down,
+                            out var hitInfo,
+                            50f,
+                            StartOfRound.Instance.collidersAndRoomMaskAndDefault,
+                            QueryTriggerInteraction.Ignore))
                     {
-                        targetPosition = hit.point;
+                        targetPosition = hitInfo.point;
                     }
                     obj.transform.position = targetPosition;
                     GrabbableObject grabbableObject = obj.GetComponent<GrabbableObject>();
+                    CullFactorySoftCompat.RefreshGrabbableObjectPosition(grabbableObject);
                     if (grabbableObject != null)
                     {
                         grabbableObject.targetFloorPosition = targetPosition;
@@ -184,25 +192,27 @@ namespace MysteryDice.Effects
         {
             try
             {
-                List<SpawnableOutsideObjectWithRarity> allObjects = new List<SpawnableOutsideObjectWithRarity>();
-
-                foreach (var level in StartOfRound.Instance.levels)
-                {
-                    allObjects = allObjects
-                        .Union(level.spawnableOutsideObjects)
-                        .ToList();
-                }
-                allObjects = allObjects
-                .GroupBy(x => x.spawnableObject.name)
-                .Select(g => g.First())
-                .OrderBy(x => x.spawnableObject.name)
-                .ToList();
+                //List<SpawnableOutsideObjectWithRarity> allObjects = new List<SpawnableOutsideObjectWithRarity>();
+                // foreach (var level in StartOfRound.Instance.levels)
+                // {
+                //     allObjects = allObjects
+                //         .Union(level.spawnableOutsideObjects)
+                //         .ToList();
+                // }
+                // allObjects = allObjects
+                // .GroupBy(x => x.spawnableObject.name)
+                // .Select(g => g.First())
+                // .OrderBy(x => x.spawnableObject.name)
+                // .ToList();
+                List<SpawnableOutsideObject> allObjects = new List<SpawnableOutsideObject>();
+                allObjects = GetEnemies.allObjects.ToList();
+                
                 PlayerControllerB player = Misc.GetPlayerByUserID(userID);
                 Vector3 pos = player.transform.position;
-                var ObjectToSpawn = allObjects.Where(x => x.spawnableObject.name == name).First();
+                var ObjectToSpawn = allObjects.Where(x => x.name == name).First();
 
                 GameObject gameObject = UnityEngine.Object.Instantiate(
-                    ObjectToSpawn.spawnableObject.prefabToSpawn,
+                    ObjectToSpawn.prefabToSpawn,
                     pos,
                     Quaternion.identity,
                     RoundManager.Instance.mapPropsContainer.transform);

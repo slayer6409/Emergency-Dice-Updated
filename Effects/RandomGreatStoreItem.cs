@@ -35,7 +35,7 @@ namespace MysteryDice.Effects
                 RoundManager.Instance.playersManager.propsContainer);
                 obj.GetComponent<GrabbableObject>().fallTime = 0f;
                 obj.GetComponent<NetworkObject>().Spawn();
-                obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+                CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj.GetComponent<GrabbableObject>());
                 obj.GetComponent<GrabbableObject>().EnablePhysics(true);
             }
         }

@@ -18,6 +18,26 @@ using LCTarrotCard;
 
 namespace MysteryDice.Patches
 {
+    
+    
+    [HarmonyPatch(typeof(PlayerControllerB))]
+    [HarmonyPatch(nameof(PlayerControllerB.DamagePlayer), 
+        typeof(int), typeof(bool), typeof(bool), typeof(CauseOfDeath), typeof(int), typeof(bool), typeof(Vector3))]
+    class Patch_RemoveFallDamage
+    {
+        static bool Prefix(PlayerControllerB __instance, int damageNumber, bool hasDamageSFX, bool callRPC, CauseOfDeath causeOfDeath, int deathAnimation, bool fallDamage, Vector3 force)
+        { 
+            bool isFall = fallDamage || __instance.takingFallDamage || causeOfDeath == CauseOfDeath.Gravity;
+
+            if (isFall && Fly.CanFly)
+            {
+                return false;
+            }
+
+            return true;
+        }
+    }
+    
     [HarmonyPatch(typeof(PlayerControllerB))]
     internal class PlayerControllerBPatch
     {
@@ -63,16 +83,76 @@ namespace MysteryDice.Patches
 
         [HarmonyPostfix]
         [HarmonyPatch("Update")]
+        public static void CheckDoubleTap(PlayerControllerB __instance)
+        {
+            bool spacePressed = MysteryDice.Keybinds.FlyButton.WasPressedThisFrame();
+            
+            if (spacePressed)
+            {
+                float time = Time.time;
+
+                if (time - Fly.lastTapTime < Fly.tapCooldown)
+                {
+                    Fly.tapCount++;
+                    if (Fly.tapCount >= 2)
+                    {
+                        Fly.isFlying = !Fly.isFlying;
+                        Fly.tapCount = 0;
+                    }
+                }
+                else
+                {
+                    Fly.tapCount = 1;
+                }
+
+                Fly.lastTapTime = time;
+            }
+        }
+        [HarmonyPostfix]
+        [HarmonyPatch("Update")]
+        public static void CheckIfGrounded(PlayerControllerB __instance)
+        {
+            if (__instance.IsPlayerNearGround() && Fly.isFlying) Fly.isFlying = false;
+        }
+        
+        [HarmonyPostfix]
+        [HarmonyPatch("Update")]
         public static void FlyMode(PlayerControllerB __instance)
         {
+            // if (!Fly.CanFly) return;
+            //
+            // if (MysteryDice.Keybinds.FlyButton.ReadValue<float>() > 0.5f)
+            // {
+            //     __instance.externalForces += Vector3.Lerp(__instance.externalForces, Vector3.ClampMagnitude(__instance.transform.up * 10, 400f), Time.deltaTime * 50f);
+            //     __instance.fallValue = 0f;
+            //     __instance.ResetFallGravity();
+            // }
+            
             if (!Fly.CanFly) return;
+            if (!Fly.isFlying) return;
 
-            if (MysteryDice.Keybinds.FlyButton.ReadValue<float>() > 0.5f)
-            {
-                __instance.externalForces += Vector3.Lerp(__instance.externalForces, Vector3.ClampMagnitude(__instance.transform.up * 10, 400f), Time.deltaTime * 50f);
-                __instance.fallValue = 0f;
-                __instance.ResetFallGravity();
-            }
+            var input = Keyboard.current;
+            bool flyUp = MysteryDice.Keybinds.FlyButton.ReadValue<float>() > 0.5f;
+            bool flyDown = MysteryDice.Keybinds.FlyDownButton.ReadValue<float>() > 0.5f;
+
+            float verticalSpeed = 8f;
+            Vector3 verticalVelocity = Vector3.zero;
+
+            if (flyUp)
+                verticalVelocity = __instance.transform.up * verticalSpeed;
+            else if (flyDown)
+                verticalVelocity = -__instance.transform.up * verticalSpeed;
+            else
+                verticalVelocity = Vector3.zero;
+
+            __instance.externalForces = new Vector3(
+                __instance.externalForces.x,
+                verticalVelocity.y,
+                __instance.externalForces.z
+            );
+
+            __instance.fallValue = 0f;
+            __instance.ResetFallGravity();
         }
 
         [HarmonyPostfix]

@@ -12,6 +12,7 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 namespace MysteryDice
 {
@@ -106,6 +107,7 @@ namespace MysteryDice
             return true;
         }
 
+       
         public static int playerCount()
         {
             int players = 0;
@@ -298,7 +300,7 @@ namespace MysteryDice
                 textMeshProUGUI.text = textMeshProUGUI.text + "\n" + HUDManager.Instance.ChatMessageHistory[i];
             }
         }
-
+        
         public static trap[] getAllTraps()
         {
             List<trap> allTraps = new List<trap>();
@@ -313,15 +315,17 @@ namespace MysteryDice
             }
             if (MysteryDice.CodeRebirthPresent)
             {
-                foreach (var crt in CodeRebirthCheckConfigs.getSpawnPrefabs())
-                {
-                    if(allTraps.Exists(x=>x.name==crt.name)) continue;
-                    allTraps.Add(crt);
-                }
+                // foreach (var crt in CodeRebirthCheckConfigs.getSpawnPrefabs())
+                // {
+                //     if(allTraps.Exists(x=>x.name==crt.name)) continue;
+                //     allTraps.Add(crt);
+                // }
             }
             return allTraps.ToArray();
         }
 
+
+        
         
         public static void SafeTipMessage(string title, string body)
         {

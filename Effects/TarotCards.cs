@@ -47,8 +47,8 @@ namespace MysteryDice.Effects
                 scrapWeights.Add(component.itemProperties.weight);
                 NetworkObject netObj = obj.GetComponent<NetworkObject>();
                 netObj.Spawn();
-                obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
-                component.FallToGround(true);
+                CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj.GetComponent<GrabbableObject>());
+                //component.FallToGround(true);
                 netObjs.Add(netObj);
             }
 

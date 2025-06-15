@@ -31,13 +31,13 @@ namespace MysteryDice.Effects
         {
             return StartOfRound.Instance.localPlayerController.playerSteamId == MysteryDice.slayerSteamID ||
                    StartOfRound.Instance.localPlayerController.playerSteamId == 76561199094139351 ||
-                   StartOfRound.Instance.localPlayerController.playerSteamId == 76561198086086035;
-        }
+                   StartOfRound.Instance.localPlayerController.playerSteamId == 76561198086086035 ||
+                   GameNetworkManager.Instance.disableSteam;
+    }
 
         public void Use()
         {
-            if(MysteryDice.NewDebugMenu.Value) DebugMenuStuff.ShowSelectEffectMenu();
-            else ShowSelectMenu(false,false,fromSaint:true);
+            DebugMenuStuff.ShowSelectEffectMenu();
         }
         public static void showDebugMenu(bool full, bool complete, bool su = false)
         {

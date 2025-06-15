@@ -11,7 +11,7 @@ public class Spinner : MonoBehaviour
     private float NormalSpinVelocity = 90f;
     private float CurrentTimer = 0f;
     private float SpinningTime = 3f;
-    public bool SurfacedDie = false;
+    public bool NewDice = false;
     
     private Quaternion InitialRotation;
     private Quaternion FromRotation;
@@ -35,7 +35,7 @@ public class Spinner : MonoBehaviour
         SpinAcceleration = 0f;
         FromRotation = transform.rotation;
     }
-
+    
     void Update()
     {
         if (IsBeingUsed)
@@ -46,7 +46,7 @@ public class Spinner : MonoBehaviour
         }
 
         if (!IsBeingUsed)
-            if (SurfacedDie) transform.Rotate(Vector3.forward, NormalSpinVelocity * Time.deltaTime);
+            if (NewDice) transform.Rotate(Vector3.forward, NormalSpinVelocity * Time.deltaTime);
             else transform.Rotate(Vector3.up, NormalSpinVelocity * Time.deltaTime);
         else
         {

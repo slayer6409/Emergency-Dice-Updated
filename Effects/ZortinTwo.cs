@@ -39,9 +39,9 @@ namespace MysteryDice.Effects
             scrapWeights.Add(component.itemProperties.weight);
             NetworkObject netObj = obj.GetComponent<NetworkObject>();
             netObj.Spawn();
-            obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+            CullFactorySoftCompat.RefreshGrabbableObjectPosition(component);
             obj.GetComponent<GrabbableObject>().EnablePhysics(true);
-            component.FallToGround(true);
+            component.FallToGround(false, false, player.transform.position);
             netObjs.Add(netObj);
             
             
@@ -55,9 +55,9 @@ namespace MysteryDice.Effects
             scrapWeights.Add(component2.itemProperties.weight);
             NetworkObject netObj2 = obj2.GetComponent<NetworkObject>();
             netObj2.Spawn();
-            obj2.GetComponent<GrabbableObject>().EnableItemMeshes(true);
-            obj.GetComponent<GrabbableObject>().EnablePhysics(true);
-            component2.FallToGround(true);
+            CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj2.GetComponent<GrabbableObject>());
+            obj2.GetComponent<GrabbableObject>().EnablePhysics(true);
+            component2.FallToGround(false, false, player.transform.position);
             netObjs.Add(netObj2);
             
             
@@ -72,9 +72,9 @@ namespace MysteryDice.Effects
             scrapWeights.Add(component3.itemProperties.weight);
             NetworkObject netObj3 = obj3.GetComponent<NetworkObject>();
             netObj3.Spawn();
-            obj3.GetComponent<GrabbableObject>().EnableItemMeshes(true);
-            obj.GetComponent<GrabbableObject>().EnablePhysics(true);
-            component3.FallToGround(true);
+            CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj3.GetComponent<GrabbableObject>());
+            obj3.GetComponent<GrabbableObject>().EnablePhysics(true);
+            component3.FallToGround(false, false, player.transform.position);
             netObjs.Add(netObj3);
             
             var item4 = Misc.GetItemByName("Recorder",false);
@@ -87,9 +87,9 @@ namespace MysteryDice.Effects
             scrapWeights.Add(component4.itemProperties.weight);
             NetworkObject netObj4 = obj4.GetComponent<NetworkObject>();
             netObj4.Spawn();
-            obj4.GetComponent<GrabbableObject>().EnableItemMeshes(true);
-            obj.GetComponent<GrabbableObject>().EnablePhysics(true);
-            component4.FallToGround(true);
+            CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj4.GetComponent<GrabbableObject>());
+            obj4.GetComponent<GrabbableObject>().EnablePhysics(true);
+            component4.FallToGround(false, false, player.transform.position);
             netObjs.Add(netObj4);
             
             RM.StartCoroutine(DelaySync(RM, netObjs.ToArray(), scrapValues.ToArray(), scrapWeights.ToArray()));

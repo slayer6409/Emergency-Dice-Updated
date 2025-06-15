@@ -33,6 +33,8 @@ namespace MysteryDice
     [BepInDependency("Jordo.BombCollar", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("dev.kittenji.NavMeshInCompany", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("me.swipez.melonloader.morecompany", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("com.fumiko.CullFactory", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("FlipMods.TooManyEmotes", BepInDependency.DependencyFlags.SoftDependency)]
     public class MysteryDice : BaseUnityPlugin
     {
         //public static bool DEBUGMODE = false;
@@ -53,13 +55,12 @@ namespace MysteryDice
         public enum chatDebug { Host, Everyone, None};
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.9.25";
+        private const string modVersion = "1.11.4";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
         public static AssetBundle LoadedAssets, LoadedAssets2;
 
-        public static InputAction debugMenuAction = null;
         internal static IngameKeybinds Keybinds = null!;
 
         
@@ -82,7 +83,7 @@ namespace MysteryDice
         public static Dictionary<string, AudioClip> sounds = new Dictionary<string, AudioClip>();
         public static Sprite WarningBracken, WarningJester, WarningDeath, WarningLuck;
 
-        public static Item DieEmergency, DieGambler, DieChronos, DieSacrificer, DieSaint, DieRusty, DieSurfaced, PathfinderSpawner;
+        public static Item DieEmergency, DieGambler, DieChronos, DieSacrificer, DieSaint, DieRusty, DieSurfaced, DieCodeRebirth, DieSteve, PathfinderSpawner;
         public static ConfigFile BepInExConfig = null;
         public static bool lethalThingsPresent = false;
         public static Assembly lethalThingsAssembly;
@@ -93,6 +94,7 @@ namespace MysteryDice
         public static bool SurfacedPresent = false;
         public static bool LCTarotCardPresent = false;
         public static bool TakeyPlushPresent = false;
+        public static bool TooManyEmotesPresent = false;
         public static bool DiversityPresent = false;
         public static bool NightOfTheLivingMimicPresent = false;
         public static bool NavMeshInCompanyPresent = false;
@@ -123,6 +125,7 @@ namespace MysteryDice
         public static ConfigEntry<bool> useNeckBreakTimer;
         public static ConfigEntry<bool> debugMenuShowsAll;
         public static ConfigEntry<bool> yippeeUse;
+        public static ConfigEntry<bool> insideJoke;
         public static ConfigEntry<int> minNeckBreakTimer;
         public static ConfigEntry<int> maxNeckBreakTimer;
         public static ConfigEntry<int> hyperShakeTimer;
@@ -139,6 +142,9 @@ namespace MysteryDice
         public static ConfigEntry<string> DebugMenuAccentColor;
         public static ConfigEntry<int> DebugMenuAccentAlpha;
         public static ConfigEntry<string> DebugButtonColor;
+        public static ConfigEntry<string> cursedIDs;
+        public static ConfigEntry<bool> cursedRandomly;
+        public static ConfigEntry<bool> toggleCursed;
         public static ConfigEntry<int> DebugButtonAlpha;
         public static ConfigEntry<bool> BrutalMode;
         public static ConfigEntry<bool> BrutalChat;
@@ -155,7 +161,6 @@ namespace MysteryDice
         public static ConfigEntry<bool> superDebugMode;
         public static ConfigEntry<bool> DebugLogging;
         public static ConfigEntry<bool> BetterDebugMenu;
-        public static ConfigEntry<bool> NewDebugMenu;
         public static ConfigEntry<bool> LockDebugUI;
         //public static ConfigEntry<bool> DisableSizeBased;
         public static ConfigEntry<bool> doDiceExplosion;
@@ -205,11 +210,7 @@ namespace MysteryDice
                 "Better Debug Menu",
                 false,
                 "Enables the Better Debug Menu");
-            NewDebugMenu = BepInExConfig.Bind<bool>(
-                "New Debug",
-                "New Debug Menu",
-                true,
-                "Enables the New Debug Menu");
+           
             LockDebugUI = BepInExConfig.Bind<bool>(
                 "New Debug",
                 "Lock input",
@@ -327,6 +328,12 @@ namespace MysteryDice
                 "Lovers On Start",
                 false,
                 "Assigns New Lovers on each round");
+            
+            insideJoke = BepInExConfig.Bind<bool>(
+                "Misc",
+                "Inside Joke",
+                false,
+                "Turns on inside jokes for stuff");
             
             aprilFoolsConfig = BepInExConfig.Bind<bool>(
                 "Misc",
@@ -483,11 +490,27 @@ namespace MysteryDice
             //     "Only Owner Disables Gal",
             //     false,
             //     "Makes it to where only the owner can disable the Gal");
+            
             DebugMenuClosesAfter = BepInExConfig.Bind<bool>(
                 "Misc",
                 "Debug Menu Closes After",
                 true,
                 "Makes it to where the debug menu closes after selecting an effect, False to stay open");
+            toggleCursed = BepInExConfig.Bind<bool>(
+                "Misc",
+                "ToggleCursed",
+                false,
+                "If set to true makes the cursed IDs and cursed randomly actually do stuff :D");
+            cursedIDs = BepInExConfig.Bind<string>(
+                "Misc",
+                "Cursed IDs",
+                "76561198984467725",
+                "Curses players whose steam IDs you put in here seperated by a comma");
+            cursedRandomly = BepInExConfig.Bind<bool>(
+                "Misc",
+                "Cursed Randomly",
+                false,
+                "Makes it to where random players are picked every quota for curses instead of the Cursed IDs List");
             BrutalMode = BepInExConfig.Bind<bool>(
                 "Brutal",
                 "Brutal Mode",
@@ -608,6 +631,7 @@ namespace MysteryDice
             //MoreCompanyPresent = IsModPresent("me.swipez.melonloader.morecompany", "MoreCompany compatibility enabled!");
             NavMeshInCompanyPresent = IsModPresent("dev.kittenji.NavMeshInCompany", "Nav Mesh In Company compatibility enabled! >:)");
             NightOfTheLivingMimicPresent = IsModPresent("Slayer6409.NightOfTheLivingMimic", ">:)");
+            TooManyEmotesPresent = IsModPresent("FlipMods.TooManyEmotes", "Dancing Enabled!");
             if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("ainavt.lc.lethalconfig"))
                 LethalConfigPresent = true;
             BepInExConfig = new ConfigFile(Path.Combine(Paths.ConfigPath, "Emergency Dice.cfg"),true);
@@ -655,6 +679,16 @@ namespace MysteryDice
             sounds.Add("tuturu", LoadedAssets2.LoadAsset<AudioClip>("tuturu"));
             sounds.Add("mah-boi", LoadedAssets2.LoadAsset<AudioClip>("mah-boi"));
             sounds.Add("Bad Romance", LoadedAssets2.LoadAsset<AudioClip>("bad"));
+            sounds.Add("Boom", LoadedAssets2.LoadAsset<AudioClip>("boom"));
+            sounds.Add("Bald", LoadedAssets2.LoadAsset<AudioClip>("Glitchimnotbald"));
+            sounds.Add("BerthaCollide", LoadedAssets2.LoadAsset<AudioClip>("BerthaCollide"));
+            sounds.Add("Jimothy", LoadedAssets2.LoadAsset<AudioClip>("JimHonk"));
+            sounds.Add("Beartrap", LoadedAssets2.LoadAsset<AudioClip>("BearTrapSnapOnPlayer"));
+            sounds.Add("JanitorBald", LoadedAssets2.LoadAsset<AudioClip>("JanitorIdleSpeak12"));
+            sounds.Add("Duck", LoadedAssets2.LoadAsset<AudioClip>("DuckSpawn"));
+            sounds.Add("Fumo", LoadedAssets2.LoadAsset<AudioClip>("Fumo"));
+            sounds.Add("Steve", LoadedAssets2.LoadAsset<AudioClip>("Steve"));
+            
 
             WarningBracken = LoadedAssets.LoadAsset<Sprite>("bracken");
             WarningJester = LoadedAssets.LoadAsset<Sprite>("jester");
@@ -708,6 +742,7 @@ namespace MysteryDice
             harmony.PatchAll();
             //All config edits come before this
             if (LethalConfigPresent) ConfigManager.setupLethalConfig();
+
             CustomLogger.LogInfo("The Emergency Dice mod was initialized!");
         }
         public static void RegisterNewEffect(IEffect effect, bool defaultOff = false, bool superDebug = false)
@@ -947,9 +982,31 @@ namespace MysteryDice
         };
 
         public static List<Item> RegisteredDice = new List<Item>();
-
+        
         public static void LoadDice()
         {
+            
+            DieSteve = LoadedAssets2.LoadAsset<Item>("stevedieitem");
+            DieSteve.canBeGrabbedBeforeGameStart = true;
+            SteveLeDice scriptDieSteve = DieSteve.spawnPrefab.GetComponent<SteveLeDice>();
+            scriptDieSteve.myType = DieBehaviour.DiceType.STEVE;
+            scriptDieSteve.grabbable = true;
+            scriptDieSteve.grabbableToEnemies = true;
+            scriptDieSteve.itemProperties = DieSteve;
+            RegisteredDice.Add(DieSteve);
+            
+            DieCodeRebirth = LoadedAssets2.LoadAsset<Item>("coderebirthdieitem");
+            DieCodeRebirth.minValue = 150;
+            DieCodeRebirth.maxValue = 210;
+            DieCodeRebirth.canBeGrabbedBeforeGameStart = true;
+            CodeRebirthDie scriptCodeRebirth = DieCodeRebirth.spawnPrefab.AddComponent<CodeRebirthDie>();
+            scriptCodeRebirth.myType = DieBehaviour.DiceType.CODEREBIRTH;
+            scriptCodeRebirth.grabbable = true;
+            scriptCodeRebirth.grabbableToEnemies = true;
+            scriptCodeRebirth.itemProperties = DieCodeRebirth;
+            RegisteredDice.Add(DieCodeRebirth);
+            
+            ///
             DieSurfaced = LoadedAssets2.LoadAsset<Item>("surfaceddieitem");
             DieSurfaced.minValue = 150;
             DieSurfaced.maxValue = 210;
@@ -1038,7 +1095,7 @@ namespace MysteryDice
 
             ///
 
-            DieRusty = LoadedAssets.LoadAsset<Item>("Rusty");
+            DieRusty = LoadedAssets2.LoadAsset<Item>("RustyItem");
             DieRusty.minValue = 90;
             DieRusty.maxValue = 160;
             DieRusty.canBeGrabbedBeforeGameStart = true;
@@ -1069,6 +1126,30 @@ namespace MysteryDice
 
             Dictionary<(string,string),int> DefaultSpawnRates = new Dictionary<(string, string), int>
             {
+                { (DieSteve.itemName, Consts.Default), 25 },
+                { (DieSteve.itemName, Consts.Experimentation), 16 },
+                { (DieSteve.itemName, Consts.Assurance), 26 },
+                { (DieSteve.itemName, Consts.Vow), 25 },
+                { (DieSteve.itemName, Consts.Offense), 17 },
+                { (DieSteve.itemName, Consts.March), 27 },
+                { (DieSteve.itemName, Consts.Rend), 26 },
+                { (DieSteve.itemName, Consts.Dine), 36 },
+                { (DieSteve.itemName, Consts.Titan), 25 },
+                { (DieSteve.itemName, Consts.Adamance), 15 },
+                { (DieSteve.itemName, Consts.Artifice), 28 },
+                { (DieSteve.itemName, Consts.Embrion), 45 },
+                { (DieCodeRebirth.itemName, Consts.Default), 25 },
+                { (DieCodeRebirth.itemName, Consts.Experimentation), 16 },
+                { (DieCodeRebirth.itemName, Consts.Assurance), 26 },
+                { (DieCodeRebirth.itemName, Consts.Vow), 25 },
+                { (DieCodeRebirth.itemName, Consts.Offense), 17 },
+                { (DieCodeRebirth.itemName, Consts.March), 27 },
+                { (DieCodeRebirth.itemName, Consts.Rend), 26 },
+                { (DieCodeRebirth.itemName, Consts.Dine), 36 },
+                { (DieCodeRebirth.itemName, Consts.Titan), 25 },
+                { (DieCodeRebirth.itemName, Consts.Adamance), 15 },
+                { (DieCodeRebirth.itemName, Consts.Artifice), 28 },
+                { (DieCodeRebirth.itemName, Consts.Embrion), 45 },
                 { (DieSurfaced.itemName, Consts.Default), 25 },
                 { (DieSurfaced.itemName, Consts.Experimentation), 16 },
                 { (DieSurfaced.itemName, Consts.Assurance), 26 },
@@ -1160,8 +1241,6 @@ namespace MysteryDice
                 DefaultSpawnRates.Add((DieEmergency.itemName, Consts.Embrion), 38);
             }
            
-
-
             foreach (Item die in RegisteredDice)
             {
                 LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(die.spawnPrefab);

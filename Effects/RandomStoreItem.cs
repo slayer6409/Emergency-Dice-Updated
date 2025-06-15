@@ -34,7 +34,7 @@ namespace MysteryDice.Effects
 
             obj.GetComponent<GrabbableObject>().fallTime = 0f;
             obj.GetComponent<NetworkObject>().Spawn();
-            obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+            CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj.GetComponent<GrabbableObject>());
         }
         public static void SpawnItemNamed(int playerID, string name, Vector3 position = default(Vector3))
         {
@@ -52,7 +52,7 @@ namespace MysteryDice.Effects
 
             obj.GetComponent<GrabbableObject>().fallTime = 0f;
             obj.GetComponent<NetworkObject>().Spawn();
-            obj.GetComponent<GrabbableObject>().EnableItemMeshes(true);
+            CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj.GetComponent<GrabbableObject>());
             obj.GetComponent<GrabbableObject>().EnablePhysics(true);
         }
     }
