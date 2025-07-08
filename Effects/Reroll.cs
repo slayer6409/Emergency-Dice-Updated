@@ -45,7 +45,7 @@ namespace MysteryDice.Effects
                 scrapWeights.Add(component.itemProperties.weight);
                 NetworkObject netObj = obj.GetComponent<NetworkObject>();
                 netObj.Spawn();
-                //component.FallToGround(true);
+                component.FallToGround(false, true, player.transform.position);
                 netObjs.Add(netObj);
             }
 

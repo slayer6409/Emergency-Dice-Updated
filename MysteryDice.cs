@@ -35,34 +35,35 @@ namespace MysteryDice
     [BepInDependency("me.swipez.melonloader.morecompany", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.fumiko.CullFactory", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("FlipMods.TooManyEmotes", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("com.github.xuuxiaolan.coderebirthlib", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("CodeRebirth", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("Zaggy1024.PathfindingLib")]
     public class MysteryDice : BaseUnityPlugin
     {
         //public static bool DEBUGMODE = false;
-        private static HashSet<ulong> admins = new HashSet<ulong>{   
+        public static HashSet<ulong> admins = new HashSet<ulong>{   
             76561198077184650 /*Me*/,
             76561199094139351 /*Lizzie*/,
             76561198984467725 /*Glitch*/,
             76561198399127090 /*Xu*/,
-            76561199182474292 /*Rat*/,
             76561198086086035 /*Nut*/
         };
-
+        public static HashSet<ulong> revokedAdmins = new();
         
         public static readonly ulong slayerSteamID = 76561198077184650;
         
         internal static bool isAdmin=false;
-        internal static bool forcedAdmin=true;
+        internal static bool triedRequestingAdmin=false;
         public enum chatDebug { Host, Everyone, None};
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.11.4";
+        private const string modVersion = "1.11.8";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
         public static AssetBundle LoadedAssets, LoadedAssets2;
 
         internal static IngameKeybinds Keybinds = null!;
-
         
         //public static UnlockableItemDef diceGalUnlockable;  //gal commented
         public static GameObject NetworkerPrefab,
@@ -171,6 +172,7 @@ namespace MysteryDice
         public static ConfigEntry<bool> TwitchEnabled;
         public static ConfigEntry<string> DisplayResults;
         public static ConfigEntry<string> debugChat;
+        public static ConfigEntry<bool> deadAds;
         
 
         public static void ModConfig()
@@ -180,6 +182,11 @@ namespace MysteryDice
                 "Pussy mode",
                 true,
                 "Changes the jumpscare effect to a less scary one.");
+            deadAds = BepInExConfig.Bind<bool>(
+                "Clientside",
+                "Dead Ads",
+                true,
+                "Do Ads play while dead.");
 
             DieEmergencyAsScrap = BepInExConfig.Bind<bool>(
                 "Emergency Die",
@@ -865,65 +872,44 @@ namespace MysteryDice
 
         public static void DebugMenu(bool bypassButton = false)
         {
+            TryRequestAdmin();
             var localPlayer = GameNetworkManager.Instance.localPlayerController;
             bool isSlayer = localPlayer.playerSteamId == slayerSteamID;
             bool isHost = GameNetworkManager.Instance.localPlayerController.IsHost;
-            bool hasDebugAccess = Networker.Instance != null && (isHost || isSlayer || isAdmin || (admins.Contains(GameNetworkManager.Instance.localPlayerController.playerSteamId) && forcedAdmin));
+            bool hasDebugAccess = Networker.Instance != null && canOpenAdminMenu();
             bool debugModeEnabled = superDebugMode.Value || isSlayer;
-
-            // if (!NewDebugMenu.Value)
-            // {
-            //     if (superDebugMode.Value && !isSlayer && !isHost)
-            //     {
-            //         SelectEffect.showDebugMenu(true, true);
-            //         return;
-            //     }
-            //
-            //     if (hasDebugAccess && ( debugButton.Value || bypassButton || isSlayer))
-            //     {
-            //         if (isSlayer||isHost)
-            //         {
-            //             SelectEffect.showDebugMenu(BetterDebugMenu.Value, debugModeEnabled, true);
-            //         }
-            //         else if (BetterDebugMenu.Value)
-            //         {
-            //             SelectEffect.showDebugMenu(true, false);
-            //         }
-            //         else
-            //         {
-            //             SelectEffect.ShowSelectMenu(false, false);
-            //         }
-            //     }
-            // }
-            // else
-            // {
-            if (superDebugMode.Value && !isSlayer && !isHost)
+            
+            if (!debugButton.Value && !isSlayer) return;
+            if (hasDebugAccess)
             {
-                DebugMenuStuff.showDebugMenu(true, true);
-                return;
+                if(isSlayer) DebugMenuStuff.showDebugMenu(true, true, true);
+                else if(isHost) DebugMenuStuff.showDebugMenu(BetterDebugMenu.Value, debugModeEnabled, true);
+                else DebugMenuStuff.showDebugMenu(BetterDebugMenu.Value, false, isHost);
             }
-            if (hasDebugAccess && ( debugButton.Value || bypassButton || isSlayer))
-            {
-                if (isSlayer||isHost)
-                {
-                    if(isSlayer)
-                        DebugMenuStuff.showDebugMenu(true, true, true);
-                    else 
-                        DebugMenuStuff.showDebugMenu(BetterDebugMenu.Value, debugModeEnabled, true);
-                    
-                }
-                else if (BetterDebugMenu.Value)
-                {
-                    DebugMenuStuff.showDebugMenu(true, false, isHost);
-                }
-                else
-                {
-                    DebugMenuStuff.showDebugMenu(false, false, isHost);
-                }
-            }
-           // }
         }
-        
+
+        public static bool canOpenAdminMenu()
+        {
+            var player = StartOfRound.Instance.localPlayerController;
+            ulong steamId = player.playerSteamId;
+
+            return steamId == slayerSteamID
+                   || player.IsHost
+                   || isAdmin;
+        }
+        public static void TryRequestAdmin()
+        {
+            if (MysteryDice.triedRequestingAdmin || MysteryDice.isAdmin)
+                return;
+
+            var localPlayer = GameNetworkManager.Instance.localPlayerController;
+            if (localPlayer != null)
+            {
+                MysteryDice.triedRequestingAdmin = true;
+                var steamId = localPlayer.playerSteamId;
+                Networker.Instance.RequestAdminStateServerRpc(steamId);
+            }
+        }
         public static Assembly GetAssembly(string name)
         {
             if (Chainloader.PluginInfos.ContainsKey(name))
@@ -963,8 +949,12 @@ namespace MysteryDice
           
         }
 
-       
-    
+
+
+        public static void ExtendedLogging(string logMessage, LogLevel level = LogLevel.Info)
+        {
+            if(DebugLogging.Value) CustomLogger.Log(level, logMessage);
+        }
 
         public static Dictionary<string, Levels.LevelTypes> RegLevels = new Dictionary<string, Levels.LevelTypes>
         {

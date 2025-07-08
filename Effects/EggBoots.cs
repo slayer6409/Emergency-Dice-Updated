@@ -44,8 +44,8 @@ namespace MysteryDice.Effects
             Vector3 sps = new Vector3(obj.transform.position.x, spawnPosition.y, obj.transform.position.z);
             component.targetFloorPosition = sps;
             component2.targetFloorPosition = sps;
-            //component.FallToGround(true);
-            //component2.FallToGround(true);
+            component.FallToGround(false, true, spawnPosition);
+            component2.FallToGround(false, true, spawnPosition);
             Networker.Instance.explodeItemServerRPC(netObj.NetworkObjectId, true, 0);
             Networker.Instance.explodeItemServerRPC(netObj2.NetworkObjectId, true, 0);
         }

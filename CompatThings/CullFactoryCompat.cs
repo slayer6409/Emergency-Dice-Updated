@@ -45,4 +45,5 @@ internal static class CullFactorySoftCompat
             RefreshLightMethod?.Invoke(null, new object[] { light });
         }
     }
+    
 }

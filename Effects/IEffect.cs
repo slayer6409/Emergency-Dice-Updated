@@ -13,7 +13,9 @@ namespace MysteryDice.Effects
         Bad,
         Mixed,
         Good,
-        Great
+        Great,
+        Penalty,
+        SpecialPenalty
     }
 
     /// <summary>

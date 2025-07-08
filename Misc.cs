@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using MysteryDice.CompatThings;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -225,6 +226,7 @@ namespace MysteryDice
             RM.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
             return enemyObject;
         }
+        
 
         /// <summary>
         /// Allows an enemy to spawn on a moon which he isnt native to.
@@ -313,13 +315,22 @@ namespace MysteryDice
             {
                 allTraps.Add(new trap(spawnableMapObject.prefabToSpawn.name, spawnableMapObject.prefabToSpawn));
             }
+            
+            string NormalizeName(string input) =>
+                new string(input.Where(c => !char.IsWhiteSpace(c)).ToArray()).ToLowerInvariant();
+
             if (MysteryDice.CodeRebirthPresent)
             {
-                // foreach (var crt in CodeRebirthCheckConfigs.getSpawnPrefabs())
-                // {
-                //     if(allTraps.Exists(x=>x.name==crt.name)) continue;
-                //     allTraps.Add(crt);
-                // }
+                var seenNames = new HashSet<string>(allTraps.Select(x => NormalizeName(x.name)));
+
+                foreach (var crt in CodeRebirthCheckConfigs.getSpawnPrefabs())
+                {
+                    string normName = NormalizeName(crt.name);
+                    if (seenNames.Contains(normName)) continue;
+
+                    allTraps.Add(crt);
+                    seenNames.Add(normName);
+                }
             }
             return allTraps.ToArray();
         }

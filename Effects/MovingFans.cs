@@ -214,7 +214,7 @@ namespace MysteryDice.Effects
                 }
                 if (agent != null)
                 {
-                    agent.DoPathingToDestination(_currentTargetPosition, _currentIsInside);
+                    agent.DoPathingToDestination(_currentTargetPosition);
                 }
             }
         }

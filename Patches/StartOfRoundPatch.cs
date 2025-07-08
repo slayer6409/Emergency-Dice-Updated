@@ -133,6 +133,8 @@ namespace MysteryDice.Patches
                 }
             }
         }
+        
+        
         public static void ResetSettingsShared()
         {
             FireExitPatch.AreFireExitsBlocked = false;
@@ -149,7 +151,7 @@ namespace MysteryDice.Patches
             HyperShake.ShakingData = null;
             EggBoots.eggBootsEnabled = false;
             Martyrdom.doMinesDrop = false;
-
+            Confusion.isConfused = false;
           
             
             if (LeverShake.IsShaking)
@@ -204,5 +206,6 @@ namespace MysteryDice.Patches
             
            
         }
+
     }
 }

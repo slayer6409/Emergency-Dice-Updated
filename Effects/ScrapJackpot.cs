@@ -59,7 +59,7 @@ namespace MysteryDice.Effects
                 NetworkObject netObj = obj.GetComponent<NetworkObject>();
                 netObj.Spawn(); 
                 CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj.GetComponent<GrabbableObject>());
-                //component.FallToGround(true);
+                component.FallToGround(false, true, player.transform.position);
                 netObjs.Add(netObj);
             }
 

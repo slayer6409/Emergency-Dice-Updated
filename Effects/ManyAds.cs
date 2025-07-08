@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Steamworks.Data;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Networking;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
@@ -32,36 +33,36 @@ namespace MysteryDice.Effects
         {
             Networker.Instance.TriggerManyAdsServerRpc();
         }
-
-        public static void initializeStuff()
+        
+        public static IEnumerator LoadRemoteTextLists()
         {
-            if (bottomText == null || bottomText.Count == 0)
-                bottomText = new List<string>()
+            yield return LoadListFromURL("https://raw.githubusercontent.com/YourUser/YourRepo/main/topText.txt", topText, InitializeTopText);
+            yield return LoadListFromURL("https://raw.githubusercontent.com/YourUser/YourRepo/main/bottomText.txt", bottomText, InitializeBottomText);
+            yield return LoadListFromURL("https://raw.githubusercontent.com/YourUser/YourRepo/main/neutralText.txt", neutralText, InitializeNeutralText);
+        }
+
+        private static IEnumerator LoadListFromURL(string url, List<string> targetList, Action fallback)
+        {
+            using (UnityWebRequest www = UnityWebRequest.Get(url))
+            {
+                yield return www.SendWebRequest();
+
+                if (www.result != UnityWebRequest.Result.Success)
                 {
-                    "bottom text", 
-                    "I wonder whose?",
-                    "Take a bath",
-                    "Import local mod",
-                    "Is a milf",
-                    "In your area",
-                    "You",
-                    "Buy 1 get 1",
-                    "Ive seen better",
-                    "sucks",
-                    "is cancelled",
-                    "The least of your concern",
-                    "is entertaining",
-                    "I wish they were real",
-                    "Not safe for work",
-                    "Happy birthday!",
-                    "Most likely to die next",
-                    "It burns when I pee",
-                    "Wheres the beef",
-                    "Spin spin spin",
-                    "is dead"
-                };
-            if (topText == null || topText.Count == 0)
-                topText = new List<string>()
+                    MysteryDice.CustomLogger.LogWarning($"Failed to load ad text from {url}: {www.error}");
+                    fallback?.Invoke();
+                }
+                else
+                {
+                    targetList.Clear();
+                    string[] lines = www.downloadHandler.text.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    targetList.AddRange(lines.Select(line => line.Trim()).Where(line => !string.IsNullOrWhiteSpace(line)));
+                }
+            }
+        }
+        private static void InitializeTopText()
+        {
+            topText = new List<string>()
                 {
                     "This fuckin thing",
                     "top text",
@@ -83,49 +84,78 @@ namespace MysteryDice.Effects
                     "Surfaced",
                     "Code rebirth",
                     "Hi I'm Chris Hansen"
-                
                 };
-            if (neutralText == null || neutralText.Count == 0)
-                neutralText = new List<string>()
-                {
-                    "Breaking News!",
-                    "Fuck",
-                    "Heheheheheheh",
-                    "Not the best",
-                    "?????????????????????",
-                    "What the fuck?",
-                    "Hehehehehehehe",
-                    ">:D",
-                    "Wut",
-                    "Ewwwww",
-                    "Happy Birthday",
-                    "Mu Mu Mu",
-                    "Whose child is this?",
-                    "Oh no",
-                    "RUN",
-                    "I hate it",
-                    "Go away",
-                    "Got ran over by a car",
-                    "Go Scarab",
-                    "Whatever",
-                    "Sussy",
-                    "Nice wig",
-                    "Smash.",
-                    "Skill Issue",
-                    "Someone clip that",
-                    "is Bald",
-                    "is Stinky",
-                    "is Short",
-                    "Glitch is Bald",
-                    "Mu is Bald",
-                    "Cross is Stinky",
-                    "Beef is Short",
-                    "The Short, Bald, and Stinky",
-                    "wi wi wi",
-                    "",
-                    "There is a config you should change :D"
-                };
-            
+        }
+
+        private static void InitializeBottomText()
+        {
+            bottomText = new List<string>()
+            {
+                "bottom text", 
+                "I wonder whose?",
+                "Take a bath",
+                "Import local mod",
+                "Is a milf",
+                "In your area",
+                "You",
+                "Buy 1 get 1",
+                "Ive seen better",
+                "sucks",
+                "is cancelled",
+                "The least of your concern",
+                "is entertaining",
+                "I wish they were real",
+                "Not safe for work",
+                "Happy birthday!",
+                "Most likely to die next",
+                "It burns when I pee",
+                "Wheres the beef",
+                "Spin spin spin",
+                "is dead"
+            };
+        }
+
+        private static void InitializeNeutralText()
+        {
+            neutralText = new List<string>()
+            {
+                "Breaking News!",
+                "Fuck",
+                "Heheheheheheh",
+                "Not the best",
+                "?????????????????????",
+                "What the fuck?",
+                "Hehehehehehehe",
+                ">:D",
+                "Wut",
+                "Ewwwww",
+                "Happy Birthday",
+                "Mu Mu Mu",
+                "Whose child is this?",
+                "Oh no",
+                "RUN",
+                "I hate it",
+                "Go away",
+                "Got ran over by a car",
+                "Go Scarab",
+                "Whatever",
+                "Sussy",
+                "Nice wig",
+                "Smash.",
+                "Skill Issue",
+                "Someone clip that",
+                "is Bald",
+                "is Stinky",
+                "is Short",
+                "Glitch is Bald",
+                "Mu is Bald",
+                "Cross is Stinky",
+                "Beef is Short",
+                "The Short, Bald, and Stinky",
+                "wi wi wi",
+                "",
+                "There is a config you should change :D"
+            };
         }
 
         public static void logAll()
@@ -148,7 +178,6 @@ namespace MysteryDice.Effects
         public static string getTopText()
         {
             if(MysteryDice.DebugLogging.Value)logAll();
-            initializeStuff(); 
             List<string> tempList = new List<string>(topText);
             tempList.AddRange(StartOfRound.Instance.allPlayerScripts
                 .Where(x=>x.isPlayerControlled||x.isPlayerDead)
@@ -160,7 +189,6 @@ namespace MysteryDice.Effects
 
         public static string getBottomText()
         {
-            initializeStuff(); 
             List<string> tempList = new List<string>(bottomText);
             tempList.AddRange(StartOfRound.Instance.allPlayerScripts
                 .Where(x=>x.isPlayerControlled||x.isPlayerDead)

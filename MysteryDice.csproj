@@ -37,15 +37,18 @@
     <Reference Include="BombCollar">
       <HintPath>$(ThunderstorePath)\Jordo-BombCollar\BombCollar.dll</HintPath>
     </Reference>
+    <Reference Include="CodeRebirth" Publicize="true">
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\CodeRebirth\CodeRebirth\CodeRebirth.dll</HintPath>
+    </Reference>
+    <Reference Include="com.github.xuuxiaolan.coderebirthlib">
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\XuXiaolan-CodeRebirthLib\CodeRebirthLib\com.github.xuuxiaolan.coderebirthlib.dll</HintPath>
+    </Reference>
     <Reference Include="CullFactory">
       <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\fumiko-CullFactory\CullFactory.dll</HintPath>
     </Reference>
     <Reference Include="LethalLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(ThunderstorePath)\Evaisa-LethalLib\LethalLib\LethalLib.dll</HintPath>
-    </Reference>
-    <Reference Include="CodeRebirth" Publicize="true">
-      <HintPath>$(ThunderstorePath)\XuXiaolan-CodeRebirth\CodeRebirth\CodeRebirth.dll</HintPath>
     </Reference>
     <Reference Include="Diversity Remastered">
       <HintPath>$(ThunderstorePath)\IntegrityChaos-Diversity\Diversity Remastered.dll</HintPath>
@@ -67,6 +70,9 @@
     </Reference>
     <Reference Include="MoreCompany">
       <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\notnotnotswipez-MoreCompany\MoreCompany.dll</HintPath>
+    </Reference>
+    <Reference Include="PathfindingLib">
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\Zaggy1024-PathfindingLib\PathfindingLib.dll</HintPath>
     </Reference>
     <Reference Include="Surfaced" Publicize="true">
       <HintPath>$(ThunderstorePath)\SurfacedTeam-Surfaced\Surfaced.dll</HintPath>

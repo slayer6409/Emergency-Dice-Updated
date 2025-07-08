@@ -85,34 +85,36 @@ namespace MysteryDice.Patches
         [HarmonyPatch("Update")]
         public static void CheckDoubleTap(PlayerControllerB __instance)
         {
-            bool spacePressed = MysteryDice.Keybinds.FlyButton.WasPressedThisFrame();
-            
-            if (spacePressed)
+            if (!__instance.IsOwner) return;
+
+            float time = Time.time;
+
+            if (time - Fly.lastTapTime > Fly.tapCooldown)
             {
-                float time = Time.time;
-
-                if (time - Fly.lastTapTime < Fly.tapCooldown)
-                {
-                    Fly.tapCount++;
-                    if (Fly.tapCount >= 2)
-                    {
-                        Fly.isFlying = !Fly.isFlying;
-                        Fly.tapCount = 0;
-                    }
-                }
-                else
-                {
-                    Fly.tapCount = 1;
-                }
-
-                Fly.lastTapTime = time;
+                Fly.tapCount = 0;
             }
+
+            bool spacePressed = MysteryDice.Keybinds.FlyButton.WasPressedThisFrame();
+            if (!spacePressed) return;
+
+            Fly.tapCount++;
+
+            if (Fly.tapCount >= 2)
+            {
+                Fly.isFlying = !Fly.isFlying;
+                Fly.tapCount = 0;
+            }
+
+            Fly.lastTapTime = time;
         }
         [HarmonyPostfix]
         [HarmonyPatch("Update")]
         public static void CheckIfGrounded(PlayerControllerB __instance)
         {
-            if (__instance.IsPlayerNearGround() && Fly.isFlying) Fly.isFlying = false;
+            if (!__instance.IsOwner) return;
+
+            if (__instance.IsPlayerNearGround() && Fly.isFlying)
+                Fly.isFlying = false;
         }
         
         [HarmonyPostfix]

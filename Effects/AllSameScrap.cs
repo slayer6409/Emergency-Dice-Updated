@@ -9,6 +9,7 @@ using MysteryDice.Patches;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace MysteryDice.Effects
 {
@@ -124,7 +125,7 @@ namespace MysteryDice.Effects
                         netObj.Spawn();
                         CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj.GetComponent<GrabbableObject>());
                         obj.GetComponent<GrabbableObject>().EnablePhysics(true);
-                        //component.FallToGround(true);
+                        component.FallToGround(false, true, randomPosition);
                         netObjs.Add(netObj);
 
                     }
@@ -142,9 +143,10 @@ namespace MysteryDice.Effects
         
         public static IEnumerator DelayedSyncAndTeleport(RoundManager RM, NetworkObjectReference[] netObjs, int[] scrapValues, float[] scrapWeights, PlayerControllerB player, bool usePos, Vector3 spawnPos)
         {
-            yield return new WaitForSeconds(1f);
             Networker.Instance.AllOfOneTPServerRPC(netObjs, Array.IndexOf(StartOfRound.Instance.allPlayerScripts, player), usePos, spawnPos);
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(0.5f); 
+            Networker.Instance.FixGiftBoxesServerRPC(netObjs);
+            yield return new WaitForSeconds(0.5f);
             RM.SyncScrapValuesClientRpc(netObjs, scrapValues);
             Networker.Instance.SyncItemWeightsClientRPC(netObjs, scrapWeights);
         }
@@ -175,14 +177,16 @@ namespace MysteryDice.Effects
                             StartOfRound.Instance.collidersAndRoomMaskAndDefault,
                             QueryTriggerInteraction.Ignore))
                     {
-                        targetPosition = hitInfo.point;
+                        targetPosition = hitInfo.point+ new Vector3(0, 0.3f ,0);
                     }
                     obj.transform.position = targetPosition;
                     GrabbableObject grabbableObject = obj.GetComponent<GrabbableObject>();
                     CullFactorySoftCompat.RefreshGrabbableObjectPosition(grabbableObject);
                     if (grabbableObject != null)
                     {
-                        grabbableObject.targetFloorPosition = targetPosition;
+                        grabbableObject.targetFloorPosition = targetPosition+new Vector3(0, 1.1f, 0);
+                        grabbableObject.startFallingPosition = targetPosition+new Vector3(0, 1.1f, 0);
+                        grabbableObject.FallToGround();
                     }
                 }
             }

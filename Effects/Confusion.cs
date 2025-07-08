@@ -8,9 +8,11 @@ namespace MysteryDice.Effects
     internal class Confusion : IEffect
     {
         public string Name => "Confusion";
-        public EffectType Outcome => EffectType.Bad;
+        public EffectType Outcome => EffectType.Mixed;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "??????????????????????";
+        
+        public static bool isConfused = false;
       
         public void Use()
         {
@@ -21,7 +23,7 @@ namespace MysteryDice.Effects
     internal class StupidConfusion : IEffect
     {
         public string Name => "Stupid Confusion";
-        public EffectType Outcome => EffectType.Awful;
+        public EffectType Outcome => EffectType.Bad;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "??????????????????????????????????????????????????";
       

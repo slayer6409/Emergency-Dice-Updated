@@ -49,7 +49,7 @@ namespace MysteryDice.Effects
                 netObj.Spawn();
                 CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj.GetComponent<GrabbableObject>());
                 obj.GetComponent<GrabbableObject>().EnablePhysics(true);
-                //component.FallToGround(true);
+                component.FallToGround(false, true, player.transform.position);
                 netObjs.Add(netObj);
             }
 

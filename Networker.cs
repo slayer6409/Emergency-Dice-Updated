@@ -9,8 +9,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using LethalLib;
 using LethalLib.Extras;
 using LethalLib.Modules;
+using MysteryDice.CompatThings;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
@@ -24,15 +26,22 @@ namespace MysteryDice
     public class Networker : NetworkBehaviour
     {
         public static Networker Instance;
+        internal static EntranceTeleport[] _entrancePoints = [];
         public static float RebelTimer = 0f;
         public static bool CoilheadIgnoreStares = false;
         public static List<UnlockableSuit> orderedSuits = new List<UnlockableSuit>();
         public List<AudioSource> AudioSources = new List<AudioSource>();
         public List<AudioSource> FreebirdAudioSources = new List<AudioSource>();
         public List<ulong> cursedPeople = new();
+        public static IReadOnlyList<EntranceTeleport> EntrancePoints => _entrancePoints;
 
-        
-       
+
+        public void Awake()
+        {
+            StartOfRound.Instance.StartNewRoundEvent.AddListener(OnNewRoundStart);
+        }
+
+
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
@@ -68,9 +77,24 @@ namespace MysteryDice
         {
             yield return new WaitForSeconds(3.5f);
             DelaySuitGet();
-           
-        }
+            StartCoroutine(ManyAds.LoadRemoteTextLists());
 
+        }
+        
+        //thanks xu
+        private void OnNewRoundStart()
+        {
+            if (MysteryDice.CodeRebirthPresent) CodeRebirthCheckConfigs.ListAll();
+            _entrancePoints = FindObjectsByType<EntranceTeleport>(FindObjectsSortMode.InstanceID);
+            foreach (EntranceTeleport? entrance in _entrancePoints)
+            {
+                if (!entrance.FindExitPoint())
+                {
+                    MysteryDice.CustomLogger.LogError("Something went wrong in the generation of the fire exits! (ignorable if EntranceTeleportOptimisation is installed)");
+                }
+            }
+            StartCoroutine(ManyAds.LoadRemoteTextLists());
+        }
         public IEnumerator SyncRequest()
         {
             while (!GameNetworkManager.Instance.GetComponent<NetworkManager>().IsConnectedClient)
@@ -134,6 +158,7 @@ namespace MysteryDice
 
             if (StartOfRound.Instance.currentLevel.PlanetName == "71 Gordion") twitchCanRoll = false;
             if (StartOfRound.Instance.currentLevel.PlanetName == "98 Galetry") twitchCanRoll = false;
+            if (StartOfRound.Instance.currentLevel.sceneName == "Oxyde") twitchCanRoll = false;
 
             if (IsServer && twitchCanRoll && spawnQueue.Count > 0) ProcessSpawnQueue();
 
@@ -351,26 +376,7 @@ namespace MysteryDice
             }
         }
         
-        [ServerRpc(RequireOwnership = false)]
-        public void doPenaltyServerRPC(int amount)
-        {
-            List<SpawnableEnemyWithRarity> allenemies = StartOfRound.Instance.currentLevel.Enemies
-                .Union(StartOfRound.Instance.currentLevel.OutsideEnemies)
-                .Union(StartOfRound.Instance.currentLevel.DaytimeEnemies)
-                .ToList();
-
-            List<SpawnableEnemyWithRarity> randomEnemies = new List<SpawnableEnemyWithRarity>();
-            for (int i = 0; i < amount; i++)
-            {
-                var randomEnemy = allenemies[UnityEngine.Random.Range(0, allenemies.Count)];
-                randomEnemies.Add(randomEnemy);
-            }
-
-            foreach (var enemy in randomEnemies)
-            {
-                Misc.SpawnEnemyForced(enemy, 1, false);
-            }
-        }
+        
 
         // [ServerRpc(RequireOwnership = false)]
         // public void MoveTrapServerRpc(int getInstanceID, Vector3 targetPosition, bool isInside)
@@ -402,7 +408,7 @@ namespace MysteryDice
             }
 
             //MysteryDice.CustomLogger.LogWarning($"Trying to move trap to {targetPosition} and inside is {isInside}");
-            agent.DoPathingToDestination(targetPosition, isInside);
+            agent.DoPathingToDestination(targetPosition);
         }
 
         #region TwitchNetworking
@@ -569,6 +575,19 @@ namespace MysteryDice
             for (int i = 0; i < 4; i++)
                 ManyAds.showRandomAd();
         }
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void TriggerSelectAdsServerRpc(int num)
+        {
+            for (int i = 0; i < num; i++)
+                ManyAds.showRandomAd();
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void RandomAdItemServerRpc(string name)
+        {
+            ManyAds.QueueAd(true, name, ManyAds.getTopText(), ManyAds.getBottomText());
+        }
 
         #endregion
 
@@ -608,36 +627,40 @@ namespace MysteryDice
         #region SpawnSurrounded
 
         [ServerRpc(RequireOwnership = false)]
-        public void SpawnSurroundedServerRPC(string enemyName, int amount = 10, int radius = 3, bool doSize = false,
-            Vector3 size = default)
+        public void SpawnSurroundedServerRPC(string enemyName, int amount = 10, int radius = 3, bool doSize = false, Vector3 size = default)
         {
             var enemy = Misc.getEnemyByName(enemyName);
             var RM = RoundManager.Instance;
             if (enemy == null)
                 return;
+
             var player = Misc.GetRandomAlivePlayer();
             for (int i = 0; i < amount; i++)
             {
                 float angle = i * Mathf.PI * 2 / amount;
-                Vector3 spawnPosition = new Vector3(
-                    Mathf.Cos(angle) * radius,
-                    player.transform.position.y + 0.25f,
-                    Mathf.Sin(angle) * radius
-                );
+                Vector3 offset = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
+                Vector3 spawnPosition = player.transform.position + offset + new Vector3(0, 0.25f, 0);
+                Quaternion rotation = Quaternion.LookRotation(player.transform.position - spawnPosition);
 
-                spawnPosition += player.transform.position;
-                Vector3 directionToPlayer = player.transform.position - spawnPosition;
-                Quaternion rotation = Quaternion.LookRotation(directionToPlayer);
-                spawnPosition = RoundManager.Instance.GetRandomNavMeshPositionInRadius(spawnPosition, 0.5f);
-                if (spawnPosition == Vector3.zero) continue;
-                if (spawnPosition.y > player.transform.position.y + 10) continue;
-                GameObject enemyObject = UnityEngine.Object.Instantiate(
-                    enemy.enemyType.enemyPrefab,
-                    spawnPosition,
-                    rotation);
+                RaycastHit hit;
+                Vector3 rayOrigin = spawnPosition + Vector3.up * 2f;
+                if (Physics.Raycast(rayOrigin, Vector3.down, out hit, 10f, StartOfRound.Instance.collidersAndRoomMaskAndDefault))
+                {
+                    spawnPosition = hit.point;
+                }
+                else
+                {
+                    continue;
+                }
+
+                if (spawnPosition.y > player.transform.position.y + 10f || spawnPosition.y < player.transform.position.y - 5f)
+                    continue;
+
+                GameObject enemyObject = UnityEngine.Object.Instantiate(enemy.enemyType.enemyPrefab, spawnPosition, rotation);
                 var netObj = enemyObject.GetComponentInChildren<NetworkObject>();
                 netObj.Spawn(destroyWithScene: true);
-                RoundManager.Instance.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
+                RM.SpawnedEnemies.Add(enemyObject.GetComponent<EnemyAI>());
+
                 if (doSize)
                 {
                     setSizeClientRPC(netObj.NetworkObjectId, size);
@@ -657,24 +680,45 @@ namespace MysteryDice
             for (int i = 0; i < amount; i++)
             {
                 float angle = i * Mathf.PI * 2 / amount;
-                Vector3 spawnPosition = new Vector3(
+
+                Vector3 horizontalOffset = new Vector3(
                     Mathf.Cos(angle) * radius,
-                    player.transform.position.y + 0.25f,
+                    0f,
                     Mathf.Sin(angle) * radius
                 );
-                spawnPosition += player.transform.position;
+
+                Vector3 baseSpawnPos = player.transform.position + horizontalOffset;
+
+                Vector3 rayOrigin = baseSpawnPos + Vector3.up * 10f;
+
+                Vector3 spawnPosition;
+
+                if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, 20f, LayerMask.GetMask("Default")))
+                {
+                    spawnPosition = hit.point + Vector3.up * 0.01f;
+                }
+                else
+                {
+                    spawnPosition = baseSpawnPos;
+                }
+
                 Vector3 directionToPlayer = player.transform.position - spawnPosition;
                 Quaternion rotation = Quaternion.LookRotation(directionToPlayer);
+
                 GameObject enemyObject = UnityEngine.Object.Instantiate(
                     enemy.prefab,
                     spawnPosition,
-                    rotation);
+                    rotation
+                );
+
                 var netObj = enemyObject.GetComponentInChildren<NetworkObject>();
-                netObj.Spawn(destroyWithScene: true);
+                if (netObj != null) netObj.Spawn(destroyWithScene: true);
+
                 if (doSize)
                 {
                     setSizeClientRPC(netObj.NetworkObjectId, size);
                 }
+
                 SceneManager.MoveGameObjectToScene(enemyObject, RoundManager.Instance.mapPropsContainer.scene);
             }
         }
@@ -848,6 +892,26 @@ namespace MysteryDice
 
         #endregion
 
+        [ServerRpc(RequireOwnership = false)]
+        public void ShowAdMenuServerRPC(int userID)
+        {
+            PlayerControllerB player = StartOfRound.Instance.allPlayerScripts[userID];
+            ClientRpcParams rpcParams = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new[] { player.playerClientId }
+                }
+            };
+            ShowAdMenuClientRPC(rpcParams);
+        }
+
+        [ClientRpc]
+        public void ShowAdMenuClientRPC(ClientRpcParams rpcParams = default)
+        {
+            DebugMenuStuff.ShowSelectEffectMenu(true);
+        }
+
         #region Detonate
 
         private static Vector2 TimerRange = new Vector2(3f, 6f);
@@ -873,6 +937,7 @@ namespace MysteryDice
             ExplosionTimer = UnityEngine.Random.Range(TimerRange.x, TimerRange.y);
         }
 
+        
         [ClientRpc]
         public void OnStartRoundClientRPC()
         {
@@ -916,6 +981,7 @@ namespace MysteryDice
         [ClientRpc]
         public void ConfusionPlayerClientRPC(bool stupidMode)
         {
+            Confusion.isConfused = true;
             var player = StartOfRound.Instance.localPlayerController;
             if (player.playerSteamId == 76561199094139351) return;
             if (player.gameObject.GetComponent<confusionPlayer>() != null)
@@ -980,10 +1046,10 @@ namespace MysteryDice
             StartCoroutine(SpawnExplosionAfterSFX(player.transform.position));
         }
 
-        IEnumerator SpawnExplosionAfterSFX(Vector3 position)
+        IEnumerator SpawnExplosionAfterSFX(Vector3 position, int killrange = 1, int damageRange = 5, int nonLethalDamage = 50, int physicForce = 0)
         {
             yield return new WaitForSeconds(0.5f);
-            Landmine.SpawnExplosion(position, true, 1, 5, 50, 0, null, false);
+            Landmine.SpawnExplosion(position, true, killrange, damageRange, nonLethalDamage, physicForce, null, false);
         }
 
         #endregion
@@ -1804,6 +1870,16 @@ namespace MysteryDice
         {
             BIGBertha.SpawnBIGBertha(1);
         }
+        [ServerRpc(RequireOwnership = false)]
+        public void SpawnSmolCraneServerRPC()
+        {
+            SmolCrane.SpawnSmolCrane(1);
+        }
+        [ServerRpc(RequireOwnership = false)]
+        public void SpawnBeegCraneServerRPC()
+        {
+            BeegCrane.SpawnBeegCrane(1);
+        }
 
         [ServerRpc(RequireOwnership = false)]
         public void BIGSpikeServerRPC()
@@ -1826,9 +1902,9 @@ namespace MysteryDice
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void explodeBerthaServerRPC(ulong berthaID)
+        public void spawnMistressServerRPC()
         {
-
+            ManyMistress.SpawnMistress();
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -1924,17 +2000,23 @@ namespace MysteryDice
                 Paparazzi.MaxMinesToSpawn + 1));
             AddMovingTrapClientRPC("Paparazzi");
         }
-
         [ServerRpc(RequireOwnership = false)]
         public void doMadScienceServerRPC(int e)
         {
-            TulipBombers.spawnAttachedEnemyCombo(e, GetEnemies.allEnemies[Random.Range(0,GetEnemies.allEnemies.Count)].enemyName, Misc.getAllTraps()[Random.Range(0, Misc.getAllTraps().Length)].name, Random.value>0.5f, matchSize:true);
+            var filteredEnemies = GetEnemies.allEnemies.Where(x => !x.enemyName.ToLower().Contains("spider")).ToList();
+            var enemyName = filteredEnemies[Random.Range(0, filteredEnemies.Count)].enemyName;
+            TulipBombers.spawnAttachedEnemyCombo(e, enemyName, Misc.getAllTraps()[Random.Range(0, Misc.getAllTraps().Length)].name, Random.value>0.5f, matchSize:true);
         }
         
         [ServerRpc(RequireOwnership = false)]
         public void doTulipBomberServerRPC(int e)
         {
             TulipBombers.spawnAttachedEnemyCombo(e, GetEnemies.Tulip.enemyType.enemyName, Misc.getAllTraps().Where(x=>x.name.Contains("Landmine")).First().name, true, sizeOfTrap: new Vector3(0.5f, 0.5f, 0.5f));
+        }
+        [ServerRpc(RequireOwnership = false)]
+        public void doImmortalSnailCatServerRPC(int e)
+        {
+            TulipBombers.spawnAttachedEnemyCombo(e, "Real Enemy SnailCat", Misc.getAllTraps().Where(x=>x.name.Contains("Landmine")).First().name, true, sizeOfTrap: new Vector3(0.5f, 0.5f, 0.5f));
         }
 
         [ClientRpc]
@@ -2107,15 +2189,23 @@ namespace MysteryDice
         #endregion
 
         #region BecomeAdmin
-
+        
         [ServerRpc(RequireOwnership = false)]
         public void becomeAdminServerRPC(int userID, bool grant, bool forced = true)
         {
             becomeAdminClientRPC(userID, grant, forced);
+            if (grant)
+            {
+                MysteryDice.revokedAdmins.Remove(StartOfRound.Instance.allPlayerScripts[userID].playerSteamId);
+            }
+            else
+            {
+                MysteryDice.revokedAdmins.Add(StartOfRound.Instance.allPlayerScripts[userID].playerSteamId);
+            }
         }
 
         [ClientRpc]
-        public void becomeAdminClientRPC(int userID, bool grant, bool forced)
+        public void becomeAdminClientRPC(int userID, bool grant, bool forced, bool noMessage=false)
         {
             if (StartOfRound.Instance.localPlayerController != StartOfRound.Instance.allPlayerScripts[userID])
                 return;
@@ -2125,9 +2215,21 @@ namespace MysteryDice
             }
             else MysteryDice.isAdmin = !MysteryDice.isAdmin;
 
-            Misc.SafeTipMessage(MysteryDice.isAdmin ? "Granted" : "Revoked",
+            if(!noMessage) Misc.SafeTipMessage(MysteryDice.isAdmin ? "Granted" : "Revoked",
                 MysteryDice.isAdmin ? "You were granted admin privileges!" : "Your admin privileges were revoked.");
         }
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void RequestAdminStateServerRpc(ulong steamId)
+        {
+            bool isRevoked = MysteryDice.revokedAdmins.Contains(steamId);
+            bool shouldGrant = MysteryDice.admins.Contains(steamId) && !isRevoked;
+
+            int userId = Array.FindIndex(StartOfRound.Instance.allPlayerScripts, x => x != null && x.playerSteamId == steamId);
+            if (userId >= 0)
+                becomeAdminClientRPC(userId, shouldGrant, true, true);
+        }
+        
 
         #endregion
 
@@ -2239,6 +2341,45 @@ namespace MysteryDice
         public void TeleportEggClientRPC(NetworkObjectReference netObjs, int playerID, Vector3 pos)
         {
             EggFountain.teleport(netObjs, playerID, pos);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void FixGiftBoxesServerRPC(NetworkObjectReference[] netObjs)
+        {
+            foreach (var netObjRef in netObjs)
+            {
+                if (netObjRef.TryGet(out NetworkObject netObj))
+                {
+                    GiftBoxItem giftBox = netObj.GetComponent<GiftBoxItem>();
+                    if (giftBox != null)
+                    {
+                        Item item = StartOfRound.Instance.allItemsList.itemsList[
+                            Random.Range(0, StartOfRound.Instance.allItemsList.itemsList.Count)];
+                        var val =Random.Range(item.minValue, item.maxValue);
+                        FixGiftBoxesClientRPC(netObj, item.itemName, val);
+                    }
+                }
+            }
+        }
+
+        [ClientRpc]
+        public void FixGiftBoxesClientRPC(NetworkObjectReference netObjref, string itemName, int val)
+        {
+            if (netObjref.TryGet(out NetworkObject netObj))
+            {
+                GiftBoxItem giftBox = netObj.GetComponent<GiftBoxItem>();
+                if (giftBox != null)
+                {
+                    var item = StartOfRound.Instance.allItemsList.itemsList
+                        .Find(x => x.itemName.Equals(itemName, StringComparison.OrdinalIgnoreCase));
+                    if (item != null)
+                    {
+                        giftBox.objectInPresentItem = item;
+                        giftBox.objectInPresent = item.spawnPrefab;
+                        giftBox.objectInPresentValue = val;
+                    }
+                }
+            }
         }
 
         #endregion
@@ -3037,6 +3178,7 @@ namespace MysteryDice
         }
 
         #endregion
+        
 
         #region Outside Coilhead
 
@@ -3619,6 +3761,47 @@ namespace MysteryDice
 
         #endregion
 
+        #region PenaltyRolls
+
+        [ServerRpc(RequireOwnership = false)]
+        public void doOxydePenaltyServerRpc()
+        {
+            OxydePenalty.doPenalty();
+        }
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void doPenaltyServerRPC(int amount)
+        {
+            NavMeshPenalty.doPenalty(amount);
+        }
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void SpecialDetonateServerRPC()
+        {
+            if (StartOfRound.Instance is null) return;
+            if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
+
+            List<PlayerControllerB> validPlayers = new List<PlayerControllerB>();
+
+            validPlayers = getValidPlayers();
+            if (validPlayers.Count == 0) return;
+            PlayerControllerB theUnluckyOne = validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)];
+            SpecialDetonatePlayerClientRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,theUnluckyOne));
+        }
+        
+        [ClientRpc]
+        public void SpecialDetonatePlayerClientRPC(int clientID)
+        {
+            if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
+            var player = StartOfRound.Instance.allPlayerScripts[clientID];
+            if(!Misc.isPlayerLocal(clientID)) return;
+            if(!Misc.IsPlayerAliveAndControlled(player)) return;
+            MysteryDice.sounds.TryGetValue("MineTrigger", out AudioClip clip);
+            AudioSource.PlayClipAtPoint(clip, player.transform.position);
+            StartCoroutine(SpawnExplosionAfterSFX(player.transform.position, 3, 10, 70, 10));
+        }
+
+        #endregion
 
     }
 }

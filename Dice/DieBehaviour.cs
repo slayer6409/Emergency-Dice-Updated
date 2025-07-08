@@ -9,6 +9,7 @@ using Unity.Netcode;
 using UnityEngine;
 using GameNetcodeStuff;
 using KaimiraGames;
+using MysteryDice.CompatThings;
 using MysteryDice.Patches;
 using MysteryDice.Visual;
 using Random = UnityEngine.Random;
@@ -256,8 +257,13 @@ namespace MysteryDice.Dice
                         if (StartOfRound.Instance.currentLevel.PlanetName == "71 Gordion" || StartOfRound.Instance.currentLevel.PlanetName == "98 Galetry" )
                         {
                             Misc.SafeTipMessage($"Company penalty", "Do not try this again.");
-                            doPenalty();
-                            yield break;
+                            var effect = getRandomEffectByType(EffectType.Penalty, AllEffects);
+                            effect.Use();
+                        }
+                        if (StartOfRound.Instance.currentLevel.sceneName == "Oxyde")
+                        {
+                            var effect = getRandomEffectByType(EffectType.SpecialPenalty, AllEffects);
+                            effect.Use();
                         }
                         
                         if(MysteryDice.aprilFoolsConfig.Value) AprilFoolsRoll(); 
@@ -364,6 +370,16 @@ namespace MysteryDice.Dice
             Networker.Instance.LogEffectsToOwnerServerRPC(who, randomEffect.Name, diceRoll);
             ShowDefaultTooltip(randomEffect, diceRoll);
         }
+
+        public IEffect getRandomEffectByType(EffectType type, List<IEffect> effectsToUse)
+        {
+            List<IEffect> effectsChosen = new List<IEffect>();
+            foreach (IEffect effect in effectsToUse)
+            {
+                if(effect.Outcome == type) effectsChosen.Add(effect);
+            }
+            return effectsChosen[UnityEngine.Random.Range(0, effectsChosen.Count)];
+        }
         
         public IEffect GetRandomEffect(int diceRoll, List<IEffect> effects)
         {
@@ -467,21 +483,9 @@ namespace MysteryDice.Dice
             Misc.SafeTipMessage($"Rolled {diceRoll}", message);
         }
 
-        public static void doPenalty()
-        {
-            if (MysteryDice.NavMeshInCompanyPresent)
-            {
-                Networker.Instance.doPenaltyServerRPC(10);
-            }
-            else
-            {
-                (new Detonate()).Use();
-            }
-            Misc.SafeTipMessage($"Penalty", "Next time roll it inside :)");
-        }
-
         public static void Config()
         {
+            
             MysteryDice.MainRegisterNewEffect(new NeckBreak());
             SteveNames.Add(new SelectEffect().Name);
             MysteryDice.MainRegisterNewEffect(new SelectEffect());
@@ -509,6 +513,8 @@ namespace MysteryDice.Dice
             MysteryDice.MainRegisterNewEffect(new ZombieToShip());
             MysteryDice.MainRegisterNewEffect(new InvertDoorLock());
             SteveNames.Add(new AlarmCurse().Name);
+           
+            
             MysteryDice.MainRegisterNewEffect(new AlarmCurse());
             SteveNames.Add(new JumpscareGlitch().Name);
             MysteryDice.MainRegisterNewEffect(new JumpscareGlitch());
@@ -618,7 +624,7 @@ namespace MysteryDice.Dice
             MysteryDice.MainRegisterNewEffect(new TulipBombers());
             SteveNames.Add(new MadScience().Name);
             MysteryDice.MainRegisterNewEffect(new MadScience());
-            //MysteryDice.MainRegisterNewEffect(new TargetPractice(), true); //it bad no do this
+            MysteryDice.MainRegisterNewEffect(new SpecialDetonate(), true);
 
             if (MysteryDice.TooManyEmotesPresent)
             {
@@ -638,6 +644,7 @@ namespace MysteryDice.Dice
                 MysteryDice.MainRegisterNewEffect(new CatchEmAll());
                 MysteryDice.MainRegisterNewEffect(new LegendaryCatch());
             }
+            
             if (MysteryDice.LCOfficePresent)
             {
                 MysteryDice.MainRegisterNewEffect(new InsideShrimps());
@@ -716,73 +723,132 @@ namespace MysteryDice.Dice
             
             if (MysteryDice.CodeRebirthPresent) 
             {
-                
-                CodeRebirthNames.Add(new Tornado().Name);
-                //if(CodeRebirthCheckConfigs.checkTornadoConfig()) 
+                if (CodeRebirthCheckConfigs.getEnemy("Tornado")!= null)
+                {
+                    CodeRebirthNames.Add(new Tornado().Name);
                     MysteryDice.MainRegisterNewEffect(new Tornado());
-                CodeRebirthNames.Add(new CratesOutside().Name);
-                //if(CodeRebirthCheckConfigs.checkCrateConfig()) 
-                    MysteryDice.MainRegisterNewEffect(new CratesOutside());
-                CodeRebirthNames.Add(new CratesInside().Name);
-                //if(CodeRebirthCheckConfigs.checkCrateConfig()) 
+                }
+
+                if (CodeRebirthCheckConfigs.getTrap("Crate")!= null)
+                {
+                    CodeRebirthNames.Add(new CratesOutside().Name);
+                    MysteryDice.MainRegisterNewEffect(new CratesOutside()); 
+                    CodeRebirthNames.Add(new CratesInside().Name);
                     MysteryDice.MainRegisterNewEffect(new CratesInside());
-                CodeRebirthNames.Add(new MovingCrates().Name);
-                SteveNames.Add(new MovingCrates().Name);
-                //if(CodeRebirthCheckConfigs.checkCrateConfig()) 
+                    CodeRebirthNames.Add(new MovingCrates().Name);
+                    SteveNames.Add(new MovingCrates().Name);
                     MysteryDice.MainRegisterNewEffect(new MovingCrates());
-                CodeRebirthNames.Add(new Fans().Name);
-                //if(CodeRebirthCheckConfigs.checkFanConfig()) 
+                }
+
+                if (CodeRebirthCheckConfigs.getTrap("Industrial Fan")!= null)
+                {
+                    CodeRebirthNames.Add(new Fans().Name);
                     MysteryDice.MainRegisterNewEffect(new Fans());
-                CodeRebirthNames.Add(new Flashers().Name);
-                //if(CodeRebirthCheckConfigs.checkFlashConfig()) 
-                    MysteryDice.MainRegisterNewEffect(new Flashers());
-                CodeRebirthNames.Add(new Microwave().Name);
-                //if(CodeRebirthCheckConfigs.checkMicrowaveConfig()) 
-                    MysteryDice.MainRegisterNewEffect(new Microwave());
-                CodeRebirthNames.Add(new MovingFans().Name);
-                //if(CodeRebirthCheckConfigs.checkFanConfig()) 
-                    MysteryDice.MainRegisterNewEffect(new MovingFans());
-                CodeRebirthNames.Add(new SkyFan().Name);
-                //if(CodeRebirthCheckConfigs.checkFanConfig()) 
-                    MysteryDice.MainRegisterNewEffect(new SkyFan(),true);//Need to turn shadows off 
-                    SteveNames.Add(new Paparazzi().Name);
-                    CodeRebirthNames.Add(new Paparazzi().Name); 
-                //if(CodeRebirthCheckConfigs.checkFanConfig() && CodeRebirthCheckConfigs.checkFlashConfig())
-                    MysteryDice.MainRegisterNewEffect(new Paparazzi());
-                //if(CodeRebirthCheckConfigs.checkBearTrapConfig()) MysteryDice.MainRegisterNewEffect(new MovingBeartraps());
-                CodeRebirthNames.Add(new TheRumbling().Name);
-                MysteryDice.MainRegisterNewEffect(new TheRumbling());
-                CodeRebirthNames.Add(new FollowerFan().Name);
-                //if(CodeRebirthCheckConfigs.checkFanConfig()) 
+                    CodeRebirthNames.Add(new MovingFans().Name);
+                    MysteryDice.MainRegisterNewEffect(new MovingFans()); 
+                    CodeRebirthNames.Add(new FollowerFan().Name);
                     MysteryDice.MainRegisterNewEffect(new FollowerFan());
-                    SteveNames.Add(new CleaningCrew().Name);
-                CodeRebirthNames.Add(new CleaningCrew().Name);
-                //if(CodeRebirthCheckConfigs.checkJanitorConfig()&&CodeRebirthCheckConfigs.checkTransporterConfig()) 
-                    MysteryDice.MainRegisterNewEffect(new CleaningCrew());
-                CodeRebirthNames.Add(new FreebirdJimothy().Name);
-                SteveNames.Add(new FreebirdJimothy().Name);
-                //if(CodeRebirthCheckConfigs.checkTransporterConfig()) 
-                    MysteryDice.MainRegisterNewEffect(new FreebirdJimothy());
-                CodeRebirthNames.Add(new Bald().Name);
-                SteveNames.Add(new Bald().Name);
-                //if(CodeRebirthCheckConfigs.checkFlashConfig()) 
+                    if (CodeRebirthCheckConfigs.getTrap("Flash Turret")!= null)
+                    {
+                        SteveNames.Add(new Paparazzi().Name);
+                        CodeRebirthNames.Add(new Paparazzi().Name); 
+                        MysteryDice.MainRegisterNewEffect(new Paparazzi());
+                    }
+                }
+
+                if (CodeRebirthCheckConfigs.getTrap("Flash Turret")!= null)
+                {
+                    CodeRebirthNames.Add(new Flashers().Name);
+                    MysteryDice.MainRegisterNewEffect(new Flashers());
+                    CodeRebirthNames.Add(new Bald().Name);
+                    SteveNames.Add(new Bald().Name);
                     MysteryDice.MainRegisterNewEffect(new Bald());
+                }
+                if (CodeRebirthCheckConfigs.getTrap("Functional Microwave")!= null)
+                {
+                    CodeRebirthNames.Add(new Microwave().Name);
+                    MysteryDice.MainRegisterNewEffect(new Microwave());
+                }
+                if (CodeRebirthCheckConfigs.getEnemy("Transporter")!= null)
+                {
+                    CodeRebirthNames.Add(new FreebirdJimothy().Name);
+                    SteveNames.Add(new FreebirdJimothy().Name);
+                    MysteryDice.MainRegisterNewEffect(new FreebirdJimothy());
+                }
+                if (CodeRebirthCheckConfigs.getEnemy("Janitor")!= null && CodeRebirthCheckConfigs.getEnemy("Transporter")!= null)
+                {
+                    SteveNames.Add(new CleaningCrew().Name);
+                    CodeRebirthNames.Add(new CleaningCrew().Name);
+                    MysteryDice.MainRegisterNewEffect(new CleaningCrew());
+                }   
+                if (CodeRebirthCheckConfigs.getEnemy("Redwood Titan")!= null)
+                {
+                     CodeRebirthNames.Add(new TheRumbling().Name);
+                                    MysteryDice.MainRegisterNewEffect(new TheRumbling());
+                }
+
+                if (CodeRebirthCheckConfigs.getTrap("Autonomous Crane") != null)
+                {
+                    CodeRebirthNames.Add(new SmolCrane().Name);
+                    MysteryDice.MainRegisterNewEffect(new SmolCrane());
+                    CodeRebirthNames.Add(new BeegCrane().Name);
+                    MysteryDice.MainRegisterNewEffect(new BeegCrane());
+                }
+                if (CodeRebirthCheckConfigs.getTrap("Emerging Cactus 1") != null)
+                {
+                    CodeRebirthNames.Add(new TheDesert().Name);
+                    MysteryDice.MainRegisterNewEffect(new TheDesert());
+                }
+              
+                MysteryDice.MainRegisterNewEffect(new OxydePenalty(), true);
                 CodeRebirthNames.Add(new Zortin().Name);
                 SteveNames.Add(new Zortin().Name);
-                //if(CodeRebirthCheckConfigs.checkZortConfig()) 
-                    MysteryDice.MainRegisterNewEffect(new Zortin());
+                   MysteryDice.MainRegisterNewEffect(new Zortin());
                 CodeRebirthNames.Add(new ZortinTwo().Name);
                 SteveNames.Add(new ZortinTwo().Name);
-                //if(CodeRebirthCheckConfigs.checkZortConfig()) 
                     MysteryDice.MainRegisterNewEffect(new ZortinTwo());
                 CodeRebirthNames.Add(new BlameGlitch().Name);
+                if (CodeRebirthCheckConfigs.getEnemy("Nancy") != null)
+                {
+                    CodeRebirthNames.Add(new Healers().Name);
+                    MysteryDice.MainRegisterNewEffect(new Healers());
+                }
+                if (CodeRebirthCheckConfigs.getEnemy("Mistress") != null)
+                {
+                    CodeRebirthNames.Add(new ManyMistress().Name);
+                    MysteryDice.MainRegisterNewEffect(new ManyMistress());
+                } 
+                if (CodeRebirthCheckConfigs.getEnemy("Guardsman") != null)
+                {
+                    CodeRebirthNames.Add(new GuardsmanOutside().Name);
+                    MysteryDice.MainRegisterNewEffect(new GuardsmanOutside());
+                } 
+                if (CodeRebirthCheckConfigs.getEnemy("Peace Keeper") != null)
+                {
+                    CodeRebirthNames.Add(new PeaceTreaty().Name);
+                    MysteryDice.MainRegisterNewEffect(new PeaceTreaty());
+                }
+                if (CodeRebirthCheckConfigs.getEnemy("Mistress") != null &&
+                    CodeRebirthCheckConfigs.getEnemy("Rabbit Magician") != null &&
+                    CodeRebirthCheckConfigs.getEnemy("Lord Of The Manor") != null)
+                {
+                    CodeRebirthNames.Add(new HappyFamily().Name);
+                    MysteryDice.MainRegisterNewEffect(new HappyFamily());
+                }
+                if (CodeRebirthCheckConfigs.getEnemy("Real Enemy SnailCat") != null)
+                {
+                    CodeRebirthNames.Add(new ImmortalSnailcat().Name);
+                    MysteryDice.MainRegisterNewEffect(new ImmortalSnailcat());
+                }
+
+                if (CodeRebirthCheckConfigs.getEnemy("Lord Of The Manor") != null)
+                {
+                    CodeRebirthNames.Add(new EtTuBrute().Name);
+                    MysteryDice.MainRegisterNewEffect(new EtTuBrute());
+                }
+                
             }
-            // if (!MysteryDice.DisableSizeBased.Value)
-            // {
-            //     MysteryDice.MainRegisterNewEffect(new SizeDifference());
-            //     MysteryDice.MainRegisterNewEffect(new SizeDifferenceForAll(),false,true);
-            //     MysteryDice.MainRegisterNewEffect(new SizeDifferenceSwitcher());
-            // }
+            
             if (MysteryDice.DiversityPresent)
             {
                 if (DiversityEffect1.checkConfigs()) MysteryDice.MainRegisterNewEffect(new DiversityEffect1());
@@ -794,6 +860,10 @@ namespace MysteryDice.Dice
                 MysteryDice.MainRegisterNewEffect(new EveryoneFriends());
             }
 
+            if (MysteryDice.NavMeshInCompanyPresent)
+            {
+                MysteryDice.MainRegisterNewEffect(new NavMeshPenalty(), true);
+            }
             List<IEffect> sortedList = AllEffects.OrderBy(o => o.Name).ToList();
             CompleteEffects.AddRange(AllEffects);
             CompleteEffects = CompleteEffects.OrderBy(o => o.Name).ToList();

@@ -340,7 +340,7 @@ public class DebugMenuStuff : MonoBehaviour
 
     }
     
-    public static void ShowSelectEffectMenu()
+    public static void ShowSelectEffectMenu(bool isAdMenu = false)
     {   
         SetupColors();
         if(!ran) setupElements();
@@ -403,7 +403,15 @@ public class DebugMenuStuff : MonoBehaviour
         
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
-        ShowSelectMenu(true);
+        if (!isAdMenu) ShowSelectMenu(true);
+        else
+        {
+            EffectMenu.transform.Find("DebugMenu/TopPart/Border/Title").GetComponent<TMP_Text>().text = "Select an Ad";
+            EffectMenu.transform.Find("DebugMenu/Background/TopText").gameObject.SetActive(true);
+            EffectMenu.transform.Find("DebugMenu/Background/BottomText").gameObject.SetActive(true);
+            AdUnlockable(true);
+            AdAnyItem(true);
+        }
     }
 
     static void FilterItems(string searchText)
@@ -423,10 +431,18 @@ public class DebugMenuStuff : MonoBehaviour
     public static void clearMainViewport()
     {
         Transform scrollContent = EffectMenu.transform.Find("DebugMenu/Background/Scroll View/Viewport/Content");
+        hideStuff();
         foreach (Transform obj in scrollContent)
         {
+            
             Destroy(obj.gameObject);
         }
+    }
+
+    public static void hideStuff()
+    {
+        EffectMenu.transform.Find("DebugMenu/Background/TopText").gameObject.SetActive(false);
+        EffectMenu.transform.Find("DebugMenu/Background/BottomText").gameObject.SetActive(false);
     }
 
     public static void clearSubViewport()
@@ -851,7 +867,7 @@ public class DebugMenuStuff : MonoBehaviour
     } 
     
     
-    public static void AdAnyItem()
+    public static void AdAnyItem(bool fromSelect = false)
     {
         FavoriteEffectManager.FavoriteData favoritesData = FavoriteEffectManager.LoadFavorites();
         List<string> favoriteItemsNames = favoritesData.FavoriteItems;
@@ -873,8 +889,8 @@ public class DebugMenuStuff : MonoBehaviour
             Button button = effectObj.GetComponent<Button>();
             button.onClick.AddListener(() =>
             {
-                CloseSelectMenu();
-                Networker.Instance.AdServerRPC(true, scrap.itemName, ManyAds.getTopText(), ManyAds.getBottomText());
+                CloseSelectMenu(fromSelect);
+                Networker.Instance.AdServerRPC(true, scrap.itemName, getTopText(), getBottomText());
             });
 
             RightClickHandler2 rightClickHandler = effectObj.AddComponent<RightClickHandler2>();
@@ -883,9 +899,25 @@ public class DebugMenuStuff : MonoBehaviour
             rightClickHandler.full = full;
             rightClickHandler.complete = complete;
         }
-    } 
+    }
+
+    public static string getTopText()
+    {
+        string toReturn = ManyAds.getTopText();
+        var TopText = EffectMenu.transform.Find("DebugMenu/Background/TopText").GetComponent<TMP_InputField>();
+        if(TopText.text!="") toReturn = TopText.text;
+        return toReturn;
+    }
+
+    public static string getBottomText()
+    {
+        string toReturn = ManyAds.getBottomText();
+        var BottomText = EffectMenu.transform.Find("DebugMenu/Background/BottomText").GetComponent<TMP_InputField>();
+        if(BottomText.text!="") toReturn = BottomText.text;
+        return toReturn;
+    }
     
-    public static void AdUnlockable()
+    public static void AdUnlockable(bool fromSelect = false)
     {
         Transform scrollContent = EffectMenu.transform.Find("DebugMenu/Background/Scroll View/Viewport/Content");
 
@@ -900,11 +932,12 @@ public class DebugMenuStuff : MonoBehaviour
             Button button = effectObj.GetComponent<Button>();
             button.onClick.AddListener(() =>
             {
-                Networker.Instance.AdServerRPC(false, item.unlockableName, ManyAds.getTopText(), ManyAds.getBottomText());
-                CloseSelectMenu();
+                Networker.Instance.AdServerRPC(false, item.unlockableName, getTopText(), getBottomText());
+                CloseSelectMenu(fromSelect);
             });
         }
     }
+    
 
     public static void spawnWorldObject()
     {
@@ -1183,6 +1216,11 @@ public class DebugMenuStuff : MonoBehaviour
         button10.onClick.AddListener(() =>
         {
             clearMainViewport();
+            if (SelectEffect.isSpecial())
+            {
+                EffectMenu.transform.Find("DebugMenu/Background/TopText").gameObject.SetActive(true);
+                EffectMenu.transform.Find("DebugMenu/Background/BottomText").gameObject.SetActive(true);
+            }
             AdAnyItem();
             FilterItems(searchInput.text);
         });
@@ -1195,6 +1233,11 @@ public class DebugMenuStuff : MonoBehaviour
         button11.onClick.AddListener(() =>
         {
             clearMainViewport();
+            if (SelectEffect.isSpecial())
+            {
+                EffectMenu.transform.Find("DebugMenu/Background/TopText").gameObject.SetActive(true);
+                EffectMenu.transform.Find("DebugMenu/Background/BottomText").gameObject.SetActive(true);
+            }
             AdUnlockable();
             FilterItems(searchInput.text);
         });
@@ -1358,6 +1401,18 @@ public class DebugMenuStuff : MonoBehaviour
                 ForceSuitPlayerSelector();
                 FilterItems(searchInput.text);
             });
+            
+            GameObject effectObj5 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, scrollContent);
+            TMP_Text buttonText5 = effectObj5.transform.GetChild(0).GetComponent<TMP_Text>();
+            buttonText5.text = $"Player Choose Ad";
+
+            Button button5 = effectObj5.GetComponent<Button>();
+            button5.onClick.AddListener(() =>
+            {
+                clearMainViewport();
+                ForcePlayerAd();
+                FilterItems(searchInput.text);
+            });
         }
         OnPlayerFunctionsAdded?.Invoke(subScrollContent);
     }
@@ -1410,6 +1465,36 @@ public class DebugMenuStuff : MonoBehaviour
                 }
 
                 Misc.SafeTipMessage($"Teleport", txtToSay);
+            });
+
+        }
+    } 
+    public static void ForcePlayerAd()
+    {
+
+        Transform scrollContent = EffectMenu.transform.Find("DebugMenu/Background/Scroll View/Viewport/Content");
+
+        List<PlayerControllerB> allPlayers = StartOfRound.Instance.allPlayerScripts.ToList();
+
+        allPlayers = allPlayers
+            .GroupBy(x => x.playerUsername)
+            .Select(g => g.First())
+            .OrderBy(x => x.playerUsername)
+            .ToList();
+
+
+        foreach (var player in allPlayers)
+        {
+            if (!player.isPlayerControlled) continue;
+            GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
+            TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
+            buttonText.text = $"{player.playerUsername}";
+
+            Button button = effectObj.GetComponent<Button>();
+            button.onClick.AddListener(() =>
+            {
+                CloseSelectMenu();
+                Networker.Instance.ShowAdMenuServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, player));
             });
 
         }

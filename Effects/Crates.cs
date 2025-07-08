@@ -2,12 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
-using CodeRebirth.src.Content.Maps;
-using CodeRebirth.src.Util.Extensions;
+using CodeRebirthLib.ContentManagement.MapObjects;
 using UnityEngine.SceneManagement;
 using Random = System.Random;
 
@@ -28,13 +28,18 @@ namespace MysteryDice.Effects
             Networker.Instance.CratesOutsideServerRPC();
         }
 
+        [MethodImpl (MethodImplOptions.NoInlining)]
+        public static CRMapObjectDefinition getRandomCrate()
+        {
+            var crates = CodeRebirth.src.Plugin.Mod.MapObjectRegistry()
+                .Where(x => x.ObjectName.Contains("crate", StringComparison.OrdinalIgnoreCase)).ToList();
+            return crates[UnityEngine.Random.Range(0, crates.Count)];
+        }
+
+        [MethodImpl (MethodImplOptions.NoInlining)]
         public static void SpawnCratesOutside(int MinesToSpawn, float positionOffsetRadius = 5f)
         {
-            MapObjectHandler handler = CodeRebirth.src.Content.Maps.MapObjectHandler.Instance;
-            GameObject metalCrate = handler.Crate.MetalCratePrefab;
-            GameObject metalMimicCrate = handler.Crate.MimicMetalCratePrefab;
-            GameObject woodenCrate = handler.Crate.WoodenCratePrefab;
-            GameObject woodenMimicCrate = handler.Crate.MimicWoodenCratePrefab;
+            
             int spawnedMines = 0;
             System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed);
 
@@ -48,21 +53,12 @@ namespace MysteryDice.Effects
                     Vector3 vector = RoundManager.Instance.GetRandomNavMeshPositionInBoxPredictable(position, 10f, default, random, -1) + (Vector3.up * 2);
 
                     Physics.Raycast(vector, Vector3.down, out RaycastHit hit, 100, StartOfRound.Instance.collidersAndRoomMaskAndDefault);
-                    GameObject crate;
-                    if (UnityEngine.Random.Range(0, 3) == 1)
-                    {
-                        
-                        crate = UnityEngine.Random.value > 0.5 ? metalCrate: metalMimicCrate;
-                    }
-                    else
-                    {
-                        crate = UnityEngine.Random.value > 0.5 ? woodenCrate: woodenMimicCrate;
-                    }
+                    CRMapObjectDefinition crate = getRandomCrate();
 
                     if (hit.collider != null)
                     {
                         Vector3 spawnPoint = hit.point + hit.normal * -0.75f;
-                        GameObject spawnedCrate = GameObject.Instantiate(crate, spawnPoint, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
+                        GameObject spawnedCrate = GameObject.Instantiate(crate.GameObject, spawnPoint, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
                         spawnedCrate.transform.up = hit.normal;
                         spawnedCrate.GetComponent<NetworkObject>().Spawn();
                         SceneManager.MoveGameObjectToScene(spawnedCrate, RoundManager.Instance.mapPropsContainer.scene);
@@ -71,13 +67,11 @@ namespace MysteryDice.Effects
                 }
             }
         }
+        
+        [MethodImpl (MethodImplOptions.NoInlining)]
         public static void SpawnCratesInside(int MinesToSpawn, float positionOffsetRadius = 5f)
         {
-            MapObjectHandler handler = CodeRebirth.src.Content.Maps.MapObjectHandler.Instance;
-            GameObject metalCrate = handler.Crate.MetalCratePrefab;
-            GameObject metalMimicCrate = handler.Crate.MimicMetalCratePrefab;
-            GameObject woodenCrate = handler.Crate.WoodenCratePrefab;
-            GameObject woodenMimicCrate = handler.Crate.MimicWoodenCratePrefab;
+           
             int spawnedMines = 0;
             System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed);
 
@@ -90,20 +84,14 @@ namespace MysteryDice.Effects
                     Vector3 vector = RoundManager.Instance.GetRandomNavMeshPositionInBoxPredictable(position, 10f, default, random, -1) + (Vector3.up * 2);
 
                     Physics.Raycast(vector, Vector3.down, out RaycastHit hit, 100, StartOfRound.Instance.collidersAndRoomMaskAndDefault);
-                    GameObject crate;
-                    if (UnityEngine.Random.Range(0, 3) == 1)
-                    {
-                        crate = UnityEngine.Random.value > 0.5 ? metalCrate: metalMimicCrate;
-                    }
-                    else
-                    {
-                        crate = UnityEngine.Random.value > 0.5 ? woodenCrate: woodenMimicCrate;
-                    }
+                    
+                    CRMapObjectDefinition crate = getRandomCrate();
+                    
 
                     if (hit.collider != null)
                     {
                         Vector3 spawnPoint = hit.point + hit.normal * -0.75f;
-                        GameObject spawnedCrate = GameObject.Instantiate(crate, spawnPoint, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
+                        GameObject spawnedCrate = GameObject.Instantiate(crate.GameObject, spawnPoint, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
                         spawnedCrate.transform.up = hit.normal;
                         spawnedCrate.GetComponent<NetworkObject>().Spawn();
                         SceneManager.MoveGameObjectToScene(spawnedCrate, RoundManager.Instance.mapPropsContainer.scene);

@@ -41,24 +41,23 @@ namespace MysteryDice.Dice
                 }
                 else if (MysteryDice.chronosUpdatedTimeOfDay.Value)
                 {
-                    if(offset < .5f)
+                    if (offset < .5f)
                     {
-
-                        weightedRolls.Add(1, 1 + (int)((1 - offset) * 10f));
-                        weightedRolls.Add(2, 1 + (int)((1 - offset) * 8f));
-                        weightedRolls.Add(3, 1 + (int)((1 - offset) * 6f));
-                        weightedRolls.Add(4, 1 + (int)(offset * 4f));
-                        weightedRolls.Add(5, 1 + (int)(offset * 2f));
-                        weightedRolls.Add(6, 1 + (int)offset);
-                    }
-                    else if(offset >= .5f)
-                    {
-                        weightedRolls.Add(1, 1 + (int)(offset * 4f));
-                        weightedRolls.Add(2, 1 + (int)(offset * 2f));
-                        weightedRolls.Add(3, 1 + (int)offset);
+                        weightedRolls.Add(1, 1 + (int)(offset * 2f));
+                        weightedRolls.Add(2, 1 + (int)(offset * 4f));
+                        weightedRolls.Add(3, 1 + (int)(offset * 6f));
                         weightedRolls.Add(4, 1 + (int)((1 - offset) * 6f));
                         weightedRolls.Add(5, 1 + (int)((1 - offset) * 8f));
                         weightedRolls.Add(6, 1 + (int)((1 - offset) * 10f));
+                    }
+                    else if (offset >= .5f)
+                    {
+                        weightedRolls.Add(1, 1 + (int)((offset) * 10f));
+                        weightedRolls.Add(2, 1 + (int)((offset) * 8f));
+                        weightedRolls.Add(3, 1 + (int)((offset) * 6f));
+                        weightedRolls.Add(4, 1 + (int)((1 - offset) * 6f));
+                        weightedRolls.Add(5, 1 + (int)((1 - offset) * 4f));
+                        weightedRolls.Add(6, 1 + (int)((1 - offset) * 2f));
                     }
                 }
 

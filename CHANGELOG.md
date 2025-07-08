@@ -1,3 +1,27 @@
+-	**1.12.0**
+    - Updated for the Update of Code Rebirth
+    - Fixed Flying if another client existed
+    - Fixed Debug menu for certain people
+    - New Events (Code Rebirth Stuff)
+    - AHHHHHHHHHHHH 
+    - Changed Penalty system a bit so now there are a few things that can happen if you roll the dice on the company moon
+
+-	**1.11.8**
+    - Fixed some issues
+
+-	**1.11.7**
+    - Saved Christmas
+    - Made Chronos even better the earlier it is
+    - Fixed some FallToGround Issues
+    - AdStuff
+    - :(
+
+-	**1.11.6**
+    - Slight fixes for some things
+
+- **1.11.5**
+    - Removed the audio from confusion and stupid confusion making them much less bad
+
 -	**1.11.4**
     - Quality of life things with the debug menu
     - Balanced some events out

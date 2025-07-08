@@ -58,7 +58,7 @@ namespace MysteryDice.Effects
                     netObj.Spawn();
                     CullFactorySoftCompat.RefreshGrabbableObjectPosition(obj.GetComponent<GrabbableObject>());
                     obj.GetComponent<GrabbableObject>().EnablePhysics(true);
-                    //component.FallToGround(true);
+                    component.FallToGround(false, true, playerPos);
                     EggFountain.teleport(netObj,Array.IndexOf(StartOfRound.Instance.allPlayerScripts, StartOfRound.Instance.localPlayerController),component.transform.position+new Vector3(0,.25f,0));
                     BombCollarProp bcp = obj.GetComponent<BombCollarProp>();
                     BombCollar.BombCollarBase.Instance.AllBombCollars.Add(bcp);
@@ -124,7 +124,7 @@ namespace MysteryDice.Effects
                     scrapWeights.Add(component.itemProperties.weight);
                     NetworkObject netObj = obj.GetComponent<NetworkObject>();
                     netObj.Spawn();
-                    //component.FallToGround(true);
+                    component.FallToGround(false, true, pos);
                     netObjs.Add(netObj);
                     EggFountain.teleport(netObj,Array.IndexOf(StartOfRound.Instance.allPlayerScripts, StartOfRound.Instance.localPlayerController),component.transform.position+new Vector3(0,.25f,0));
                     BombCollarProp bcp = obj.GetComponent<BombCollarProp>();
