@@ -36,15 +36,25 @@ namespace MysteryDice.Effects
         
         public static IEnumerator LoadRemoteTextLists()
         {
-            yield return LoadListFromURL("https://raw.githubusercontent.com/YourUser/YourRepo/main/topText.txt", topText, InitializeTopText);
-            yield return LoadListFromURL("https://raw.githubusercontent.com/YourUser/YourRepo/main/bottomText.txt", bottomText, InitializeBottomText);
-            yield return LoadListFromURL("https://raw.githubusercontent.com/YourUser/YourRepo/main/neutralText.txt", neutralText, InitializeNeutralText);
+            topText.Clear();
+            bottomText.Clear();
+            neutralText.Clear();
+            yield return LoadListFromURL(GetURLWithTimestamp("TopText"), topText, InitializeTopText, "TopText");
+            yield return LoadListFromURL(GetURLWithTimestamp("BottomText"), bottomText, InitializeBottomText, "BottomText");
+            yield return LoadListFromURL(GetURLWithTimestamp("NeutralText"), neutralText, InitializeNeutralText, "NeutralText");
         }
 
-        private static IEnumerator LoadListFromURL(string url, List<string> targetList, Action fallback)
+        private static IEnumerator LoadListFromURL(string url, List<string> targetList, Action fallback, string name)
         {
+            MysteryDice.ExtendedLogging($"Loading List from url: {url} to target list: {name}");
+
             using (UnityWebRequest www = UnityWebRequest.Get(url))
             {
+                www.useHttpContinue = false;
+                www.SetRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+                www.SetRequestHeader("Pragma", "no-cache");
+                www.SetRequestHeader("Expires", "0");
+
                 yield return www.SendWebRequest();
 
                 if (www.result != UnityWebRequest.Result.Success)
@@ -55,13 +65,22 @@ namespace MysteryDice.Effects
                 else
                 {
                     targetList.Clear();
-                    string[] lines = www.downloadHandler.text.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    string rawText = www.downloadHandler.text;
+                    MysteryDice.ExtendedLogging($"[RawText] {name}: {rawText}");
+                    string[] lines = rawText.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     targetList.AddRange(lines.Select(line => line.Trim()).Where(line => !string.IsNullOrWhiteSpace(line)));
                 }
             }
         }
+        private static string GetURLWithTimestamp(string fileName)
+        {
+            string baseUrl = $"https://raw.githubusercontent.com/slayer6409/Emergency-Dice-Updated/master/Misc/{fileName}";
+            string timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
+            return $"{baseUrl}?cachebust={Guid.NewGuid()}";
+        }
         private static void InitializeTopText()
         {
+            MysteryDice.ExtendedLogging("Fallback Top Text");
             topText = new List<string>()
                 {
                     "This fuckin thing",
@@ -89,6 +108,7 @@ namespace MysteryDice.Effects
 
         private static void InitializeBottomText()
         {
+            MysteryDice.ExtendedLogging("Fallback Bottom Text");
             bottomText = new List<string>()
             {
                 "bottom text", 
@@ -117,6 +137,7 @@ namespace MysteryDice.Effects
 
         private static void InitializeNeutralText()
         {
+            MysteryDice.ExtendedLogging("Fallback Neutral Text");
             neutralText = new List<string>()
             {
                 "Breaking News!",
@@ -160,24 +181,24 @@ namespace MysteryDice.Effects
 
         public static void logAll()
         {
-            MysteryDice.CustomLogger.LogInfo("Logging All");
+            MysteryDice.ExtendedLogging("Logging All");
             foreach (var VARIABLE in topText)
             {
-                MysteryDice.CustomLogger.LogInfo(VARIABLE);
+                MysteryDice.ExtendedLogging("Top " + VARIABLE);
             }
             foreach (var VARIABLE in bottomText)
             {
-                MysteryDice.CustomLogger.LogInfo(VARIABLE);
+                MysteryDice.ExtendedLogging("Bottom " + VARIABLE);
             }
             foreach (var VARIABLE in neutralText)
             {
-                MysteryDice.CustomLogger.LogInfo(VARIABLE);
+                MysteryDice.ExtendedLogging("Neutral " + VARIABLE);
             }
         }
         
         public static string getTopText()
         {
-            if(MysteryDice.DebugLogging.Value)logAll();
+            logAll();
             List<string> tempList = new List<string>(topText);
             tempList.AddRange(StartOfRound.Instance.allPlayerScripts
                 .Where(x=>x.isPlayerControlled||x.isPlayerDead)
