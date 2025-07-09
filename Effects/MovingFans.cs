@@ -39,15 +39,6 @@ namespace MysteryDice.Effects
                 if (no == null) continue;
                 
                 if(no.gameObject.name.ToUpper().Contains("GAL")||no.gameObject.name.ToUpper().Contains("CHARGER")) continue;
-                // // Nuclear Option
-                // foreach (Transform child in no.gameObject.transform)
-                // {
-                //     if (child.name.ToUpper().Contains("GAL")||child.name.ToUpper().Contains("CHARGER"))
-                //     {
-                //         continue;
-                //     }
-                // }
-                //Debug.LogError($"Trap {trap.name}");
                 if (!trap)
                 {
                     MysteryDice.CustomLogger.LogWarning("Trap is null.");
@@ -71,6 +62,7 @@ namespace MysteryDice.Effects
                     agent.GetComponent<NetworkObject>().Spawn(destroyWithScene:true);
                     trap.transform.SetParent(agent.transform);
                     targetObject.transform.localPosition = Vector3.zero;
+                    trap.transform.localPosition = new Vector3(0, 0.2f, 0);
                     targetObject.transform.localRotation = Quaternion.identity;
                     mm.Initialize(smartAgentNavigator);
                     mm.enabled = true;
@@ -105,7 +97,7 @@ namespace MysteryDice.Effects
             var smartAgentNavigator = agent.GetComponent<SmartAgentNavigator>();
             var mm = trap.AddComponent<MakeMove>();
             trap.transform.SetParent(agent.transform);
-            trap.transform.localPosition = Vector3.zero;
+            trap.transform.localPosition = new Vector3(0, 0.2f, 0);
             trap.transform.localRotation = Quaternion.identity;
             mm.Initialize(smartAgentNavigator);
             mm.enabled = true;

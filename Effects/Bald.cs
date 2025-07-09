@@ -17,7 +17,7 @@ namespace MysteryDice.Effects
     internal class Bald : IEffect
     {
         public string Name => "Chrome Dome";
-        public EffectType Outcome => EffectType.Awful;
+        public EffectType Outcome => EffectType.Bad;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "Blindingly Bald";
         public void Use()

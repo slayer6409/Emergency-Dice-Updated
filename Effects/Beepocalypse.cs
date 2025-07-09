@@ -26,7 +26,7 @@ namespace MysteryDice.Effects
 
         public static void SpawnBeehives()
         {
-            for(int i = 0; i < UnityEngine.Random.Range(30,50); i++)
+            for(int i = 0; i < UnityEngine.Random.Range(5,25); i++)
                 Misc.SpawnOutsideEnemy(GetEnemies.Beehive);
 
             Networker.Instance.ZeroOutBeehiveScrapClientRPC();
@@ -34,12 +34,16 @@ namespace MysteryDice.Effects
 
         public static void ZeroAllBeehiveScrap()
         {
-            foreach (RedLocustBees enemy in GameObject.FindObjectsOfType<RedLocustBees>())
+            var beeType = GetEnemies.Beehive.enemyType;
+            foreach (var enemy in RoundManager.Instance.SpawnedEnemies)
             {
-                RedLocustBees bees = (RedLocustBees)enemy;
-                if (bees)
-                    if (bees.hive)
-                        bees.hive.SetScrapValue(0);
+                if (enemy.enemyType != beeType)
+                    continue;
+
+                if (enemy is RedLocustBees bees && bees.hive != null)
+                {
+                    bees.hive.SetScrapValue(0);
+                }
             }
         }
     }

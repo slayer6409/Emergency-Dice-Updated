@@ -5,6 +5,7 @@
     - New Events (Code Rebirth Stuff)
     - AHHHHHHHHHHHH 
     - Changed Penalty system a bit so now there are a few things that can happen if you roll the dice on the company moon
+    - Moving Traps are now more performant, and shouldn't cause lag, but Dice now requires PathfindingLib
 
 -	**1.11.8**
     - Fixed some issues

@@ -24,9 +24,7 @@ namespace MysteryDice.Effects
         public static void SpawnMistress()
         {
             if (!Networker.Instance.IsHost) return;
-            
-            
-            Misc.SpawnEnemyForced2(Misc.getEnemyByName("Mistress"),4, false);
+            Networker.Instance.CustomMonsterServerRPC("Mistress",3,5, false);
         }
         
 

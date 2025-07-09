@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>API</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<h1>API</h1>
+
+<p>I made an API of sorts that allows anyone to make their own dice effect:</p>
+
+<pre><code>
+public interface IEffect
+{
+    EffectType Outcome { get; }
+    bool ShowDefaultTooltip { get; }
+    string Name { get; }
+    string Tooltip { get; }
+    void Use();
+}
+    </code></pre>
+
+<p>Your dice roll has to be an <code>IEffect</code> from <code>MysteryDice.Effects</code>, and anything put in <code>Use()</code> will run when rolled.</p>
+
+<p><code>Use()</code> is only run by the client that rolled the die, so if you need server logic such as spawning things, it's best to use a networker for that.</p>
+
+<p>To register your effect in your plugin's <code>Awake</code> method, you would call:</p>
+
+<pre><code>
+MysteryDice.MysteryDice.RegisterNewEffect(new YourEffect());
+    </code></pre>
+
+<p>I made an <a href="https://github.com/slayer6409/Dice-Addon/tree/main">Example Mod</a> that uses said API if you want to see how it all works.</p>
+
+<footer>
+    I'm bad at design :D
+</footer>
+
+<p style="margin-top: 2em;"><a href="index.html">Back</a></p>
+</body>
+</html>

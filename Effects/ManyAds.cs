@@ -39,9 +39,9 @@ namespace MysteryDice.Effects
             topText.Clear();
             bottomText.Clear();
             neutralText.Clear();
-            yield return LoadListFromURL(GetURLWithTimestamp("TopText"), topText, InitializeTopText, "TopText");
-            yield return LoadListFromURL(GetURLWithTimestamp("BottomText"), bottomText, InitializeBottomText, "BottomText");
-            yield return LoadListFromURL(GetURLWithTimestamp("NeutralText"), neutralText, InitializeNeutralText, "NeutralText");
+            yield return LoadListFromURL(GetURLWithTimestamp("TopText.txt"), topText, InitializeTopText, "TopText");
+            yield return LoadListFromURL(GetURLWithTimestamp("BottomText.txt"), bottomText, InitializeBottomText, "BottomText");
+            yield return LoadListFromURL(GetURLWithTimestamp("NeutralText.txt"), neutralText, InitializeNeutralText, "NeutralText");
         }
 
         private static IEnumerator LoadListFromURL(string url, List<string> targetList, Action fallback, string name)
@@ -74,7 +74,7 @@ namespace MysteryDice.Effects
         }
         private static string GetURLWithTimestamp(string fileName)
         {
-            string baseUrl = $"https://raw.githubusercontent.com/slayer6409/Emergency-Dice-Updated/master/Misc/{fileName}";
+            string baseUrl = $"https://slayer6409.github.io/Emergency-Dice-Updated/{fileName}";
             string timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
             return $"{baseUrl}?cachebust={Guid.NewGuid()}";
         }

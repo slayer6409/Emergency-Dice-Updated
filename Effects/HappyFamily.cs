@@ -11,7 +11,7 @@ namespace MysteryDice.Effects
     internal class HappyFamily : IEffect
     {
         public string Name => "Happy Family";
-        public EffectType Outcome => EffectType.Great;
+        public EffectType Outcome => EffectType.Awful;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "One Big Happy Family!";
         

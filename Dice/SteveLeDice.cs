@@ -14,10 +14,10 @@ namespace MysteryDice.Dice
         public override void SetupRollToEffectMapping()
         {
             RollToEffect.Add(1, [EffectType.Awful, EffectType.Bad]);
-            RollToEffect.Add(2, [EffectType.Bad, EffectType.Awful,EffectType.Mixed]);
+            RollToEffect.Add(2, [EffectType.Bad ,EffectType.Mixed]);
             RollToEffect.Add(3, [EffectType.Mixed, EffectType.Bad, EffectType.Good]);
             RollToEffect.Add(4, [EffectType.Good, EffectType.Mixed, EffectType.Bad]);
-            RollToEffect.Add(5, [EffectType.Good, EffectType.Great,EffectType.Mixed]);
+            RollToEffect.Add(5, [EffectType.Good, EffectType.Mixed]);
             RollToEffect.Add(6, [EffectType.Great, EffectType.Good]);
         }
 

@@ -493,7 +493,7 @@ namespace MysteryDice.Dice
             MysteryDice.MainRegisterNewEffect(new Fly());
             MysteryDice.MainRegisterNewEffect(new LeverShake());
             MysteryDice.MainRegisterNewEffect(new HyperShake());
-            //MysteryDice.MainRegisterNewEffect(new MovingLandmines());
+            MysteryDice.MainRegisterNewEffect(new MovingLandmines());
             MysteryDice.MainRegisterNewEffect(new OutsideCoilhead());
             SteveNames.Add(new Arachnophobia().Name);
             MysteryDice.MainRegisterNewEffect(new Arachnophobia());
@@ -738,6 +738,9 @@ namespace MysteryDice.Dice
                     CodeRebirthNames.Add(new MovingCrates().Name);
                     SteveNames.Add(new MovingCrates().Name);
                     MysteryDice.MainRegisterNewEffect(new MovingCrates());
+                    CodeRebirthNames.Add(new IFeelSafe().Name);
+                    SteveNames.Add(new IFeelSafe().Name);
+                    MysteryDice.MainRegisterNewEffect(new IFeelSafe());
                 }
 
                 if (CodeRebirthCheckConfigs.getTrap("Industrial Fan")!= null)
@@ -845,6 +848,11 @@ namespace MysteryDice.Dice
                 {
                     CodeRebirthNames.Add(new EtTuBrute().Name);
                     MysteryDice.MainRegisterNewEffect(new EtTuBrute());
+                }
+                if (CodeRebirthCheckConfigs.getEnemy("CutieFly") != null)
+                {
+                    CodeRebirthNames.Add(new HeatSeakingCutieFly().Name);
+                    MysteryDice.MainRegisterNewEffect(new HeatSeakingCutieFly());
                 }
                 
             }

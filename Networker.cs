@@ -1641,6 +1641,12 @@ namespace MysteryDice
                 UnityEngine.Random.Range(CratesOutside.MinMinesToSpawn, CratesOutside.MaxMinesToSpawn + 1);
             CratesOutside.SpawnCratesOutside(MinesToSpawn);
         }
+        [ServerRpc(RequireOwnership = false)]
+        public void IFeelSafeServerRPC()
+        {
+           
+            IFeelSafe.SpawnCratesOutside();
+        }
 
         #endregion
 
@@ -2016,7 +2022,7 @@ namespace MysteryDice
         [ServerRpc(RequireOwnership = false)]
         public void doImmortalSnailCatServerRPC(int e)
         {
-            TulipBombers.spawnAttachedEnemyCombo(e, "Real Enemy SnailCat", Misc.getAllTraps().Where(x=>x.name.Contains("Landmine")).First().name, true, sizeOfTrap: new Vector3(0.5f, 0.5f, 0.5f));
+            TulipBombers.spawnAttachedEnemyCombo(e, "Real Enemy SnailCat", Misc.getAllTraps().Where(x=>x.name.Contains("Landmine")).First().name, true, sizeOfTrap: new Vector3(0.5f, 0.5f, 0.5f), targetRandom:true);
         }
 
         [ClientRpc]
@@ -2468,6 +2474,12 @@ namespace MysteryDice
 
         #endregion
 
+        [ServerRpc(RequireOwnership = false)]
+        public void doEvilCutieFlyServerRPC()
+        {
+            HeatSeakingCutieFly.doSpawnCutie();
+        }
+        
         #region HealAndRestore
 
         [ServerRpc(RequireOwnership = false)]

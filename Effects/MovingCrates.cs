@@ -43,7 +43,7 @@ namespace MysteryDice.Effects
                 var smartAgentNavigator = agent.GetComponent<SmartAgentNavigator>();
                 var mm = trap.AddComponent<MakeMove>();
                 trap.transform.SetParent(agent.transform);
-                trap.transform.localPosition = Vector3.zero;
+                trap.transform.localPosition = new Vector3(0, 0.5f, 0);
                 trap.transform.localRotation = Quaternion.identity;
                 mm.Initialize(smartAgentNavigator);
                 mm.enabled = true;

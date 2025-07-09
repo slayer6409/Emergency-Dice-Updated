@@ -21,7 +21,7 @@ namespace MysteryDice.Effects
         }
 
         private static List<Vector3> allPositions = new List<Vector3>();
-        public static void spawnAttachedEnemyCombo(int MinesToSpawn, string spawnableEnemy, string spawnableTrap, bool isOutside, Vector3 trapOffset = default, float positionOffsetRadius = 5f, Vector3 sizeOfTrap = default, bool matchSize = false)
+        public static void spawnAttachedEnemyCombo(int MinesToSpawn, string spawnableEnemy, string spawnableTrap, bool isOutside, Vector3 trapOffset = default, float positionOffsetRadius = 5f, Vector3 sizeOfTrap = default, bool matchSize = false, bool targetRandom = false)
         {
             int spawnedMines = 0;
             System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed);
@@ -92,6 +92,11 @@ namespace MysteryDice.Effects
                                     {
                                         Networker.Instance.setSizeClientRPC(netobj.NetworkObjectId, sizeOfTrap);
                                     }
+                                }
+
+                                if (targetRandom)
+                                {
+                                    gameObject2.AddComponent<TargetRandomPlayer>();
                                 }
                                 gameObject.transform.SetParent(gameObject2.transform);
                                 spawnedMines++;

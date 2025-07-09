@@ -128,5 +128,4 @@ namespace MysteryDice.Effects
             Networker.Instance.CratesInsideServerRPC();
         }
     }
-
 }

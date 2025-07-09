@@ -185,7 +185,7 @@ namespace MysteryDice.Effects
             if (agent==null) return;
             agent.acceleration = 999;
             agent.angularSpeed = 360;
-            agent.speed = 20;
+            agent.speed = 10;
             if (isEvil)
             {
                 agent.destination = Misc.GetRandomAlivePlayer().transform.position;

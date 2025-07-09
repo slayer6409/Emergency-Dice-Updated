@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="styles.css">
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Effects</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<h1>Dice Effects</h1>
+
+<input type="text" id="searchInput" placeholder="Search effects..." onkeyup="searchTable()" style="margin-top: 1em; padding: 0.5em; width: 100%; font-size: 1em;">
+<table>
+    <thead>
+    <tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Type</th>
+        <th>Mod Needed</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr><td>Alarm</td><td>Makes a random player play an alarm sound (or random sounds if the config is on) every once in a while!</td><td>Bad</td><td></td></tr>
+    <tr><td>Same Scrap Different Dice</td><td>Spawns a bunch of 1 item</td><td>Great</td><td></td></tr>
+    <tr><td>Arachnophobia</td><td>Spawns some spiders and makes spiders much faster</td><td>Bad</td><td></td></tr>
+    <tr><td>Armageddon</td><td>Random explosions outside</td><td>Bad</td><td></td></tr>
+    <tr><td>Bad Romance</td><td>Makes you fall in love with a random enemy, and if that enemy dies you die and vice versa</td><td>Bad</td><td></td></tr>
+    <tr><td>Chrome Dome</td><td>Adds a invisible flasher to your head making your head "shiny"</td><td>Bad</td><td>Code Rebirth</td></tr>
+    <tr><td>Barbers</td><td>Summon barbers inside</td><td>Awful</td><td></td></tr>
+    <tr><td>Battery Drain</td><td>Halves the battery of all items in a random player's inventory</td><td>Bad</td><td></td></tr>
+    <tr><td>Beepocalypse</td><td>Summons Beehives outside</td><td>Awful</td><td></td></tr>
+    <tr><td>Bell Crabs</td><td>Summons Bell Crabs inside</td><td>Mixed</td><td>Surfaced</td></tr>
+    <tr><td>21 Gun Salute</td><td>Spawns some Nutcrackers outside</td><td>Awful</td><td></td></tr>
+    <tr><td>ALL DICE</td><td>Spawns all the dice</td><td>Great</td><td></td></tr>
+    <tr><td>Airsupply</td><td>Crates outside</td><td>Good</td><td>Code Rebirth</td></tr>
+    <tr><td>Amazon Shipping</td><td>Crates inside</td><td>Good</td><td>Code Rebirth</td></tr>
+    <tr><td>BIG Bertha</td><td>Spawns a massive bertha outside (it is too far away to kill you... for now...)</td><td>Awful</td><td>Surfaced</td></tr>
+    <tr><td>BS</td><td>AKA Big Spike summons a big spike trap outside</td><td>Awful</td><td></td></tr>
+    <tr><td>Bertha Lever</td><td>Summons a bertha on the ship lever</td><td>Awful</td><td>Surfaced</td></tr>
+    <tr><td>Bertha Outside</td><td>Summons some berthas outside</td><td>Awful</td><td>Surfaced</td></tr>
+    <tr><td>Big Delivery</td><td>Orders some items from the shop</td><td>Great</td><td></td></tr>
+    <tr><td>Big Fling</td><td>Horseshoot Crab on steroids (flings furthur)</td><td>Bad</td><td>Surfaced</td></tr>
+    <tr><td>Big Jumpscare</td><td>Spawns some big Scary</td><td>Mixed</td><td>Surfaced</td></tr>
+    <tr><td>Blame Glitch</td><td>A bunch of horrible things (blame glitch for this one)</td><td>Awful</td><td></td></tr>
+    <tr><td>Bright Flashlight</td><td>Makes every currently existing flashlight brighter</td><td>Good</td><td></td></tr>
+    <tr><td>Bruce</td><td>Spawns bruce</td><td>Bad</td><td>Surfaced</td></tr>
+    <tr><td>Bruiser</td><td>Spawns Bruce in the Cruiser if it exists, then despawns him after a bit</td><td>Awful</td><td>Surfaced</td></tr>
+    <tr><td>Bug Plague</td><td>A lot of bugs spawned inside!</td><td>Bad</td><td></td></tr>
+    <tr><td>Burger Flippers</td><td>Surrounds you with horseshoot crabs</td><td>Bad</td><td>Surfaced</td></tr>
+    <tr><td>Catch Em All!</td><td>Spawns Pokeballs</td><td>Good</td><td>LethalMon</td></tr>
+    <tr><td>Christmas</td><td>Spawns Presents</td><td>Good</td><td></td></tr>
+    <tr><td>Cleaning Crew</td><td>Spawns a few Jimothy and Scrap-e on someone</td><td>Bad</td><td>Code Rebirth</td></tr>
+    <tr><td>Confusion</td><td>Everyone changes suits every 30 seconds, once the lever is pulled, everyone goes back to normal</td><td>Mixed</td><td></td></tr>
+    <tr><td>Delayed Reaction</td><td>Delays an event for a random amount of time</td><td>Mixed</td><td></td></tr>
+    <tr><td>Detonate</td><td>Explodes a random player after a random amount of time</td><td>Awful</td><td></td></tr>
+    <tr><td>Diversity Bracken</td><td>Forces the Brakcen Kidnap event from Diversity</td><td>Awful</td><td>Diversity</td></tr>
+    <tr><td>Door malfunction</td><td>Ship doors are malfunctioning!</td><td>Bad</td><td></td></tr>
+    <tr><td>Dorjes Dream</td><td>Spawns Spray Paint and Jetpacks</td><td>Great</td><td></td></tr>
+    <tr><td>Double Trouble</td><td>2 Random Events at once</td><td>Bad</td><td></td></tr>
+    <tr><td>Drunk</td><td>Makes you a bit drunk (tzp effect)</td><td>Mixed</td><td></td></tr>
+    <tr><td>Duolingo Cousin</td><td>Spawns Rodrigo Plush</td><td>Great</td><td>Surfaced</td></tr>
+    <tr><td>Egg Boots</td><td>When you jump it does the egg explosion</td><td>Bad</td><td></td></tr>
+    <tr><td>Eggs</td><td>Spawns a bunch Eggs</td><td>Good</td><td></td></tr>
+    <tr><td>Emergency Meeting</td><td>Emergency Meeting from Among Us</td><td>Bad</td><td></td></tr>
+    <tr><td>Everyone To Someone</td><td>Sends Everyone to Someone</td><td>Mixed</td><td></td></tr>
+    <tr><td>Evil Freebird Enemy</td><td>Freebird Enemy that has a higher chance to move to target players</td><td>Awful</td><td></td></tr>
+    <tr><td>Extra Lives</td><td>Everyone Gets an Extra Life</td><td>Good</td><td></td></tr>
+    <tr><td>Fake fire exits</td><td>Spawns fake fire exits!</td><td>Bad</td><td></td></tr>
+    <tr><td>Fans</td><td>Spawns Fans</td><td>Awful</td><td>Code Rebirth</td></tr>
+    <tr><td>Fire exit block</td><td>Fire exits blocked!</td><td>Bad</td><td></td></tr>
+    <tr><td>Flashers</td><td>Spawns Flashers</td><td>Awful</td><td>Code Rebirth</td></tr>
+    <tr><td>Flinger</td><td>Spawns a Horseshoot crab on red</td><td>Awful</td><td>Surfaced</td></tr>
+    <tr><td>Fly</td><td>Double tap space to fly!!! (Like Minecraft!)</td><td>Great</td><td></td></tr>
+    <tr><td>Follower Fan</td><td>Spawns a smol fan that follows you!</td><td>Bad</td><td>Code Rebirth</td></tr>
+    <tr><td>Freebird Enemy</td><td>Spawns a random Enemy that goes much faster and plays freebird if you don't have copyright free mode on</td><td>Awful</td><td></td></tr>
+    <tr><td>Freebird Jimothy</td><td>Same as Freebird Enemy but just a jimothy</td><td>Great</td><td>Code Rebirth</td></tr>    
+    <tr><td>Freebird Trap</td><td>Same as Freebird Enemy but spawns a moving trap that is fast instead of enemy</td><td>Awful</td><td></td></tr>
+    <tr><td>Friends</td><td>Spawns some manta rays</td><td>Good</td><td>LethalThings</td></tr>
+    <tr><td>Friendship Bracelets</td><td>Gives Bomb Collars</td><td>Bad</td><td>Bomb Collars</td></tr>
+    <tr><td>Everyone Friends</td><td>Forces Everyone to wear bomb collars</td><td>Bad</td><td>Bomb Collars</td></tr>
+    <tr><td>Full restore</td><td>Healing everyone and recharging their batteries</td><td>Good</td><td></td></tr>
+    <tr><td>Global infinite stamina</td><td>Infinite stamina for everyone</td><td>Great</td><td></td></tr>
+    <tr><td>Golden Touch</td><td>Doubles the value of a random item in your inventory</td><td>Good</td><td></td></tr>
+    <tr><td>Heavy Burden</td><td>Makes everything in your inventory a bit heavier</td><td>Bad</td><td></td></tr>
+    <tr><td>Horseshoot Seat</td><td>Spawns a Horseshoot crab right at the driver seat effectively flinging them in a random direction</td><td>Awful</td><td>Surfaced</td></tr>
+    <tr><td>Horseshootnt</td><td>Horseshoot but reverse</td><td>Awful</td><td>Surfaced</td></tr>
+    <tr><td>Hyper Shake</td><td>Makes you shake a lot!</td><td>Bad</td><td></td></tr>
+    <tr><td>IEBertha</td><td>Instantly Exploding Berthas</td><td>Awful</td><td>Surfaced</td></tr>
+    <tr><td>Increased Rate</td><td>Increased company buying rate for this quota</td><td>Great</td><td></td></tr>
+    <tr><td>Indoor Urchins</td><td>Spikey boyos, but inside!</td><td>Bad</td><td>Surfaced</td></tr>
+    <tr><td>Infinite stamina</td><td>Infinite stamina for you</td><td>Good</td><td></td></tr>
+    <tr><td>Inside Dog</td><td>Spawns Dog Inside</td><td>Awful</td><td></td></tr>
+    <tr><td>Inside Giant</td><td>A giant inside</td><td>Awful</td><td></td></tr>
+    <tr><td>Inside Shrimps</td><td>LC Shrimps </td><td>Awful</td><td>LC Shrimp</td></tr>
+    <tr><td>Inside teleport</td><td>Teleported inside</td><td>Bad</td><td></td></tr>
+    <tr><td>Instajester</td><td>Spawned a popped jester!</td><td>Awful</td><td></td></tr>
+    <tr><td>Inverted door lock</td><td>Opened doors are closed and locked</td><td>Bad</td><td></td></tr>
+    <tr><td>Invisible Enemy</td><td>Spawns an invisible enemy</td><td>Awful</td><td></td></tr>
+    <tr><td>Item Duplicator</td><td>Duplicates your inventory on the ground</td><td>Great</td><td></td></tr>
+    <tr><td>Jumpscare</td><td>Jumpscare after a random time</td><td>Bad</td><td></td></tr>
+    <tr><td>Lasso</td><td>Spawns Lasso man</td><td>Mixed</td><td></td></tr>
+    <tr><td>Legendary Catch</td><td>Spawns a Masterball</td><td>Great</td><td>LethalMon</td></tr>
+    <tr><td>Lever Shake</td><td>Ship's lever starts moving!</td><td>Bad</td><td></td></tr>
+    <tr><td>Light Burden</td><td>Makes the weight of all items in your inventory a bit lighter</td><td>Great</td><td></td></tr>
+    <tr><td>Lights off</td><td>Turns off all lights</td><td>Bad</td><td></td></tr>
+    <tr><td>Lizzie`s Puppy</td><td>Spawns a smol doggo that can't hurt you</td><td>Mixed</td><td></td></tr>
+    <tr><td>Long Bertha</td><td>Spawns berthas outside that slowly get longer until they explode</td><td>Awful</td><td>Surfaced</td></tr>
+    <tr><td>Lovers</td><td>2 people are now in love! If one dies the other does too!</td><td>Mixed</td><td></td></tr>
+    <tr><td>Mad Science</td><td>Spawns a random enemy with a random trap on it</td><td>Awful</td><td></td></tr>
+    <tr><td>Maneaters</td><td>A lot of maneaters spawned inside!</td><td>Awful</td><td></td></tr>
+    <tr><td>Mantis Shrimps</td><td>Mantis Shrimps Spawned inside</td><td>Awful</td><td>Surfaced</td></tr>
+    <tr><td>ManyAds</td><td>Custom Ads!</td><td>Bad</td><td></td></tr>
+    <tr><td>Martyrdom</td><td>Players Drop bombs on death now</td><td>Awful</td><td></td></tr>
+    <tr><td>Meteors</td><td>Starts the Meteor event</td><td>Awful</td><td></td></tr>
+    <tr><td>Micro Trap</td><td>Smol Trap</td><td>Awful</td><td></td></tr>
+    <tr><td>Microwave</td><td>Microwaves outside</td><td>Awful</td><td>Code Rebirth</td></tr>
+    <tr><td>Mine and a Hard Place</td><td>Surrounds you with Berthas</td><td>Awful</td><td>Surfaced</td></tr>
+    <tr><td>Mine overflow outside</td><td>Mines spawned outside!</td><td>Awful</td><td></td></tr>
+    <tr><td>Mine overflow</td><td>More mines spawned inside!</td><td>Bad</td><td></td></tr>
+    <tr><td>More Money</td><td>Credits Were Given!</td><td>Great</td><td></td></tr>
+    <tr><td>Moving Crates</td><td>Crates that move</td><td>Bad</td><td>Code Rebirth</td></tr>
+    <tr><td>Moving Fans</td><td>Fans that move</td><td>Awful</td><td>Code Rebirth</td></tr>
+    <tr><td>Moving Landmines</td><td>Landmines that move</td><td>Awful</td><td></td></tr>
+    <tr><td>Moving Teleporter Traps</td><td>Teleporter Traps that move</td><td>Bad</td><td>LethalThings</td></tr>
+    <tr><td>NDB</td><td>NutDaddy's Baby A maneater that is longer that can't transform</td><td>Mixed</td><td></td></tr>
+    <tr><td>NavMeshPenalty</td><td>The penalty Roll that spawns enemies if NavMeshInCompany is installed</td><td>Penalty</td><td>NavMeshInCompany</td></tr>
+    <tr><td>Neck Break</td><td>Rotates your screen 90 degrees for a bit (configurable)</td><td>Awful</td><td></td></tr>
+    <tr><td>Neck Spin</td><td>Spins your screen! (configurable)</td><td>Awful</td><td></td></tr>
+    <tr><td>Nemo</td><td>Spawns a few Nemo</td><td>Great</td><td>Surfaced</td></tr>
+    <tr><td>Nemosplosion</td><td>Surrounds you with Nemos, makes you unkillable for 30 seconds, and force explodes them</td><td>Mixed</td><td>Surfaced</td></tr>
+    <tr><td>Oops All Blank</td><td>Everyone is now a specific suit (most of the time orange)</td><td>Bad</td><td></td></tr>
+    <tr><td>Outside Bugs</td><td>A lot of bugs spawned outside!</td><td>Bad</td><td></td></tr>
+    <tr><td>Outside bracken</td><td>Spawned a bracken outside!</td><td>Awful</td><td></td></tr>
+    <tr><td>Outside coilhead</td><td>Spawned a coilhead outside!</td><td>Awful</td><td></td></tr>
+    <tr><td>Paparazzi</td><td>Fans with Flashers(cameras) that move around</td><td>Awful</td><td>Code Rebirth</td></tr>
+    <tr><td>Papercut</td><td>Flattened enemies models</td><td>Awful</td><td></td></tr>
+    <tr><td>Pathfinder</td><td>Spawns a Pathfinder</td><td>Great</td><td></td></tr>
+    <tr><td>Purge</td><td>All living enemies explode (and dead hoarding bugs for some reason)</td><td>Great</td><td></td></tr>
+    <tr><td>Random Emote Time</td><td>Forces you to do a random emote!</td><td>Mixed</td><td>TooManyEmotes</td></tr>
+    <tr><td>Random Store Item</td><td>Spawns random store</td><td>Good</td><td></td></tr>
+    <tr><td>Random Store Items</td><td>Many random store items spawn</td><td>Great</td><td></td></tr>
+    <tr><td>Rebelious Coilheads</td><td>Coilheads randomly ignore if a player is looking at them.</td><td>Awful</td><td></td></tr>
+    <tr><td>Reroll</td><td>Gives a random die</td><td>Great</td><td></td></tr>
+    <tr><td>Return to ship together</td><td>Returning to ship with your nearest crewmates!</td><td>Great</td><td></td></tr>
+    <tr><td>Return to ship</td><td>Returning to ship with items!</td><td>Good</td><td></td></tr>
+    <tr><td>Revive</td><td>Reviving everyone</td><td>Great</td><td></td></tr>
+    <tr><td>Roomba Beartraps</td><td>Beartraps that move?</td><td>Awful</td><td>Code Rebirth</td></tr>
+    <tr><td>Scary?</td><td>Spawns Scary</td><td>Mixed</td><td>Surfaced</td></tr>
+    <tr><td>Scrap jackpot</td><td>Spawns a bunch of scrap!</td><td>Great</td><td></td></tr>
+    <tr><td>Seamines</td><td>Spawns seamines outside</td><td>Bad</td><td>Surfaced</td></tr>
+    <tr><td>Select Effect</td><td>You can select an effect</td><td>Great</td><td></td></tr>
+    <tr><td>Ship Turret</td><td>Turret spawned near the ship!</td><td>Awful</td><td></td></tr>
+    <tr><td>Shotgun</td><td>Spawning a shotgun and ammo!</td><td>Great</td><td></td></tr>
+    <tr><td>Silent Teleporter Traps</td><td>Teleporter Traps are invisible</td><td>Awful</td><td>LethalThings</td></tr>
+    <tr><td>Silent mine</td><td>Mines are silent and invisible</td><td>Awful</td><td></td></tr>
+    <tr><td>Sky Fan</td><td>Spawns a BIG fan in the sky (Epilepsy warning cuz it does make the sun flash cuz of the spinning blades)</td><td>Awful</td><td>Code Rebirth</td></tr>
+    <tr><td>Special Detonate</td><td>Penalty Explosion of a random player</td><td>Penalty</td><td></td></tr>
+    <tr><td>Speech jammer</td><td>Messes with your voices (incompatable with More Company)</td><td>Bad</td><td></td></tr>
+    <tr><td>Spicy Nuggies</td><td>Spawns A bunch of masked in the ship</td><td>Bad</td><td></td></tr>
+    <tr><td>Spike overflow outside</td><td>Spike Traps spawned outside!</td><td>Awful</td><td></td></tr>
+    <tr><td>Stairs</td><td>Forces the stairs event from diversity</td><td>Awful</td><td>Diversity</td></tr>
+    <tr><td>Stolen Credits</td><td>Steals some credits</td><td>Awful</td><td></td></tr>
+    <tr><td>Stuffing For Days</td><td>Spawns random plushies</td><td>Great</td><td></td></tr>
+    <tr><td>Super Flinger</td><td>Spawns A horseshoot crab with random values</td><td>Awful</td><td>Surfaced</td></tr>
+    <tr><td>Surprise Eggs!!!</td><td>Eggs that surround you and explode in a circle</td><td>Bad</td><td></td></tr>
+    <tr><td>Swap</td><td>Swapping two players!</td><td>Mixed</td><td></td></tr>
+    <tr><td>TP Traps</td><td>More Teleporter Traps spawned inside!</td><td>Bad</td><td>LethalThings</td></tr>
+    <tr><td>TP overflow outside</td><td>TP Traps spawned outside!</td><td>Awful</td><td>LethalThings</td></tr>
+    <tr><td>Takey Plushies</td><td>Spawns some Takey Plushies</td><td>Good</td><td>TakeyPlush</td></tr>
+    <tr><td>Tarot Cards</td><td>Spawns Tarot Cards</td><td>Great</td><td>LCTarotCard</td></tr>
+    <tr><td>The Rumbling</td><td>Spawns Redwood Giants</td><td>Awful</td><td>Code Rebirth</td></tr>
+    <tr><td>The Shining</td><td>Ghost Girls</td><td>Awful</td><td></td></tr>
+    <tr><td>Three`s Company</td><td>3 dice events at once</td><td>Awful</td><td></td></tr>
+    <tr><td>Tornado</td><td>Spawns Tornado</td><td>Bad</td><td>Code Rebirth</td></tr>
+    <tr><td>Tulip Bombers</td><td>Spawns Tulip Snakes that have landmines on them</td><td>Awful</td><td></td></tr>
+    <tr><td>Tulip Trapeze</td><td>Teleports you to the entrance and spawns tulip snakes surrounding you</td><td>Bad</td><td></td></tr>
+    <tr><td>Turret hell</td><td>More turrets spawned inside!</td><td>Awful</td><td></td></tr>
+    <tr><td>Unchained</td><td>Makes seamines and berthas move around</td><td>Awful</td><td>Surfaced</td></tr>
+    <tr><td>Unkillable</td><td>Makes you unkillable for 30ish seconds</td><td>Great</td><td></td></tr>
+    <tr><td>Where Did My Friends Go?</td><td>Makes a random player not be able to see anyone for the rest of the round</td><td>Awful</td><td></td></tr>
+    <tr><td>Wormageddon</td><td>Spawns a bunch of worms (Earth Leviathan)</td><td>Awful</td><td></td></tr>
+    <tr><td>Zombie apocalypse</td><td>A bunch of masked</td><td>Awful</td><td></td></tr>
+    <tr><td>Zombie return swap</td><td>Returns you to the ship and places a zombie in your original position</td><td>Awful</td><td></td></tr>
+    <tr><td>Zortin 2</td><td>Spawns Zort Instruments but their sounds are mixed up</td><td>Great</td><td>Code Rebirth</td></tr>
+    <tr><td>Zortin</td><td>Spawns Zort Instruments</td><td>Great</td><td>Code Rebirth</td></tr>
+    
+    </tbody>
+</table>
+<footer>
+    I'm bad at design :D
+</footer>
+
+<p style="margin-top: 2em;"><a href="index.html">Back</a></p>
+<script>
+    function searchTable() {
+        const input = document.getElementById("searchInput");
+        const filter = input.value.toLowerCase();
+        const table = document.querySelector("table");
+        const rows = table.getElementsByTagName("tr");
+
+        for (let i = 1; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName("td");
+            if (cells.length < 2) continue;
+
+            const nameText = cells[0].textContent.toLowerCase();
+            const TypeText = cells[3].textContent.toLowerCase();
+
+            const match = nameText.includes(filter) || TypeText.includes(filter);
+            rows[i].style.display = match ? "" : "none";
+        }
+    }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const table = document.querySelector('table');
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+
+        rows.sort((a, b) => {
+            const nameA = a.children[0].innerText.toLowerCase();
+            const nameB = b.children[0].innerText.toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+        rows.forEach(row => tbody.appendChild(row));
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const table = document.querySelector('table');
+        const headers = table.querySelectorAll('th');
+        let sortDirection = {}; // Track direction per column
+
+        headers.forEach((header, index) => {
+            sortDirection[index] = 1; // 1 = ascending, -1 = descending
+
+            header.addEventListener('click', () => {
+                const rows = Array.from(table.querySelectorAll('tbody tr'));
+
+                const sortedRows = rows.sort((a, b) => {
+                    const aText = a.children[index].innerText.toLowerCase();
+                    const bText = b.children[index].innerText.toLowerCase();
+
+                    // Push empty strings to the bottom
+                    const aIsEmpty = aText.trim() === "";
+                    const bIsEmpty = bText.trim() === "";
+
+                    if (aIsEmpty && !bIsEmpty) return 1;
+                    if (!aIsEmpty && bIsEmpty) return -1;
+                    if (aIsEmpty && bIsEmpty) return 0;
+
+                    return aText.localeCompare(bText) * sortDirection[index];
+                });
+
+                // Flip direction for next click
+                sortDirection[index] *= -1;
+
+                const tbody = table.querySelector('tbody');
+                tbody.innerHTML = '';
+                sortedRows.forEach(row => tbody.appendChild(row));
+            });
+        });
+    });
+</script>
+</html>
