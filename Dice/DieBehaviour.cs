@@ -854,7 +854,6 @@ namespace MysteryDice.Dice
                     CodeRebirthNames.Add(new HeatSeakingCutieFly().Name);
                     MysteryDice.MainRegisterNewEffect(new HeatSeakingCutieFly());
                 }
-                
             }
             
             if (MysteryDice.DiversityPresent)

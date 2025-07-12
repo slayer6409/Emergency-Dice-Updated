@@ -26,7 +26,7 @@
 //         while (true)
 //         {
 //             yield return new WaitUntil(() => TimeOfDay.Instance.normalizedTimeOfDay <= 0.12f && StartOfRound.Instance.shipHasLanded && !GalAI.Animator.GetBool("activated") && !StartOfRound.Instance.shipIsLeaving && !StartOfRound.Instance.inShipPhase && RoundManager.Instance.currentLevel.levelID != 3);
-//             
+//             //Plugin.ExtendedLogging("Activating  Gal" + TimeOfDay.Instance.normalizedTimeOfDay);
 //             if (!GalAI.Animator.GetBool("activated"))
 //             {
 //                 PlayerControllerB closestPlayer = StartOfRound.Instance.allPlayerScripts.Where(p => p.isPlayerControlled && !p.isPlayerDead).OrderBy(p => Vector3.Distance(transform.position, p.transform.position)).First();
@@ -40,7 +40,7 @@
 //     public void OnActivateGal(PlayerControllerB playerInteracting)
 //     {
 //         if (!NetworkObject.IsSpawned) return;
-//         if (playerInteracting == null || playerInteracting != GameNetworkManager.Instance.localPlayerController) return;
+//         if (playerInteracting == null || !playerInteracting.IsLocalPlayer) return;
 //         if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded || StartOfRound.Instance.shipIsLeaving || (RoundManager.Instance.currentLevel.levelID == 3 && !MysteryDice.NavMeshInCompanyPresent)) return;
 //         if (!GalAI.Animator.GetBool("activated"))
 //         {
@@ -48,7 +48,7 @@
 //         }
 //         else
 //         {
-//             if (false && playerInteracting != GalAI.ownerPlayer) return;
+//             if (MysteryDice.ConfigOnlyOwnerDisablesGal.Value && playerInteracting != GalAI.ownerPlayer) return;
 //             ActivateGirlServerRpc(-1);
 //         }
 //     }

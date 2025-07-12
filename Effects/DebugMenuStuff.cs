@@ -966,8 +966,8 @@ public class DebugMenuStuff : MonoBehaviour
                 Misc.SafeTipMessage($"Object Spawned", txtToSay);
             });
         }
-    } 
-   
+    }
+    
     public static void spawnShopItems()
     {
         FavoriteEffectManager.FavoriteData favoritesData = FavoriteEffectManager.LoadFavorites();

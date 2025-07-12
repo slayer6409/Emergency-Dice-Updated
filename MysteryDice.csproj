@@ -38,9 +38,9 @@
       <HintPath>$(ThunderstorePath)\Jordo-BombCollar\BombCollar.dll</HintPath>
     </Reference>
     <Reference Include="CodeRebirth" Publicize="true">
-      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\CodeRebirth\CodeRebirth\CodeRebirth.dll</HintPath>
+      <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\XuXiaolan-CodeRebirth\CodeRebirth\CodeRebirth.dll</HintPath>
     </Reference>
-    <Reference Include="com.github.xuuxiaolan.coderebirthlib">
+    <Reference Include="com.github.xuuxiaolan.coderebirthlib" Publicize="true">
       <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\XuXiaolan-CodeRebirthLib\CodeRebirthLib\com.github.xuuxiaolan.coderebirthlib.dll</HintPath>
     </Reference>
     <Reference Include="CullFactory">

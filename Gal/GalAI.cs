@@ -56,7 +56,7 @@
 // }
 //
 // [RequireComponent(typeof(SmartAgentNavigator))]
-// public class GalAI : NetworkBehaviour, IHittable, INoiseListener
+// public class GalAI : NetworkBehaviour, IHittable
 // {
 //     public string GalName = "";
 //     public Animator Animator = null!;
@@ -86,7 +86,7 @@
 //     [HideInInspector] public const float STARE_ROTATION_SPEED = 2f;
 //     [HideInInspector] public EnemyAI? targetEnemy;
 //     [HideInInspector] public PlayerControllerB? ownerPlayer;
-//     [HideInInspector] public List<string> enemyTargetBlacklist = new();
+//     [HideInInspector] public HashSet<EnemyType> enemyTargetBlacklist = new();
 //     [HideInInspector] public int chargeCount = 10;
 //     [HideInInspector] public int maxChargeCount;
 //     [HideInInspector] public bool currentlyAttacking = false;
@@ -103,6 +103,10 @@
 //     {
 //         base.OnNetworkSpawn();
 //         Instances.Add(this);
+//         if (!IsServer) return;
+//
+//         transform.SetParent(GalCharger.transform, false);
+//         transform.SetPositionAndRotation(GalCharger.transform.position, GalCharger.transform.rotation);
 //     }
 //
 //     [ServerRpc(RequireOwnership = false)]
@@ -158,8 +162,8 @@
 //         if (idleTimer <= idleNeededTimer) return;
 //
 //         idleTimer = 0f;
-//         idleNeededTimer = galRandom.NextFloat(5f, 10f);
-//         GalSFX.PlayOneShot(IdleSounds[galRandom.Next(0, IdleSounds.Length)]);
+//         idleNeededTimer = galRandom.NextFloat(10f, 15f);
+//         GalSFX.PlayOneShot(IdleSounds[galRandom.Next(IdleSounds.Length)]);
 //         GalVoice.pitch = galRandom.NextFloat(0.9f, 1.1f);
 //     }
 //
@@ -176,6 +180,7 @@
 //             ownerPlayer = null;
 //         }
 //     }
+//
 //     public virtual void Update()
 //     {
 //         if (!NetworkObject.IsSpawned) return;
@@ -199,17 +204,17 @@
 //
 //     public virtual void OnEnterOrExitElevator(bool enteredElevator)
 //     {
-//         
+//         //Plugin.ExtendedLogging($"Entered Elevator: {enteredElevator}");
 //     }
 //
 //     public virtual void OnEnableOrDisableAgent(bool agentEnabled)
 //     {
-//         
+//         //Plugin.ExtendedLogging($"Enabled Agent: {agentEnabled}");
 //     }
 //
 //     public virtual void OnUseEntranceTeleport(bool setOutside)
 //     {
-//         
+//         //Plugin.ExtendedLogging($"Used Entrance Teleport and should be set outside: {setOutside}");
 //         if (physicsEnabled) EnablePhysics(false);
 //     }
 //
@@ -218,7 +223,6 @@
 //         ownerPlayer = null;
 //         DoGalRadarAction(false);
 //         GalVoice.PlayOneShot(DeactivateSound);
-//         smartAgentNavigator.ResetAllValues();
 //         smartAgentNavigator.OnEnterOrExitElevator.RemoveListener(OnEnterOrExitElevator);
 //         smartAgentNavigator.OnUseEntranceTeleport.RemoveListener(OnUseEntranceTeleport);
 //         smartAgentNavigator.OnEnableOrDisableAgent.RemoveListener(OnEnableOrDisableAgent);
@@ -226,8 +230,8 @@
 //
 //     public bool GoToChargerAndDeactivate()
 //     {
-//         smartAgentNavigator.DoPathingToDestination(GalCharger.ChargeTransform.position,false);
-//         if (Vector3.Distance(transform.position, GalCharger.ChargeTransform.position) <= Agent.stoppingDistance ||!Agent.hasPath || Agent.velocity.sqrMagnitude <= 0.01f)
+//         smartAgentNavigator.DoPathingToDestination(GalCharger.ChargeTransform.position);
+//         if (Vector3.Distance(transform.position, GalCharger.ChargeTransform.position) <= Agent.stoppingDistance || !Agent.hasPath || Agent.velocity.sqrMagnitude <= 0.01f)
 //         {
 //             GalCharger.ActivateGirlServerRpc(-1);
 //             return true;
@@ -292,24 +296,32 @@
 //         if (enemyID == -1)
 //         {
 //             targetEnemy = null;
+//             //Plugin.ExtendedLogging($"Clearing Enemy target on {this}");
 //             return;
 //         }
 //         if (RoundManager.Instance.SpawnedEnemies[enemyID] == null)
 //         {
+//             //Plugin.ExtendedLogging($"Enemy Index invalid! {this}");
 //             return;
 //         }
 //         targetEnemy = RoundManager.Instance.SpawnedEnemies[enemyID];
+//         //Plugin.ExtendedLogging($"{this} setting target to: {targetEnemy.enemyType.enemyName}");
 //     }
 //
-// 	public virtual void DetectNoise(Vector3 noisePosition, float noiseLoudness, int timesPlayedInOneSpot = 0, int noiseID = 0)
-// 	{
-//         if (inActive) return;
-// 		if (noiseID == 5 && !Physics.Linecast(transform.position, noisePosition, StartOfRound.Instance.collidersAndRoomMask))
-// 		{
-//             boomboxTimer = 0f;
-// 			boomboxPlaying = true;
-// 		}
-// 	}
+//     // public virtual void DetectNoise(NoiseParams noiseParams)
+//     // {
+//     //     if (inActive)
+//     //         return;
+//     //
+//     //     if (!IsServer)
+//     //         return;
+//     //
+//     //     if (noiseParams.noiseID != 5 || Physics.Linecast(transform.position, noiseParams.noisePosition, StartOfRound.Instance.collidersAndRoomMaskAndDefault, QueryTriggerInteraction.Ignore))
+//     //         return;
+//     //
+//     //     boomboxTimer = 0f;
+//     //     boomboxPlaying = true;
+//     // }
 //
 //     public virtual bool Hit(int force, Vector3 hitDirection, PlayerControllerB? playerWhoHit = null, bool playHitSFX = false, int hitID = -1)
 //     {
@@ -327,7 +339,7 @@
 //     [ClientRpc]
 //     public virtual void PlayHurtSoundClientRpc()
 //     {
-//         GalVoice.PlayOneShot(HitSounds[galRandom.Next(0, HitSounds.Length)]);
+//         GalVoice.PlayOneShot(HitSounds[galRandom.Next(HitSounds.Length)]);
 //     }
 //
 //     public override void OnNetworkDespawn()
@@ -336,7 +348,6 @@
 //         Instances.Remove(this);
 //         if (inActive) return;
 //         DoGalRadarAction(false);
-//         smartAgentNavigator.ResetAllValues();
 //         smartAgentNavigator.OnEnterOrExitElevator.RemoveListener(OnEnterOrExitElevator);
 //         smartAgentNavigator.OnUseEntranceTeleport.RemoveListener(OnUseEntranceTeleport);
 //         smartAgentNavigator.OnEnableOrDisableAgent.RemoveListener(OnEnableOrDisableAgent);

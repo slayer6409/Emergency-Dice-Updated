@@ -12,6 +12,5 @@
 //         NetworkObject netObj = GalAI.GetComponent<NetworkObject>();
 //         GalAI.GalCharger = this;
 //         netObj.Spawn();
-//         GalAI.gameObject.transform.parent = this.transform;
 //     }
 // }

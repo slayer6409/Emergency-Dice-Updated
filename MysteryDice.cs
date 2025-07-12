@@ -48,6 +48,7 @@ namespace MysteryDice
             76561198399127090 /*Xu*/,
             76561198086086035 /*Nut*/
         };
+        
         public static HashSet<ulong> revokedAdmins = new();
         
         public static readonly ulong slayerSteamID = 76561198077184650;
@@ -57,7 +58,7 @@ namespace MysteryDice
         public enum chatDebug { Host, Everyone, None};
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.11.8";
+        private const string modVersion = "1.12.0";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -114,6 +115,8 @@ namespace MysteryDice
         public static ConfigEntry<float> minHyperShake;
         public static ConfigEntry<float> maxHyperShake;
         public static ConfigEntry<bool> randomSpinTime;
+        // public static ConfigEntry<bool> ConfigOnlyOwnerDisablesGal;
+        // public static ConfigEntry<bool> ConfigGalAutomatic;
         public static ConfigEntry<bool> chronosUpdatedTimeOfDay;
         public static ConfigEntry<bool> useDiceOutside;
         public static ConfigEntry<bool> debugDice;
@@ -167,13 +170,11 @@ namespace MysteryDice
         public static ConfigEntry<bool> doDiceExplosion;
         public static ConfigEntry<bool> DieEmergencyAsScrap;
         public static ConfigEntry<bool> LoversOnStart;
-        // public static ConfigEntry<bool> OnlyOwnerDisablesGal;
         public static ConfigEntry<bool> DebugMenuClosesAfter;
         public static ConfigEntry<bool> TwitchEnabled;
         public static ConfigEntry<string> DisplayResults;
         public static ConfigEntry<string> debugChat;
         public static ConfigEntry<bool> deadAds;
-        
 
         public static void ModConfig()
         {
@@ -258,8 +259,19 @@ namespace MysteryDice
                 "New Debug",
                 "debugSpawnOnPlayer",
                 true,
-                "Spawn Enemy On Player with the Debug Menu.");
-            
+                "Spawn Enemy On Player with the Debug Menu."); 
+             
+             // ConfigOnlyOwnerDisablesGal = BepInExConfig.Bind<bool>(
+             //    "Gal",
+             //    "Only Owner Disables Gal",
+             //    true,
+             //    "Makes it to where only the owner can disable the Gal");
+             // ConfigGalAutomatic = BepInExConfig.Bind<bool>(
+             //    "Gal",
+             //    "Auto Activate",
+             //    true,
+             //    "Makes the Gal automatically activate");
+             
             DebugMenuFavoriteTextColor = BepInExConfig.Bind<string>(
                 "New Debug",
                 "Favorite Text Color",
