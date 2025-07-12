@@ -26,82 +26,9 @@ But, not always.
 You can now add your own dice effects in your own mods
 there is an example mod on how to do that here: https://github.com/slayer6409/Dice-Addon
 
-## The Gambler
+## Documentation
 
-![](https://i.imgur.com/J6biRWU.png)
-
-A new scrap item with rolling outcomes similar to the Emergency die,
-but with a larger pool of postivie effects and a bigger chance for a bad outcome.
-
-* Rolling 6 will cause a Great effect.
-* Rolling 5 will cause a Good effect.
-* Rolling 4 will cause either a Good or a Mixed effect.
-* Rolling 3 will cause a Bad effect.
-* Rolling 2 will cause either a Bad or an Awful effect.
-* Rolling 1 will cause an Awful effect.
-
-You can either sell it, or use it.
-
-## Chronos
-
-![](https://i.imgur.com/wMPUsZB.png)
-
-Similar to The Gambler. Has a higher chance of getting a great effect,
-but the outcomes change when the time passes. As the night
-comes, the chances to roll a bad/awful effect increase.
-
-It's probably better to use it earlier in the day, but this can
-make your whole day troublesome.
-
-* Rolling 6 will cause a Great effect.
-* Rolling 5 will cause a Good or a Great effect.
-* Rolling 4 will cause either a Bad, Good or a Great effect.
-* Rolling 3 will cause a Bad effect.
-* Rolling 2 will cause either a Bad or an Awful effect.
-* Rolling 1 will cause an Awful effect.
-
-You can either sell it, or use it.
-
-## The Sacrificer
-
-![](https://i.imgur.com/7qePubu.png)
-
-Guarantees a return to the ship, and a bad/awful effect.
-
-* Rolling 6 will cause a Bad effect.
-* Rolling 5 will cause a Bad effect.
-* Rolling 4 will cause a Bad effect.
-* Rolling 3 will cause a Bad or an Awful effect.
-* Rolling 2 will cause an Awful effect.
-* Rolling 1 will cause two Awful effects.
-
-## The Saint
-
-![](https://i.imgur.com/g5gaoUH.png)
-
-This one will never roll a bad or an awful effect.
-It's the rarest die in this mod, so don't expect to see it a lot.
-
-* Rolling 6 will show you a menu from which you can select any Effect.
-* Rolling 5 will cause a Great effect.
-* Rolling 4 will cause a Good effect.
-* Rolling 3 will cause a Good effect.
-* Rolling 2 will cause a Good effect.
-* Rolling 1 will waste the die.
-
-## Rusty
-
-![](https://i.imgur.com/SjLWGEx.png)
-
-Spawns scrap. Only scrap. Higher rolls mean more scrap.
-Has negative outcomes.
-
-* Rolling 6 will spawn 7-8 scrap. Or special scrap effects
-* Rolling 5 will spawn 5-6 scrap
-* Rolling 4 will spawn 3-4 scrap.
-* Rolling 3 will spawn 1-2 scrap.
-* Rolling 2 will cause a Bad effect.
-* Rolling 1 will cause an Awful effect
+To find all Dice and Dice effects to see what they do: https://dice.slayer.games/
 
 ## Features a ton of Dice Roll Events
 Too Many to list out here, check the config to get a list of them!
