@@ -9,26 +9,15 @@ Their Github Repo: https://github.com/Theronguard/Emergency-Dice
 
 Check out that mod if you don't want my changes! 
 
-![](https://i.imgur.com/gGdBSz0.png)
+## Documentation
 
-This is an item you can buy from the store.
-It is a one time use only die, which teleports you to the ship with all your items.
-But, not always.
-
-* Rolling 6 will return you to the ship with all the crewmates standing near you (they need to be very close).
-* Rolling 4 or 5 will return you to the ship.
-* Rolling 3 will cause a mixed effect.
-* Rolling 2 will cause something bad to happen.
-* You don't want to roll a 1.
+To find all Dice and Dice effects to see what they do: https://dice.slayer.games/
 
 ## API
 
 You can now add your own dice effects in your own mods
 there is an example mod on how to do that here: https://github.com/slayer6409/Dice-Addon
 
-## Documentation
-
-To find all Dice and Dice effects to see what they do: https://dice.slayer.games/
 
 ## Features a ton of Dice Roll Events
 Too Many to list out here, check the config to get a list of them!
