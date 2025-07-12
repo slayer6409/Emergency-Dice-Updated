@@ -19,9 +19,6 @@ You can now add your own dice effects in your own mods
 there is an example mod on how to do that here: https://github.com/slayer6409/Dice-Addon
 
 
-## Features a ton of Dice Roll Events
-Too Many to list out here, check the config to get a list of them!
-
 ### Config
 Be sure to check out the plugin's config file.
 It is called EmergencyDice.cfg and it should
