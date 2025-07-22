@@ -14,6 +14,7 @@ public class Charger : NetworkBehaviour
     public Transform ChargeTransform = null!;
     [NonSerialized] public GalAI GalAI = null!;
     [NonSerialized] public static List<Charger> Instances = new();
+    private static readonly int ActivatedAnimation = Animator.StringToHash("isActivated");
 
     public override void OnNetworkSpawn()
     {
@@ -26,9 +27,9 @@ public class Charger : NetworkBehaviour
         if (!IsServer) yield break;
         while (true)
         { 
-            yield return new WaitUntil(() => TimeOfDay.Instance.normalizedTimeOfDay <= 0.12f && StartOfRound.Instance.shipHasLanded && !GalAI.Animator.GetBool("activated") && !StartOfRound.Instance.shipIsLeaving && !StartOfRound.Instance.inShipPhase && RoundManager.Instance.currentLevel.levelID != 3);
+            yield return new WaitUntil(() => TimeOfDay.Instance.normalizedTimeOfDay <= 0.12f && StartOfRound.Instance.shipHasLanded && !GalAI.Animator.GetBool(ActivatedAnimation) && !StartOfRound.Instance.shipIsLeaving && !StartOfRound.Instance.inShipPhase && RoundManager.Instance.currentLevel.levelID != 3);
             MysteryDice.ExtendedLogging("Activating  Gal" + TimeOfDay.Instance.normalizedTimeOfDay);
-            if (!GalAI.Animator.GetBool("activated"))
+            if (!GalAI.Animator.GetBool(ActivatedAnimation))
             {
                 PlayerControllerB closestPlayer = StartOfRound.Instance.allPlayerScripts.Where(p => p.isPlayerControlled && !p.isPlayerDead).OrderBy(p => Vector3.Distance(transform.position, p.transform.position)).First();
                 int playerIndex = Array.IndexOf(StartOfRound.Instance.allPlayerScripts, closestPlayer);
@@ -44,7 +45,7 @@ public class Charger : NetworkBehaviour
         if (!NetworkObject.IsSpawned) return;
         if (playerInteracting == null || !playerInteracting.IsLocalPlayer()) return;
         if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded || StartOfRound.Instance.shipIsLeaving || (RoundManager.Instance.currentLevel.levelID == 3 && !MysteryDice.NavMeshInCompanyPresent)) return;
-        if (!GalAI.Animator.GetBool("activated"))
+        if (!GalAI.Animator.GetBool(ActivatedAnimation))
         {
             ActivateGirlServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, playerInteracting));
         }
@@ -58,7 +59,7 @@ public class Charger : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void ActivateGirlServerRpc(int index)
     {
-        GalAI.Animator.SetBool("activated", index != -1);
+        GalAI.Animator.SetBool(ActivatedAnimation, index != -1);
         ActivateGirlClientRpc(index);
     }
 

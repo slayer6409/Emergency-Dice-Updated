@@ -231,6 +231,7 @@ public class GalAI : NetworkBehaviour, IHittable
             collider.enabled = enablePhysics;
         }
         physicsEnabled = enablePhysics;
+        
     }
 
     [ServerRpc(RequireOwnership = false)]

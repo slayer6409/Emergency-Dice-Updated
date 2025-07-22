@@ -113,7 +113,6 @@ public class DiceGalAI : GalAI
     [ServerRpc(RequireOwnership = false)]
     private void OnChestInteractServerRpc(PlayerControllerReference playerControllerReference)
     {
-        HandleStateAnimationSpeedChanges(State.SpecialAction);
         OnChestInteractClientRpc(playerControllerReference);
     }
 
@@ -390,46 +389,6 @@ public class DiceGalAI : GalAI
         }
     }
 
-    public void DebugDrawAllBoxColliders(int duration = 20)
-    {
-        foreach (var collider in transform.GetComponentsInChildren<BoxCollider>())
-        {
-            DrawDebugBox(collider, duration);
-        }
-    }
-    void DrawDebugBox(BoxCollider box, int duration)
-    {
-        Vector3 center = box.transform.TransformPoint(box.center);
-        Vector3 size = box.size * 0.5f;
-        Vector3[] points = new Vector3[8];
-        Transform t = box.transform;
-        Color color = box.enabled ? (box.isTrigger ? Color.yellow : Color.green) : Color.red;
-
-        points[0] = t.TransformPoint(box.center + new Vector3(-size.x, -size.y, -size.z));
-        points[1] = t.TransformPoint(box.center + new Vector3(size.x, -size.y, -size.z));
-        points[2] = t.TransformPoint(box.center + new Vector3(size.x, -size.y, size.z));
-        points[3] = t.TransformPoint(box.center + new Vector3(-size.x, -size.y, size.z));
-        points[4] = t.TransformPoint(box.center + new Vector3(-size.x, size.y, -size.z));
-        points[5] = t.TransformPoint(box.center + new Vector3(size.x, size.y, -size.z));
-        points[6] = t.TransformPoint(box.center + new Vector3(size.x, size.y, size.z));
-        points[7] = t.TransformPoint(box.center + new Vector3(-size.x, size.y, size.z));
-
-        Debug.DrawLine(points[0], points[1], color, duration);
-        Debug.DrawLine(points[1], points[2], color, duration);
-        Debug.DrawLine(points[2], points[3], color, duration);
-        Debug.DrawLine(points[3], points[0], color, duration);
-
-        Debug.DrawLine(points[4], points[5], color, duration);
-        Debug.DrawLine(points[5], points[6], color, duration);
-        Debug.DrawLine(points[6], points[7], color, duration);
-        Debug.DrawLine(points[7], points[4], color, duration);
-
-        Debug.DrawLine(points[0], points[4], color, duration);
-        Debug.DrawLine(points[1], points[5], color, duration);
-        Debug.DrawLine(points[2], points[6], color, duration);
-        Debug.DrawLine(points[3], points[7], color, duration);
-    }
-
     private void DoRandomIdle()
     {
         if(_idleResetCoroutine!=null) return;
@@ -571,8 +530,6 @@ public class DiceGalAI : GalAI
     //Use when I want to change state
     private void HandleStateAnimationSpeedChanges(State state) 
     {
-        MysteryDice.ExtendedLogging($"Switching to {state} from: {galState}");
-        MysteryDice.ExtendedLogging(new StackTrace(true).ToString());
         SwitchStateClientRpc((int)state);
         switch (state)
         {
