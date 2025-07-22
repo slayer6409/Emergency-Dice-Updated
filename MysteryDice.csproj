@@ -8,14 +8,16 @@
     <Deterministic>true</Deterministic>
     <ThunderstorePath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins</ThunderstorePath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   
   <PropertyGroup>
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>portable</DebugType>
+    <DebugType>embedded</DebugType>
     <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
   </PropertyGroup>
-  
+
+
   <PropertyGroup>
     <RestoreAdditionalProjectSources>
       https://api.nuget.org/v3/index.json;
@@ -40,7 +42,7 @@
     <Reference Include="CodeRebirth" Publicize="true">
       <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\XuXiaolan-CodeRebirth\CodeRebirth\CodeRebirth.dll</HintPath>
     </Reference>
-    <Reference Include="com.github.xuuxiaolan.coderebirthlib" Publicize="true">
+    <Reference Include="com.github.xuuxiaolan.coderebirthlib">
       <HintPath>..\..\..\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\DiceSoftDependencies\BepInEx\plugins\XuXiaolan-CodeRebirthLib\CodeRebirthLib\com.github.xuuxiaolan.coderebirthlib.dll</HintPath>
     </Reference>
     <Reference Include="CullFactory">
@@ -84,24 +86,27 @@
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <PostBuildEvent>
-      cd C:\Users\andre\Documents\NetcodePatcher
-      NetcodePatcher.dll "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\netstandard2.1" deps
-       
-       
-      copy "C:\Users\andre\DiceMod\Assets\AssetBundles\mysterydice2" "C:\Users\andre\Desktop\MysteryDice\Regular"
-      copy "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\netstandard2.1\MysteryDice.dll" "C:\Users\andre\DiceMod\Assets\LethalCompany\Plugins"
-      copy "C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\netstandard2.1\MysteryDice.dll" "C:\Users\andre\Desktop\MysteryDice\Regular"
-      copy "C:\Users\andre\source\repos\Emergency-Dice-main\CHANGELOG.md" "C:\Users\andre\Desktop\MysteryDice\Regular"
-      copy "C:\Users\andre\source\repos\Emergency-Dice-main\README.md" "C:\Users\andre\Desktop\MysteryDice\Regular"
-      copy "C:\Users\andre\source\repos\Emergency-Dice-main\manifest.json" "C:\Users\andre\Desktop\MysteryDice\Regular"
-
-      cd "C:\Users\andre\Desktop\MysteryDice\"
-      call "C:\Users\andre\Desktop\MysteryDice\Make Zip.bat"
-    </PostBuildEvent>
-  </PropertyGroup>
   
+  <Sdk Name="Evaisa.NetcodePatcher.MSBuild" Version="4.3.0" />
+  <ItemGroup>
+    <NetcodePatch Include="$(TargetPath)" />
+  </ItemGroup>
+
+  <Target Name="AfterNetcodePatch" AfterTargets="NetcodePatch">
+    <ItemGroup>
+      <FilesToCopy Include="C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\netstandard2.1\MysteryDice.dll" />
+      <FilesToCopy Include="C:\Users\andre\DiceMod\Assets\AssetBundles\mysterydice2" />
+      <FilesToCopy Include="C:\Users\andre\source\repos\Emergency-Dice-main\CHANGELOG.md" />
+      <FilesToCopy Include="C:\Users\andre\source\repos\Emergency-Dice-main\README.md" />
+      <FilesToCopy Include="C:\Users\andre\source\repos\Emergency-Dice-main\manifest.json" />
+    </ItemGroup>
+
+    <Message Importance="high" Text="Copying MysteryDice outputs..." />
+
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="C:\Users\andre\Desktop\MysteryDice\Regular" />
+    <Copy SourceFiles="C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\netstandard2.1\MysteryDice.dll" DestinationFolder="C:\Users\andre\DiceMod\Assets\LethalCompany\Plugins" />
+
+    <Exec Command="cd &quot;C:\Users\andre\Desktop\MysteryDice&quot; &amp;&amp; call &quot;Make Zip.bat&quot;" />
+  </Target>
   
 </Project>

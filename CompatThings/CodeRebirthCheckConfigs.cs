@@ -56,10 +56,10 @@ public class CodeRebirthCheckConfigs
      */
     
     
-    public static GameObject getTrap(string trapName)
+    public static CRMapObjectDefinition getTrap(string trapName)
     {
         CodeRebirth.src.Plugin.Mod.MapObjectRegistry().TryGetFromMapObjectName(trapName, out var trap);
-        return trap.GameObject;
+        return trap;
     }
  
     public static EnemyType getEnemy(string enemyName)

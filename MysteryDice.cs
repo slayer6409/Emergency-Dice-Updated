@@ -48,7 +48,6 @@ namespace MysteryDice
             76561198399127090 /*Xu*/,
             76561198086086035 /*Nut*/
         };
-        
         public static HashSet<ulong> revokedAdmins = new();
         
         public static readonly ulong slayerSteamID = 76561198077184650;
@@ -58,15 +57,16 @@ namespace MysteryDice
         public enum chatDebug { Host, Everyone, None};
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.12.0";
+        private const string modVersion = "1.12.3";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
         public static AssetBundle LoadedAssets, LoadedAssets2;
 
+        
         internal static IngameKeybinds Keybinds = null!;
         
-        //public static UnlockableItemDef diceGalUnlockable;  //gal commented
+        public static UnlockableItemDef diceGalUnlockable;  
         public static GameObject NetworkerPrefab,
             JumpscareCanvasPrefab,
             JumpscareOBJ,
@@ -77,7 +77,7 @@ namespace MysteryDice
             EffectMenuButtonPrefab,
             DebugMenuButtonPrefab,
             DebugSubButtonPrefab,
-            //DiceGal, //gal commented
+            DiceGal, 
             AgentObjectPrefab;
         public static Jumpscare JumpscareScript;
 
@@ -115,8 +115,8 @@ namespace MysteryDice
         public static ConfigEntry<float> minHyperShake;
         public static ConfigEntry<float> maxHyperShake;
         public static ConfigEntry<bool> randomSpinTime;
-        // public static ConfigEntry<bool> ConfigOnlyOwnerDisablesGal;
-        // public static ConfigEntry<bool> ConfigGalAutomatic;
+        public static ConfigEntry<bool> ConfigOnlyOwnerDisablesGal;
+        public static ConfigEntry<bool> ConfigGalAutomatic;
         public static ConfigEntry<bool> chronosUpdatedTimeOfDay;
         public static ConfigEntry<bool> useDiceOutside;
         public static ConfigEntry<bool> debugDice;
@@ -261,16 +261,16 @@ namespace MysteryDice
                 true,
                 "Spawn Enemy On Player with the Debug Menu."); 
              
-             // ConfigOnlyOwnerDisablesGal = BepInExConfig.Bind<bool>(
-             //    "Gal",
-             //    "Only Owner Disables Gal",
-             //    true,
-             //    "Makes it to where only the owner can disable the Gal");
-             // ConfigGalAutomatic = BepInExConfig.Bind<bool>(
-             //    "Gal",
-             //    "Auto Activate",
-             //    true,
-             //    "Makes the Gal automatically activate");
+             ConfigOnlyOwnerDisablesGal = BepInExConfig.Bind<bool>(
+                "Gal",
+                "Only Owner Disables Gal",
+                true,
+                "Makes it to where only the owner can disable the Gal");
+             ConfigGalAutomatic = BepInExConfig.Bind<bool>(
+                "Gal",
+                "Auto Activate",
+                true,
+                "Makes the Gal automatically activate");
              
             DebugMenuFavoriteTextColor = BepInExConfig.Bind<string>(
                 "New Debug",
@@ -503,13 +503,7 @@ namespace MysteryDice
                 "Debug Logging",
                 false,
                 "This is so I can see what the names of a lot of things are, probably not useful for most people");
-            //
-            // OnlyOwnerDisablesGal = BepInExConfig.Bind<bool>(
-            //     "Gal Options",
-            //     "Only Owner Disables Gal",
-            //     false,
-            //     "Makes it to where only the owner can disable the Gal");
-            
+           
             DebugMenuClosesAfter = BepInExConfig.Bind<bool>(
                 "Misc",
                 "Debug Menu Closes After",
@@ -707,6 +701,8 @@ namespace MysteryDice
             sounds.Add("Duck", LoadedAssets2.LoadAsset<AudioClip>("DuckSpawn"));
             sounds.Add("Fumo", LoadedAssets2.LoadAsset<AudioClip>("Fumo"));
             sounds.Add("Steve", LoadedAssets2.LoadAsset<AudioClip>("Steve"));
+            sounds.Add("Yeehaw", LoadedAssets2.LoadAsset<AudioClip>("Yeehaw"));
+            sounds.Add("KeepDice", LoadedAssets2.LoadAsset<AudioClip>("KeepDice"));
             
 
             WarningBracken = LoadedAssets.LoadAsset<Sprite>("bracken");
@@ -714,8 +710,8 @@ namespace MysteryDice
             WarningDeath = LoadedAssets.LoadAsset<Sprite>("death");
             WarningLuck = LoadedAssets.LoadAsset<Sprite>("luck");
             
-            // DiceGal = LoadedAssets2.LoadAsset<GameObject>("DiceGal"); //gal commented
-            // diceGalUnlockable = LoadedAssets2.LoadAsset<UnlockableItemDef>("DiceGalUnlockable"); //gal commented
+            DiceGal = LoadedAssets2.LoadAsset<GameObject>("DiceGal"); //gal commented
+            diceGalUnlockable = LoadedAssets2.LoadAsset<UnlockableItemDef>("DiceGalUnlockable"); //gal commented
             
             NetworkerPrefab = LoadedAssets.LoadAsset<GameObject>("Networker");
             NetworkerPrefab.name = "DiceNetworker";
@@ -750,8 +746,8 @@ namespace MysteryDice
             LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(PathfinderSpawner.spawnPrefab);
             LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(PathfinderPrefab);
             
-            // if(diceGalUnlockable == null) CustomLogger.LogError("DiceGalUnlockable is null!"); //gal commented
-            // LethalLib.Modules.Unlockables.RegisterUnlockable(MysteryDice.diceGalUnlockable, 150, StoreType.ShipUpgrade); //gal commented
+            if(diceGalUnlockable == null) CustomLogger.LogError("DiceGalUnlockable is null!"); //gal commented
+            LethalLib.Modules.Unlockables.RegisterUnlockable(MysteryDice.diceGalUnlockable, 150, StoreType.ShipUpgrade); //gal commented
 
             LoadDice();
             
@@ -1066,12 +1062,11 @@ namespace MysteryDice
             
             ///
 
-            DieSacrificer = LoadedAssets.LoadAsset<Item>("Sacrificer");
+            DieSacrificer = LoadedAssets2.LoadAsset<Item>("SacrificerItem");
             DieSacrificer.minValue = 170;
             DieSacrificer.maxValue = 230;
             DieSacrificer.canBeGrabbedBeforeGameStart = true;
-
-
+            
             SacrificerDie scriptSacrificer = DieSacrificer.spawnPrefab.AddComponent<SacrificerDie>();
             scriptSacrificer.myType = DieBehaviour.DiceType.SACRIFICER;
             scriptSacrificer.grabbable = true;

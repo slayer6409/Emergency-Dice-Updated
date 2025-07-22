@@ -4,8 +4,10 @@ using MysteryDice.Dice;
 using System.Collections.Generic;
 using System.Linq;
 using LethalLib.Modules;
+using MysteryDice.Extensions;
 using MysteryDice.Patches;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -826,9 +828,13 @@ public class DebugMenuStuff : MonoBehaviour
         var allScraps = StartOfRound.Instance.allItemsList.itemsList.ToList().OrderBy(s => favoriteItemsNames.Contains(s.itemName) ? 0 : 1)
             .ThenBy(s => s.itemName)
             .ToList();
+        
+        var localPlayer = StartOfRound.Instance.localPlayerController;
         foreach (Item scrap in allScraps)
         {
-            
+            GameObject prefab = scrap.spawnPrefab;
+            int prefabIndex = NetworkManager.Singleton.NetworkConfig.Prefabs.Prefabs
+                .FindIndex(p => p.Prefab == prefab);
             GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, mainScrollContent);
             TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
 
@@ -843,18 +849,19 @@ public class DebugMenuStuff : MonoBehaviour
                 CloseSelectMenu();
 
                 Vector3 spawnPosition;
-                if (StartOfRound.Instance.localPlayerController.isPlayerDead)
+                if (localPlayer.isPlayerDead)
                 {
                     spawnPosition = StartOfRound.Instance.spectateCamera.transform.position;
                 }
                 else
                 {
                     spawnPosition =
-                        StartOfRound.Instance.localPlayerController.transform.position; 
+                        localPlayer.transform.position; 
                 }
+                int count = Keyboard.current.leftShiftKey.isPressed ? 5 : 1;
                 Networker.Instance.SameScrapServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, GameNetworkManager.Instance.localPlayerController),
-                    1, scrap.itemName, StartOfRound.Instance.localPlayerController.isPlayerDead,
-                    spawnPosition);
+                    count, scrap.itemName, localPlayer.isPlayerDead,
+                    spawnPosition, networkPrefabIndex: prefabIndex);
                 Misc.SafeTipMessage($"Spawned {scrap.name}", $"Spawned at {spawnPosition}");
             });
 

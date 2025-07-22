@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
-using CodeRebirthLib.ContentManagement.MapObjects;
 using UnityEngine.SceneManagement;
 using Random = System.Random;
 
@@ -29,11 +28,11 @@ namespace MysteryDice.Effects
         }
 
         [MethodImpl (MethodImplOptions.NoInlining)]
-        public static CRMapObjectDefinition getRandomCrate()
+        public static GameObject getRandomCrate()
         {
             var crates = CodeRebirth.src.Plugin.Mod.MapObjectRegistry()
                 .Where(x => x.ObjectName.Contains("crate", StringComparison.OrdinalIgnoreCase)).ToList();
-            return crates[UnityEngine.Random.Range(0, crates.Count)];
+            return crates[UnityEngine.Random.Range(0, crates.Count)].GameObject;
         }
 
         [MethodImpl (MethodImplOptions.NoInlining)]
@@ -53,15 +52,15 @@ namespace MysteryDice.Effects
                     Vector3 vector = RoundManager.Instance.GetRandomNavMeshPositionInBoxPredictable(position, 10f, default, random, -1) + (Vector3.up * 2);
 
                     Physics.Raycast(vector, Vector3.down, out RaycastHit hit, 100, StartOfRound.Instance.collidersAndRoomMaskAndDefault);
-                    CRMapObjectDefinition crate = getRandomCrate();
+                    GameObject crate = getRandomCrate();
 
                     if (hit.collider != null)
                     {
                         Vector3 spawnPoint = hit.point + hit.normal * -0.75f;
-                        GameObject spawnedCrate = GameObject.Instantiate(crate.GameObject, spawnPoint, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
+                        GameObject spawnedCrate = GameObject.Instantiate(crate, spawnPoint, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
                         spawnedCrate.transform.up = hit.normal;
-                        spawnedCrate.GetComponent<NetworkObject>().Spawn();
                         SceneManager.MoveGameObjectToScene(spawnedCrate, RoundManager.Instance.mapPropsContainer.scene);
+                        spawnedCrate.GetComponent<NetworkObject>().Spawn();
                         spawnedMines++;
                     }
                 }
@@ -85,16 +84,16 @@ namespace MysteryDice.Effects
 
                     Physics.Raycast(vector, Vector3.down, out RaycastHit hit, 100, StartOfRound.Instance.collidersAndRoomMaskAndDefault);
                     
-                    CRMapObjectDefinition crate = getRandomCrate();
+                    GameObject crate = getRandomCrate();
                     
 
                     if (hit.collider != null)
                     {
                         Vector3 spawnPoint = hit.point + hit.normal * -0.75f;
-                        GameObject spawnedCrate = GameObject.Instantiate(crate.GameObject, spawnPoint, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
+                        GameObject spawnedCrate = GameObject.Instantiate(crate, spawnPoint, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
                         spawnedCrate.transform.up = hit.normal;
-                        spawnedCrate.GetComponent<NetworkObject>().Spawn();
                         SceneManager.MoveGameObjectToScene(spawnedCrate, RoundManager.Instance.mapPropsContainer.scene);
+                        spawnedCrate.GetComponent<NetworkObject>().Spawn();
                         spawnedMines++;
                     }
                 }

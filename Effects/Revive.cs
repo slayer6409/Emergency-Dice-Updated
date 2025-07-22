@@ -130,6 +130,7 @@ namespace MysteryDice.Effects
 				HUDManager.Instance.gasHelmetAnimator.SetBool("gasEmitting", value: false);
 				HUDManager.Instance.RemoveSpectateUI();
 				HUDManager.Instance.gameOverAnimator.SetTrigger("revive");
+				HUDManager.Instance.HideHUD(false);
 			}
 			StartOfRound.Instance.allPlayersDead = false;
 			StartOfRound.Instance.livingPlayers++;

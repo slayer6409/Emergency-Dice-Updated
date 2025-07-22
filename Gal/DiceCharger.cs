@@ -1,16 +1,18 @@
-// using Unity.Netcode;
-//
-// namespace MysteryDice.Gal;
-//
-// public class DiceCharger : Charger
-// {
-//     public override void OnNetworkSpawn()
-//     {
-//         base.OnNetworkSpawn();
-//         if (!IsServer) return;
-//         GalAI = Instantiate(MysteryDice.DiceGal, ChargeTransform.position, ChargeTransform.rotation).GetComponent<DiceGalAI>();
-//         NetworkObject netObj = GalAI.GetComponent<NetworkObject>();
-//         GalAI.GalCharger = this;
-//         netObj.Spawn();
-//     }
-// }
+using Unity.Netcode;
+
+using MysteryDice.Extensions;
+
+namespace MysteryDice.Gal;
+public class DiceCharger : Charger
+{
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        if (!IsServer) return;
+        // Instantiate the DICE GAL prefab
+        GalAI = Instantiate(MysteryDice.DiceGal, ChargeTransform.position, ChargeTransform.rotation).GetComponent<GalAI>();
+        NetworkObject netObj = GalAI.GetComponent<NetworkObject>();
+        GalAI.GalCharger = this;
+        netObj.Spawn();
+    }
+}

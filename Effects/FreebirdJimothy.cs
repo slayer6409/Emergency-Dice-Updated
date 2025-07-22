@@ -1,7 +1,6 @@
 ﻿using MysteryDice.Patches;
 using System;
 using System.Collections;
-using CodeRebirth.src.Content.Enemies;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -40,7 +39,7 @@ namespace MysteryDice.Effects
             if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(id, out var networkObj))
             {
                 GameObject obj = networkObj.gameObject;
-                var transporter = obj.GetComponent<Transporter>();
+                var transporter = obj.GetComponent<CodeRebirth.src.Content.Enemies.Transporter>();
                 transporter.gameObject.AddComponent<freebirdMaker>();
                 transporter.speedIncrease = speed;
             }

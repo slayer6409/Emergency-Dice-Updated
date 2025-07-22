@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using DunGen;
 using System.Linq;
 using System.Reflection;
-using CodeRebirth.src.Content.Maps;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -29,14 +28,14 @@ namespace MysteryDice.Effects
         public static IEnumerator fixSpiney(GameObject obj)
         {
             yield return new WaitForSeconds(0.1f);
-            var laser = obj.GetComponentInChildren<LaserTurret>();
+            var laser = obj.GetComponentInChildren<CodeRebirth.src.Content.Maps.LaserTurret>();
             if (laser!=null)
             { 
                 laser.rotationSpeed = 800;
             }
             else
             {
-                laser = obj.GetComponent<LaserTurret>();
+                laser = obj.GetComponent<CodeRebirth.src.Content.Maps.LaserTurret>();
                 if (laser != null)
                 {
                     laser.rotationSpeed = 800;

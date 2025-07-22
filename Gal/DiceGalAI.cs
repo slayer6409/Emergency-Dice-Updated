@@ -1,596 +1,688 @@
-// using System;
-// using System.Collections;
-// using System.Collections.Generic;
-// using System.Linq;
-// using GameNetcodeStuff;
-// using MysteryDice.Dice;
-// using Unity.Netcode;
-// using Unity.Netcode.Components;
-// using UnityEngine;
-// using UnityEngine.AI;
-//
-// namespace MysteryDice.Gal;
-//
-// public class DiceGalAI : GalAI
-// {public SkinnedMeshRenderer FaceSkinnedMeshRenderer = null!;
-//     
-//     public GameObject boostersGameObject = null!;
-//     public InteractTrigger keyboardInteractTrigger = null!;
-//     public InteractTrigger zapperInteractTrigger = null!;
-//     public InteractTrigger keyInteractTrigger = null!;
-//     public InteractTrigger teleporterInteractTrigger = null!;
-//     public AudioSource FlyingSource = null!;
-//     public AudioSource FootstepSource = null!;
-//     public AudioSource specialSource = null!;
-//     public AudioClip scrapPingSound = null!;
-//     public AudioClip keyboardPressSound = null!;
-//     public AudioClip zapperSound = null!;
-//     public AudioClip keySound = null!;
-//     public AudioClip teleporterSound = null!;
-//     public List<AudioClip> startOrEndFlyingAudioClips = new();
-//
-//     private Collider[] cachedColliders = new Collider[5];
-//     private List<Coroutine> customPassRoutines = new();
-//     private List<GameObject> pointsOfInterest = new();
-//     private float scrapRevealTimer = 10f;
-//     private bool flying = false;
-//     private Coroutine? unlockingSomething = null;
-//     private Coroutine? zapperRoutine = null;
-//     private State galState = State.Inactive;
-//     [HideInInspector] public Emotion galEmotion = Emotion.Sleeping;
-//     private readonly static int revealScrapAnimation = Animator.StringToHash("revealScrap"); // trigger
-//     private readonly static int flyingAnimation = Animator.StringToHash("flying"); // bool
-//     private readonly static int danceAnimation = Animator.StringToHash("dancing"); // bool
-//     private readonly static int activatedAnimation = Animator.StringToHash("activated"); // bool
-//     private readonly static int runSpeedFloat = Animator.StringToHash("RunSpeed"); // float
-//     private readonly static int specialAnimationInt = Animator.StringToHash("specialAnimationInt"); // int (-1 is nothing, 0 is DoorUnlock, 1 is RechargeItem, 2 is Teleport).
-//
-//     public enum State
-//     {
-//         Inactive = 0,
-//         Active = 1,
-//         FollowingPlayer = 2,
-//         Dancing = 3,
-//         UnlockingObjects = 4,
-//     }
-//
-//     public enum Emotion
-//     {
-//         Basis = -1,
-//         VeryHappy = 0,
-//         Mood = 1,
-//         Angy = 2,
-//         Winky = 3,
-//         Crying = 4,
-//         Sleeping = 5,
-//         Flustered = 6,
-//         Love = 7,
-//     }
-//
-//     private void StartUpDelay()
-//     {
-//         List<DiceCharger> diceChargers = new();
-//         foreach (var charger in Charger.Instances)
-//         {
-//             if (charger is DiceCharger actuallyADiceCharger)
-//             {
-//                 diceChargers.Add(actuallyADiceCharger);
-//             }
-//         }
-//         if (diceChargers.Count <= 0)
-//         {
-//             if (IsServer) NetworkObject.Despawn();
-//             //Plugin.Logger.LogError($"TerminalCharger not found in scene. TerminalGalAI will not be functional.");
-//             return;
-//         }
-//         DiceCharger diceCharger = diceChargers.OrderBy(x => Vector3.Distance(transform.position, x.transform.position)).First(); ;
-//         diceCharger.GalAI = this;
-//         GalCharger = diceCharger;
-//         // Automatic activation if configured
-//         if (MysteryDice.ConfigGalAutomatic.Value)
-//         {
-//             StartCoroutine(GalCharger.ActivateGalAfterLand());
-//         }
-//
-//         // Adding listener for interaction trigger
-//         GalCharger.ActivateOrDeactivateTrigger.onInteract.AddListener(GalCharger.OnActivateGal);
-//         keyboardInteractTrigger.onInteract.AddListener(OnKeyboardInteract);
-//         keyInteractTrigger.onInteract.AddListener(OnKeyHandInteract);
-//         zapperInteractTrigger.onInteract.AddListener(OnZapperInteract);
-//         teleporterInteractTrigger.onInteract.AddListener(OnTeleporterInteract);
-//
-//         foreach (var item in StartOfRound.Instance.allItemsList.itemsList)
-//         {
-//             if (item == null || item.spawnPrefab == null || !item.spawnPrefab.TryGetComponent(out GrabbableObject grabbableObject)) continue;
-//             if (grabbableObject.mainObjectRenderer != null && grabbableObject.mainObjectRenderer.gameObject.layer == 0)
-//             {
-//                 grabbableObject.mainObjectRenderer.gameObject.layer = 6;
-//             }
-//             else
-//             {
-//                 foreach (var renderer in grabbableObject.GetComponentsInChildren<Renderer>())
-//                 {
-//                     if (renderer.gameObject.layer == 0)
-//                     {
-//                         renderer.gameObject.layer = 6;
-//                     }
-//                 }
-//             }
-//         }
-//     }
-//
-//
-//     private void OnZapperInteract(PlayerControllerB playerInteracting)
-//     {
-//         if (zapperRoutine != null || !playerInteracting.IsLocalPlayer || playerInteracting != ownerPlayer) return;
-//         ZapperInteractServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, playerInteracting));
-//     }
-//
-//     [ServerRpc(RequireOwnership = false)]
-//     private void ZapperInteractServerRpc(int playerIndex)
-//     {
-//         ZapperInteractClientRpc(playerIndex);
-//     }
-//
-//     [ClientRpc]
-//     private void ZapperInteractClientRpc(int playerIndex)
-//     {
-//         zapperRoutine = StartCoroutine(RechargePlayerHeldEquipment(StartOfRound.Instance.allPlayerScripts[playerIndex]));
-//     }
-//
-//     private IEnumerator RechargePlayerHeldEquipment(PlayerControllerB playerToRecharge)
-//     {
-//         if (playerToRecharge.isPlayerDead || !playerToRecharge.isPlayerControlled || playerToRecharge.currentlyHeldObjectServer == null || !playerToRecharge.currentlyHeldObjectServer.itemProperties.requiresBattery)
-//         {
-//             if (playerToRecharge.IsLocalPlayer) HUDManager.Instance.DisplayTip("Error", "What you're holding cannot be charged", false);
-//             yield break;
-//         }
-//         else
-//         {
-//             GalVoice.PlayOneShot(zapperSound);
-//             Animator.SetInteger(specialAnimationInt, 1);
-//             playerToRecharge.inSpecialInteractAnimation = true;
-//             yield return new WaitForSeconds(0.2f);
-//             Animator.SetInteger(specialAnimationInt, -1);
-//             while (playerToRecharge.currentlyHeldObjectServer.insertedBattery.charge < 1f)
-//             {
-//                 playerToRecharge.currentlyHeldObjectServer.insertedBattery.charge += Time.deltaTime;
-//                 yield return null;
-//             }
-//             playerToRecharge.inSpecialInteractAnimation = false;
-//         }
-//         zapperRoutine = null;
-//     }
-//
-//     private void OnKeyboardInteract(PlayerControllerB playerInteracting)
-//     {
-//         if (!playerInteracting.IsLocalPlayer || playerInteracting != ownerPlayer) return;
-//         KeyboardInteractServerRpc();
-//     }
-//
-//     [ServerRpc(RequireOwnership = false)]
-//     private void KeyboardInteractServerRpc()
-//     {
-//         KeyboardInteractClientRpc();
-//     }
-//
-//     [ClientRpc]
-//     private void KeyboardInteractClientRpc()
-//     {
-//         StartCoroutine(terminalFaceController.TemporarySwitchEffect((int)Emotion.Flustered));
-//         GalVoice.PlayOneShot(keyboardPressSound);
-//         EnablePhysics(!physicsEnabled);
-//     }
-//     
-//     public float DoCalculatePathDistance(NavMeshPath path)
-//     {
-//         float length = 0.0f;
-//
-//         if (path.status != NavMeshPathStatus.PathInvalid && path.corners.Length >= 1)
-//         {
-//             for (int i = 1; i < path.corners.Length; i++)
-//             {
-//                 length += Vector3.Distance(path.corners[i - 1], path.corners[i]);
-//             }
-//         }
-//         //Plugin.ExtendedLogging($"Path distance: {length}");
-//         return length;
-//     }
-//
-//     public override void ActivateGal(PlayerControllerB owner)
-//     {
-//         base.ActivateGal(owner);
-//         ResetToChargerStation(State.Active, Emotion.Basis);
-//         if (GalCharger is DiceCharger terminalCharger)
-//         {
-//             terminalCharger.animator.SetBool(DiceCharger.isOpenedAnimation, true);
-//         }
-//     }
-//
-//     private void ResetToChargerStation(State state, Emotion emotion)
-//     {
-//         if (!IsServer) return;
-//         if (Agent.enabled) Agent.Warp(GalCharger.ChargeTransform.position);
-//         transform.SetPositionAndRotation(GalCharger.ChargeTransform.position, GalCharger.ChargeTransform.rotation);
-//         HandleStateAnimationSpeedChangesServerRpc((int)state, (int)emotion);
-//     }
-//
-//     public override void DeactivateGal()
-//     {
-//         base.DeactivateGal();
-//         ResetToChargerStation(State.Inactive, Emotion.Sleeping);
-//         if (GalCharger is DiceCharger terminalCharger)
-//         {
-//             terminalCharger.animator.SetBool(DiceCharger.isOpenedAnimation, false);
-//         }
-//     }
-//
-//     private void InteractTriggersUpdate()
-//     {
-//         bool interactable = !inActive && (ownerPlayer != null && GameNetworkManager.Instance.localPlayerController == ownerPlayer);
-//         bool idleInteractable = galState != State.UnlockingObjects && interactable;
-//         keyboardInteractTrigger.interactable = interactable;
-//         keyInteractTrigger.interactable = idleInteractable;
-//         zapperInteractTrigger.interactable = idleInteractable;
-//         teleporterInteractTrigger.interactable = idleInteractable;
-//     }
-//
-//     private void StoppingDistanceUpdate()
-//     {
-//         Agent.stoppingDistance = 3f * (galState == State.UnlockingObjects ? 0.5f : 1f);
-//     }
-//
-//     private void SetIdleDefaultStateForEveryone()
-//     {
-//         if (GalCharger == null || (IsServer && !doneOnce))
-//         {
-//             doneOnce = true;
-//             // Plugin.Logger.LogInfo("Syncing for client");
-//             galRandom = new System.Random(StartOfRound.Instance.randomMapSeed + 69);
-//             chargeCount = 0;
-//             maxChargeCount = chargeCount;
-//             Agent.enabled = false;
-//             StartUpDelay();
-//         }
-//     }
-//
-//     public override void InActiveUpdate()
-//     {
-//         base.InActiveUpdate();
-//         inActive = galState == State.Inactive;
-//     }
-//
-//     public override void Update()
-//     {
-//         base.Update();
-//         SetIdleDefaultStateForEveryone();
-//         InteractTriggersUpdate();
-//
-//         if (inActive)
-//         {
-//             FootstepSource.volume = 0f;
-//             return;
-//         }
-//         StoppingDistanceUpdate();
-//         if (Animator.GetFloat(runSpeedFloat) > 0.01f)
-//         {
-//             FootstepSource.volume = 1f;
-//         }
-//         else
-//         {
-//             FootstepSource.volume = 0f;
-//         }
-//         if (galRandom.Next(500000) <= 3)
-//         {
-//             specialSource.Stop();
-//             specialSource.Play();
-//         }
-//         if (!IsHost) return;
-//         HostSideUpdate();
-//     }
-//
-//     private float GetCurrentSpeedMultiplier()
-//     {
-//         return 1.3f;
-//     }
-//
-//     private void HostSideUpdate()
-//     {
-//         if (StartOfRound.Instance.shipIsLeaving || !StartOfRound.Instance.shipHasLanded || StartOfRound.Instance.inShipPhase)
-//         {
-//             GalCharger.ActivateGirlServerRpc(-1);
-//             return;
-//         }
-//         if (Agent.enabled) smartAgentNavigator.AdjustSpeedBasedOnDistance(GetCurrentSpeedMultiplier());
-//         Animator.SetFloat(runSpeedFloat, Agent.velocity.magnitude / 2);
-//         switch (galState)
-//         {
-//             case State.Inactive:
-//                 break;
-//             case State.Active:
-//                 DoActive();
-//                 break;
-//             case State.FollowingPlayer:
-//                 DoFollowingPlayer();
-//                 break;
-//             case State.Dancing:
-//                 DoDancing();
-//                 break;
-//         }
-//     }
-//
-//     public override void OnEnableOrDisableAgent(bool agentEnabled)
-//     {
-//         base.OnEnableOrDisableAgent(agentEnabled);
-//         Animator.SetBool(flyingAnimation, !agentEnabled);
-//     }
-//
-//     private void DoActive()
-//     {
-//         if (ownerPlayer == null)
-//         {
-//             GoToChargerAndDeactivate();
-//             return;
-//         }
-//         else
-//         {
-//             HandleStateAnimationSpeedChanges(State.FollowingPlayer, Emotion.Basis);
-//         }
-//     }
-//
-//     private void DoFollowingPlayer()
-//     {
-//         if (ownerPlayer == null)
-//         {
-//             GoToChargerAndDeactivate();
-//             return;
-//         }
-//
-//         if (smartAgentNavigator.DoPathingToDestination(ownerPlayer.transform.position))
-//         {
-//             return;
-//         }
-//
-//         DoStaringAtOwner(ownerPlayer);
-//
-//         if (DoDancingAction())
-//         {
-//             return;
-//         }
-//     }
-//
-//     private void DoDancing()
-//     {
-//     }
-//     
-//     private void PlayKeySoundAnimEvent()
-//     {
-//         GalVoice.PlayOneShot(keySound);
-//     }
-//
-//     private void DoScrapActionsAnimEvent()
-//     {
-//        
-//     }
-//
-//     private ParticleSystem DoTerrainScan()
-//     {
-//         //if (GameNetworkManager.Instance.localPlayerController != ownerPlayer || Vector3.Distance(transform.position, ownerPlayer.transform.position) > 10) return;
-//         return terrainScanner.SpawnTerrainScanner(transform.position);
-//     }
-//
-//     private bool DoDancingAction()
-//     {
-//         if (boomboxPlaying)
-//         {
-//             HandleStateAnimationSpeedChanges(State.Dancing, Emotion.VeryHappy);
-//             StartCoroutine(StopDancingDelay());
-//             return true;
-//         }
-//         return false;
-//     }
-//
-//     private IEnumerator StopDancingDelay()
-//     {
-//         yield return new WaitUntil(() => !boomboxPlaying || galState != State.Dancing);
-//         if (galState != State.Dancing) yield break;
-//         HandleStateAnimationSpeedChanges(State.FollowingPlayer, Emotion.Basis);
-//     }
-//
-//     private void StartFlyingAnimEvent()
-//     {
-//         SetFlying(true);
-//         StartCoroutine(FlyAnimationDelay());
-//     }
-//
-//     private IEnumerator FlyAnimationDelay()
-//     {
-//         smartAgentNavigator.cantMove = true;
-//         yield return new WaitForSeconds(1.5f);
-//         smartAgentNavigator.cantMove = false;
-//     }
-//
-//     private void StopFlyingAnimEvent()
-//     {
-//         SetFlying(false);
-//     }
-//
-//     private void SetFlying(bool Flying)
-//     {
-//         this.flying = Flying;
-//         if (Flying)
-//         {
-//             GalSFX.PlayOneShot(startOrEndFlyingAudioClips[0]);
-//             boostersGameObject.SetActive(true);
-//             FlyingSource.volume = MysteryDice.SoundVolume.Value;
-//         }
-//         else
-//         {
-//             boostersGameObject.SetActive(false);
-//             GalSFX.PlayOneShot(startOrEndFlyingAudioClips[1]);
-//             FlyingSource.volume = 0f;
-//         }
-//     }
-//
-//     [ServerRpc(RequireOwnership = false)]
-//     private void HandleStateAnimationSpeedChangesServerRpc(int state, int emotion)
-//     {
-//         HandleStateAnimationSpeedChanges((State)state, (Emotion)emotion);
-//     }
-//
-//     private void HandleStateAnimationSpeedChanges(State state, Emotion emotion) // This is for host
-//     {
-//         SwitchStateClientRpc((int)state, (int)emotion);
-//         switch (state)
-//         {
-//             case State.Inactive:
-//                 SetAnimatorBools(dance: false, activated: false);
-//                 break;
-//             case State.Active:
-//                 SetAnimatorBools(dance: false, activated: true);
-//                 break;
-//             case State.FollowingPlayer:
-//                 SetAnimatorBools(dance: false, activated: true);
-//                 break;
-//             case State.Dancing:
-//                 SetAnimatorBools(dance: true, activated: true);
-//                 break;
-//         }
-//     }
-//
-//     private void SetAnimatorBools(bool dance, bool activated)
-//     {
-//         Animator.SetBool(danceAnimation, dance);
-//         Animator.SetBool(activatedAnimation, activated);
-//     }
-//
-//     [ServerRpc(RequireOwnership = false)]
-//     private void SwitchStateServerRpc(int state, int emotion)
-//     {
-//         SwitchStateClientRpc(state, emotion);
-//     }
-//
-//     [ClientRpc]
-//     private void SwitchStateClientRpc(int state, int emotion)
-//     {
-//         SwitchState(state, emotion);
-//     }
-//
-//     private void SwitchState(int state, int emotion) // this is for everyone.
-//     {
-//         State stateToSwitchTo = (State)state;
-//         Emotion emotionToSwitchTo = (Emotion)emotion;
-//
-//         if (state != -1)
-//         {
-//             switch (stateToSwitchTo)
-//             {
-//                 case State.Inactive:
-//                     HandleStateInactiveChange();
-//                     break;
-//                 case State.Active:
-//                     HandleStateActiveChange();
-//                     break;
-//                 case State.FollowingPlayer:
-//                     HandleStateFollowingPlayerChange();
-//                     break;
-//                 case State.Dancing:
-//                     HandleStateDancingChange();
-//                     break;
-//                 case State.UnlockingObjects:
-//                     HandleStateUnlockingObjectsChange();
-//                     break;
-//             }
-//             galState = stateToSwitchTo;
-//         }
-//
-//         //Plugin.ExtendedLogging($"Switching emotion to {emotionToSwitchTo}");
-//         terminalFaceController.SetFaceState(emotionToSwitchTo, 100);
-//     }
-//
-//     #region State Changes
-//     private void HandleStateInactiveChange()
-//     {
-//         ownerPlayer = null;
-//         Agent.enabled = false;
-//         Animator.SetBool(flyingAnimation, false);
-//     }
-//
-//     private void HandleStateActiveChange()
-//     {
-//         Agent.enabled = true;
-//     }
-//
-//     private void HandleStateFollowingPlayerChange()
-//     {
-//         GalVoice.PlayOneShot(GreetOwnerSound);
-//     }
-//
-//     private void HandleStateDancingChange()
-//     {
-//     }
-//
-//     private void HandleStateUnlockingObjectsChange()
-//     {
-//     }
-//     #endregion
-//
-//     public override void OnUseEntranceTeleport(bool setOutside)
-//     {
-//         base.OnUseEntranceTeleport(setOutside);
-//     }
-//
-//     public override void OnEnterOrExitElevator(bool enteredElevator)
-//     {
-//         base.OnEnterOrExitElevator(enteredElevator);
-//     }
-//
-//     public IEnumerator DoCustomPassThing(ParticleSystem particleSystem, CustomPassManager.CustomPassType customPassType)
-//     {
-//         if (CustomPassManager.Instance.EnableCustomPass(customPassType, true) is not SeeThroughCustomPass customPass) yield break;
-//
-//         customPass.maxVisibilityDistance = 0f;
-//
-//         yield return new WaitWhile(() =>
-//         {
-//             float percentLifetime = particleSystem.time / particleSystem.main.startLifetime.constant;
-//             customPass.maxVisibilityDistance = particleSystem.sizeOverLifetime.size.Evaluate(percentLifetime) * 300; // takes some odd seconds
-//             return customPass.maxVisibilityDistance < Plugin.ModConfig.ConfigTerminalScanRange.Value;
-//         });
-//
-//         yield return new WaitForSeconds(5);
-//
-//         yield return new WaitWhile(() =>
-//         {
-//             customPass.maxVisibilityDistance -= Time.deltaTime * Plugin.ModConfig.ConfigTerminalScanRange.Value / 3f; // takes 3s
-//             return customPass.maxVisibilityDistance > 0f;
-//         });
-//         CustomPassManager.Instance.RemoveCustomPass(customPassType);
-//     }
-//
-//     public override bool Hit(int force, Vector3 hitDirection, PlayerControllerB? playerWhoHit = null, bool playHitSFX = false, int hitID = -1)
-//     {
-//         base.Hit(force, hitDirection, playerWhoHit, playHitSFX, hitID);
-//         DoAngerGalServerRpc();
-//         return true;
-//     }
-//
-//     [ServerRpc(RequireOwnership = false)]
-//     public void DoAngerGalServerRpc()
-//     {
-//         DoAngerGalClientRpc();
-//     }
-//
-//     [ClientRpc]
-//     private void DoAngerGalClientRpc()
-//     {
-//         if (terminalFaceController.TemporarySwitchCoroutine != null)
-//         {
-//             StopCoroutine(terminalFaceController.TemporarySwitchCoroutine);
-//         }
-//         terminalFaceController.TemporarySwitchCoroutine = StartCoroutine(terminalFaceController.TemporarySwitchEffect((int)Emotion.Angy));
-//         terminalFaceController.glitchTimer = terminalFaceController.controllerRandom.NextFloat(4f, 8f);
-//     }
-// }
-//
-//
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using CodeRebirthLib.Util.INetworkSerializables;
+using GameNetcodeStuff;
+using MysteryDice.Dice;
+using MysteryDice.Effects;
+using Unity.Netcode;
+using UnityEngine;
+using UnityEngine.AI;
+using MysteryDice.Extensions;
+using Debug = UnityEngine.Debug;
+
+namespace MysteryDice.Gal;
+public class DiceGalAI : GalAI
+{
+    [Header("Interact Triggers")]
+    [SerializeField]
+    private InteractTrigger _collisionTrigger = null!;
+    [SerializeField]
+    private InteractTrigger _onTheHouseInteractTrigger = null!;
+    [SerializeField]
+    private InteractTrigger _feelingLuckyInteractTrigger = null!;
+    [SerializeField]
+    private InteractTrigger _devilishDealInteractTrigger = null!;
+
+    [Header("Sounds")]
+    [SerializeField]
+    private AudioSource _specialSource = null!;
+    [SerializeField]
+    private AudioSource _flyingSource = null!;
+    [SerializeField]
+    private AudioClip _onTheHouseSound = null!;
+    [SerializeField]
+    private AudioClip _feelingLuckySound = null!;
+    [SerializeField]
+    private AudioClip _devilishDealSound = null!;
+    [SerializeField]
+    private AudioClip _collisionSwitchSound = null!;
+    [SerializeField]
+    private AudioClip[] _startOrEndFlyingAudioClips = [];
+
+    private bool flying = false;
+    private Coroutine? _assRoutine = null;
+    private Coroutine? _plateRoutine = null;
+    private Coroutine? _feelingLuckyRoutine = null;
+    private Coroutine? _idleResetCoroutine = null;
+    private State galState = State.Inactive;
+
+    private static readonly int DanceAnimation = Animator.StringToHash("isDancing"); // Bool
+    private static readonly int ActivatedAnimation = Animator.StringToHash("isActivated"); // Bool
+    private static readonly int RunSpeedFloat = Animator.StringToHash("RunSpeedFloat"); // Float
+    private static readonly int FlyingAnimation = Animator.StringToHash("isFlying"); // Bool
+    private static readonly int EffectChoice = Animator.StringToHash("effectChoice");
+    private static readonly int spin = Animator.StringToHash("spin");
+    private static readonly int deal = Animator.StringToHash("deal");
+    private static readonly int serve = Animator.StringToHash("serve");
+    private static readonly int RandomIdle = Animator.StringToHash("RandomIdle");
+
+    public enum State
+    {
+        Inactive = 0,
+        Active = 1,
+        FollowingPlayer = 2,
+        Dancing = 3,
+        SpecialAction = 4,
+        Idle = 5,
+    }
+
+    private void StartUpDelay()
+    {
+        List<DiceCharger> diceChargers = new();
+        foreach (var charger in Charger.Instances)
+        {
+            if (charger is DiceCharger actuallyADiceCharger)
+            {
+                diceChargers.Add(actuallyADiceCharger);
+            }
+        }
+        if (diceChargers.Count <= 0)
+        {
+            if (IsServer) NetworkObject.Despawn();
+            MysteryDice.CustomLogger.LogError($"DiceCharger not found in scene. TerminalGalAI will not be functional.");
+            return;
+        }
+        DiceCharger diceCharger = diceChargers.OrderBy(x => Vector3.Distance(transform.position, x.transform.position)).First(); ;
+        diceCharger.GalAI = this;
+        GalCharger = diceCharger;
+        // Automatic activation if configured
+        if (MysteryDice.ConfigGalAutomatic.Value)
+        {
+            StartCoroutine(GalCharger.ActivateGalAfterLand());
+        }
+
+        // Adding listener for interaction trigger
+        GalCharger.ActivateOrDeactivateTrigger.onInteract.AddListener(GalCharger.OnActivateGal);
+        _collisionTrigger.onInteract.AddListener(OnChestInteract);
+        _onTheHouseInteractTrigger.onInteract.AddListener(OnPlateTrigger);
+        _devilishDealInteractTrigger.onInteract.AddListener(OnAssTrigger);
+        _feelingLuckyInteractTrigger.onInteract.AddListener(OnHeadTrigger);
+    }
+
+    #region Chest Trigger
+    private void OnChestInteract(PlayerControllerB playerInteracting)
+    {
+        if (!playerInteracting.IsLocalPlayer() || playerInteracting != ownerPlayer)
+            return;
+
+        OnChestInteractServerRpc(playerInteracting);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void OnChestInteractServerRpc(PlayerControllerReference playerControllerReference)
+    {
+        HandleStateAnimationSpeedChanges(State.SpecialAction);
+        OnChestInteractClientRpc(playerControllerReference);
+    }
+
+    [ClientRpc]
+    private void OnChestInteractClientRpc(PlayerControllerReference playerControllerReference)
+    {
+        GalVoice.PlayOneShot(_collisionSwitchSound);
+        EnablePhysics(!physicsEnabled);
+    }
+    #endregion
+
+    #region Ass Trigger
+    private void OnAssTrigger(PlayerControllerB playerInteracting)
+    {
+        if (_assRoutine != null || !playerInteracting.IsLocalPlayer() || playerInteracting != ownerPlayer)
+            return;
+
+        OnAssInteractServerRpc(playerInteracting);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void OnAssInteractServerRpc(PlayerControllerReference playerControllerReference)
+    {
+        HandleStateAnimationSpeedChanges(State.SpecialAction);
+        OnAssInteractClientRpc(playerControllerReference);
+        NetworkAnimator.SetTrigger(deal);
+    }
+
+    [ClientRpc]
+    private void OnAssInteractClientRpc(PlayerControllerReference playerControllerReference)
+    {
+        _assRoutine = StartCoroutine(DoDevilishDeal(playerControllerReference));
+    }
+
+    private IEnumerator DoDevilishDeal(PlayerControllerB playerDoingDeal)
+    {
+        yield return null;
+        if (IsServer && galState == State.SpecialAction)
+        {
+            HandleStateAnimationSpeedChangesServerRpc((int)State.FollowingPlayer);
+        }
+        _assRoutine = null;
+    }
+    #endregion
+
+    #region Plate Interact
+    private void OnPlateTrigger(PlayerControllerB playerInteracting)
+    {
+        if (_plateRoutine != null || !playerInteracting.IsLocalPlayer() || playerInteracting != ownerPlayer)
+            return;
+
+        OnPlateInteractServerRpc(playerInteracting);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void OnPlateInteractServerRpc(PlayerControllerReference playerControllerReference)
+    {
+        HandleStateAnimationSpeedChanges(State.SpecialAction);
+        OnPlateInteractClientRpc(playerControllerReference);
+        NetworkAnimator.SetTrigger(serve);
+    }
+    
+    [ClientRpc]
+    private void OnPlateInteractClientRpc(PlayerControllerReference playerControllerReference)
+    {
+        _plateRoutine = StartCoroutine(OnTheHouseDeal(playerControllerReference));
+    }
+
+    private IEnumerator OnTheHouseDeal(PlayerControllerB playerDoingDeal)
+    {
+        yield return null;
+        if (IsServer && galState == State.SpecialAction)
+        {
+            HandleStateAnimationSpeedChangesServerRpc((int)State.FollowingPlayer);
+        }
+        _plateRoutine = null;
+    }
+    #endregion
+
+    #region Head Interact
+    private void OnHeadTrigger(PlayerControllerB playerInteracting)
+    {
+        if (_feelingLuckyRoutine != null || !playerInteracting.IsLocalPlayer() || playerInteracting != ownerPlayer) return;
+        OnHeadInteractServerRpc(playerInteracting);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void OnHeadInteractServerRpc(PlayerControllerReference playerControllerReference)
+    {
+        HandleStateAnimationSpeedChanges(State.SpecialAction);
+        OnHeadInteractClientRpc(playerControllerReference);
+        NetworkAnimator.SetTrigger(spin);
+    }
+
+    [ClientRpc]
+    private void OnHeadInteractClientRpc(PlayerControllerReference playerControllerReference)
+    {
+        _feelingLuckyRoutine = StartCoroutine(FeelingLuckyDeal(playerControllerReference));
+    }
+
+    private IEnumerator FeelingLuckyDeal(PlayerControllerB playerDoingDeal)
+    {
+        yield return null;
+        if (IsServer && galState == State.SpecialAction)
+        {
+            HandleStateAnimationSpeedChangesServerRpc((int)State.FollowingPlayer);
+            NetworkAnimator.Animator.SetFloat(EffectChoice, 0);
+            var effectToUse = DieBehaviour.getRandomEffectByType(EffectType.SpecialPenalty, DieBehaviour.AllEffects);
+            yield return new WaitForSeconds(3);
+            switch (effectToUse.Outcome)
+            {
+                case EffectType.Awful:
+                    Animator.SetInteger(EffectChoice, 1);
+                    break;
+                case EffectType.Bad:
+                    Animator.SetInteger(EffectChoice, 2);
+                    break;
+                case EffectType.Mixed:
+                    Animator.SetInteger(EffectChoice, 3);
+                    break;
+                case EffectType.Great:
+                    Animator.SetInteger(EffectChoice, 4);
+                    break;
+                default:
+                    Animator.SetInteger(EffectChoice, 2);
+                    break;
+            }
+
+            yield return new WaitForSeconds(2);
+            NetworkAnimator.Animator.SetFloat(EffectChoice, 0);
+        }
+        _feelingLuckyRoutine = null;
+    }
+    #endregion
+
+    public float DoCalculatePathDistance(NavMeshPath path)
+    {
+        float length = 0.0f;
+
+        if (path.status != NavMeshPathStatus.PathInvalid && path.corners.Length >= 1)
+        {
+            for (int i = 1; i < path.corners.Length; i++)
+            {
+                length += Vector3.Distance(path.corners[i - 1], path.corners[i]);
+            }
+        }
+        MysteryDice.ExtendedLogging($"Path distance: {length}");
+        return length;
+    }
+
+    public override void ActivateGal(PlayerControllerB owner)
+    {
+        base.ActivateGal(owner);
+        ResetToChargerStation(State.Active);
+    }
+
+    private void ResetToChargerStation(State state)
+    {
+        if (!IsServer)
+            return;
+
+        if (Agent.enabled)
+            Agent.Warp(GalCharger.ChargeTransform.position);
+
+        transform.SetPositionAndRotation(GalCharger.ChargeTransform.position, GalCharger.ChargeTransform.rotation);
+        HandleStateAnimationSpeedChangesServerRpc((int)state);
+    }
+
+    public override void DeactivateGal()
+    {
+        base.DeactivateGal();
+        ResetToChargerStation(State.Inactive);
+    }
+
+    private void InteractTriggersUpdate()
+    {
+        bool interactable = !inActive && (ownerPlayer != null && GameNetworkManager.Instance.localPlayerController == ownerPlayer);
+        bool idleInteractable = galState != State.SpecialAction && interactable && galState != State.Idle;
+        _onTheHouseInteractTrigger.interactable = interactable;
+        _devilishDealInteractTrigger.interactable = idleInteractable;
+        _feelingLuckyInteractTrigger.interactable = idleInteractable;
+        _collisionTrigger.interactable = idleInteractable;
+    }
+
+    
+    private void StoppingDistanceUpdate()
+    {
+        Agent.stoppingDistance = 3f;
+    }
+
+    private void SetIdleDefaultStateForEveryone()
+    {
+        if (GalCharger == null || (IsServer && !doneOnce))
+        {
+            doneOnce = true;
+            MysteryDice.CustomLogger.LogInfo("Syncing for client");
+            galRandom = new System.Random(StartOfRound.Instance.randomMapSeed + 69);
+            chargeCount = 0;
+            maxChargeCount = chargeCount;
+            Agent.enabled = false;
+            StartUpDelay();
+        }
+    }
+
+    public override void InActiveUpdate()
+    {
+        base.InActiveUpdate();
+        inActive = galState == State.Inactive;
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        SetIdleDefaultStateForEveryone();
+        InteractTriggersUpdate();
+
+        if (inActive)
+        {
+            return;
+        }
+        StoppingDistanceUpdate();
+        if (galRandom.Next(500000) <= 3)
+        {
+            _specialSource.Stop();
+            _specialSource.Play();
+        }
+        if (!IsHost) return;
+        HostSideUpdate();
+    }
+
+    private float GetCurrentSpeedMultiplier()
+    {
+        return 1.3f;
+    }
+
+    private void HostSideUpdate()
+    {
+        if (StartOfRound.Instance.shipIsLeaving || !StartOfRound.Instance.shipHasLanded || StartOfRound.Instance.inShipPhase)
+        {
+            GalCharger.ActivateGirlServerRpc(-1);
+            return;
+        }
+        if (Agent.enabled)
+            smartAgentNavigator.AdjustSpeedBasedOnDistance(GetCurrentSpeedMultiplier());
+
+        if(galRandom.Next(50000)<=3 
+           && Agent.velocity.magnitude<0.05f 
+           && galState != State.SpecialAction 
+           && galState != State.Inactive 
+           && galState != State.Dancing 
+           && _idleResetCoroutine==null) 
+                HandleStateAnimationSpeedChanges(State.Idle);
+        
+        Animator.SetFloat(RunSpeedFloat, Agent.velocity.magnitude / 2);
+        switch (galState)
+        {
+            case State.Inactive:
+                break;
+            case State.Active:
+                DoActive();
+                break;
+            case State.FollowingPlayer:
+                DoFollowingPlayer();
+                break;
+            case State.Dancing:
+                DoDancing();
+                break;
+            case State.SpecialAction:
+                DoSpecialActions();
+                break;
+            case State.Idle:
+                DoRandomIdle();
+                break;
+        }
+    }
+
+    public void DebugDrawAllBoxColliders(int duration = 20)
+    {
+        foreach (var collider in transform.GetComponentsInChildren<BoxCollider>())
+        {
+            DrawDebugBox(collider, duration);
+        }
+    }
+    void DrawDebugBox(BoxCollider box, int duration)
+    {
+        Vector3 center = box.transform.TransformPoint(box.center);
+        Vector3 size = box.size * 0.5f;
+        Vector3[] points = new Vector3[8];
+        Transform t = box.transform;
+        Color color = box.enabled ? (box.isTrigger ? Color.yellow : Color.green) : Color.red;
+
+        points[0] = t.TransformPoint(box.center + new Vector3(-size.x, -size.y, -size.z));
+        points[1] = t.TransformPoint(box.center + new Vector3(size.x, -size.y, -size.z));
+        points[2] = t.TransformPoint(box.center + new Vector3(size.x, -size.y, size.z));
+        points[3] = t.TransformPoint(box.center + new Vector3(-size.x, -size.y, size.z));
+        points[4] = t.TransformPoint(box.center + new Vector3(-size.x, size.y, -size.z));
+        points[5] = t.TransformPoint(box.center + new Vector3(size.x, size.y, -size.z));
+        points[6] = t.TransformPoint(box.center + new Vector3(size.x, size.y, size.z));
+        points[7] = t.TransformPoint(box.center + new Vector3(-size.x, size.y, size.z));
+
+        Debug.DrawLine(points[0], points[1], color, duration);
+        Debug.DrawLine(points[1], points[2], color, duration);
+        Debug.DrawLine(points[2], points[3], color, duration);
+        Debug.DrawLine(points[3], points[0], color, duration);
+
+        Debug.DrawLine(points[4], points[5], color, duration);
+        Debug.DrawLine(points[5], points[6], color, duration);
+        Debug.DrawLine(points[6], points[7], color, duration);
+        Debug.DrawLine(points[7], points[4], color, duration);
+
+        Debug.DrawLine(points[0], points[4], color, duration);
+        Debug.DrawLine(points[1], points[5], color, duration);
+        Debug.DrawLine(points[2], points[6], color, duration);
+        Debug.DrawLine(points[3], points[7], color, duration);
+    }
+
+    private void DoRandomIdle()
+    {
+        if(_idleResetCoroutine!=null) return;
+        Animator.SetInteger(RandomIdle, galRandom.Next(1, 4));
+        _idleResetCoroutine=StartCoroutine(ResetIdle());
+    }
+
+    public IEnumerator ResetIdle()
+    {
+        yield return null; 
+        var clipInfo = Animator.GetCurrentAnimatorClipInfo(0);
+        float waitTime = 1.0f;
+        if (clipInfo.Length > 0)
+        {
+            waitTime = clipInfo[0].clip.length;
+        }
+        yield return new WaitForSeconds(waitTime);
+        HandleStateAnimationSpeedChangesServerRpc((int)State.FollowingPlayer);
+        Animator.SetInteger(RandomIdle, 0);
+        _idleResetCoroutine = null;
+    }
+
+
+    public override void OnEnableOrDisableAgent(bool agentEnabled)
+    {
+        base.OnEnableOrDisableAgent(agentEnabled);
+        Animator.SetBool(FlyingAnimation, !agentEnabled);
+    }
+
+    private void DoActive()
+    {
+        if (ownerPlayer == null)
+        {
+            GoToChargerAndDeactivate();
+            return;
+        }
+        else
+        {
+            HandleStateAnimationSpeedChanges(State.FollowingPlayer);
+        }
+    }
+
+    private void DoFollowingPlayer()
+    {
+        if (ownerPlayer == null)
+        {
+            GoToChargerAndDeactivate();
+            return;
+        }
+
+        if (smartAgentNavigator.DoPathingToDestination(ownerPlayer.transform.position))
+        {
+            return;
+        }
+
+        DoStaringAtOwner(ownerPlayer);
+
+        if (DoDancingAction())
+        {
+            return;
+        }
+    }
+
+    private void DoDancing()
+    {
+    }
+
+    private void DoSpecialActions()
+    {
+    }
+
+    private void PlayDevilishDealSoundAnimEvent()
+    {
+        GalVoice.PlayOneShot(_devilishDealSound);
+    }
+
+    private bool DoDancingAction()
+    {
+        if (boomboxPlaying)
+        {
+            HandleStateAnimationSpeedChanges(State.Dancing);
+            StartCoroutine(StopDancingDelay());
+            return true;
+        }
+        return false;
+    }
+
+    private IEnumerator StopDancingDelay()
+    {
+        yield return new WaitUntil(() => !boomboxPlaying || galState != State.Dancing);
+        if (galState != State.Dancing)
+            yield break;
+
+        HandleStateAnimationSpeedChanges(State.FollowingPlayer);
+    }
+
+    #region Animation Events
+    private void StartFlyingAnimEvent()
+    {
+        SetFlying(true);
+        StartCoroutine(FlyAnimationDelay());
+    }
+
+    private void StopFlyingAnimEvent()
+    {
+        SetFlying(false);
+    }
+    #endregion
+
+    private IEnumerator FlyAnimationDelay()
+    {
+        smartAgentNavigator.cantMove = true;
+        yield return new WaitForSeconds(1.5f);
+        smartAgentNavigator.cantMove = false;
+    }
+
+    private void SetFlying(bool Flying)
+    {
+        this.flying = Flying;
+        if (Flying)
+        {
+            GalSFX.PlayOneShot(_startOrEndFlyingAudioClips[0]);
+            _flyingSource.volume = MysteryDice.SoundVolume.Value;
+        }
+        else
+        {
+            GalSFX.PlayOneShot(_startOrEndFlyingAudioClips[1]);
+            _flyingSource.volume = 0f;
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void HandleStateAnimationSpeedChangesServerRpc(int state)
+    {
+        HandleStateAnimationSpeedChanges((State)state);
+    }
+
+    //Only Host
+    //Use when I want to change state
+    private void HandleStateAnimationSpeedChanges(State state) 
+    {
+        MysteryDice.ExtendedLogging($"Switching to {state} from: {galState}");
+        MysteryDice.ExtendedLogging(new StackTrace(true).ToString());
+        SwitchStateClientRpc((int)state);
+        switch (state)
+        {
+            case State.Inactive:
+                SetAnimatorBools(dance: false, activated: false);
+                break;
+            case State.Active:
+                SetAnimatorBools(dance: false, activated: true);
+                break;
+            case State.FollowingPlayer:
+                SetAnimatorBools(dance: false, activated: true);
+                break;
+            case State.Dancing:
+                SetAnimatorBools(dance: true, activated: true);
+                break;
+            case State.SpecialAction:
+                SetAnimatorBools(dance: false, activated: true);
+                break;
+            case State.Idle:
+                SetAnimatorBools(dance: false, activated: true);
+                break;
+        }
+    }
+
+    private void SetAnimatorBools(bool dance, bool activated)
+    {
+        Animator.SetBool(DanceAnimation, dance);
+        Animator.SetBool(ActivatedAnimation, activated);
+    }
+
+    [ClientRpc]
+    private void SwitchStateClientRpc(int state)
+    {
+        SwitchState(state);
+    }
+
+    private void SwitchState(int state) // this is for everyone.
+    {
+        State stateToSwitchTo = (State)state;
+
+        if (state != -1)
+        {
+            switch (stateToSwitchTo)
+            {
+                case State.Inactive:
+                    HandleStateInactiveChange();
+                    break;
+                case State.Active:
+                    HandleStateActiveChange();
+                    break;
+                case State.FollowingPlayer:
+                    HandleStateFollowingPlayerChange();
+                    break;
+                case State.Dancing:
+                    HandleStateDancingChange();
+                    break;
+                case State.SpecialAction:
+                    HandleStateSpecialActionsChange();
+                    break;
+                case State.Idle:
+                    HandleStateIdleChange();
+                    break;
+            }
+            galState = stateToSwitchTo;
+        }
+    }
+
+    #region State Changes
+    private void HandleStateInactiveChange()
+    {
+        ownerPlayer = null;
+        Agent.enabled = false;
+        Animator.SetBool(FlyingAnimation, false);
+    }
+
+    private void HandleStateActiveChange()
+    {
+        Agent.enabled = true;
+    }
+
+    private void HandleStateFollowingPlayerChange()
+    {
+        GalVoice.PlayOneShot(GreetOwnerSound);
+    }
+
+    private void HandleStateDancingChange()
+    {
+    }
+
+    private void HandleStateSpecialActionsChange()
+    {
+    } 
+    private void HandleStateIdleChange()
+    {
+    }
+    #endregion
+
+    public override void OnUseEntranceTeleport(bool setOutside)
+    {
+        base.OnUseEntranceTeleport(setOutside);
+    }
+
+    public override void OnEnterOrExitElevator(bool enteredElevator)
+    {
+        base.OnEnterOrExitElevator(enteredElevator);
+    }
+
+    public override bool Hit(int force, Vector3 hitDirection, PlayerControllerB? playerWhoHit = null, bool playHitSFX = false, int hitID = -1)
+    {
+        base.Hit(force, hitDirection, playerWhoHit, playHitSFX, hitID);
+        return true;
+    }
+}

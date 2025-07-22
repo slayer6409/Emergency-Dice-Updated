@@ -2320,9 +2320,9 @@ namespace MysteryDice
 
         [ServerRpc(RequireOwnership = false)]
         public void SameScrapServerRPC(int userID, int amount, string scrap, bool usePos = false,
-            Vector3 pos = default(Vector3))
+            Vector3 pos = default(Vector3), int networkPrefabIndex = -1)
         {
-            AllSameScrap.SameScrap(userID, amount, scrap, usePos, pos);
+            AllSameScrap.SameScrap(userID, amount, scrap, usePos, pos, networkPrefabIndex);
         }
 
         [ServerRpc(RequireOwnership = false)]

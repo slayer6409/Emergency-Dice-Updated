@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CodeRebirth.src.Content.Maps;
 using Unity.Netcode;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -91,7 +90,7 @@ namespace MysteryDice.Effects
 
         public static void setSuck(GameObject fan)
         {
-            IndustrialFan fanScript = fan.GetComponent<IndustrialFan>();
+            CodeRebirth.src.Content.Maps.IndustrialFan fanScript = fan.GetComponent<CodeRebirth.src.Content.Maps.IndustrialFan>();
             fanScript.pushForce *= -.06f;
             fanScript.suctionForce *= .06f;
             fanScript.rotationSpeed *= .15f;

@@ -1,3 +1,16 @@
+-	**1.12.3**
+    - Had to change some bundle things, so since I don't have the original sacrificer shader, and I am horrible with shader graphs, sacrificer has a weird new look (temporary until I fix it)
+    - Fixed some issues with some rolls not triggering
+
+-	**1.12.2**
+    - Fixed NRE
+
+-	**1.12.1**
+    - Added dependency for CodeRebirthLib since it doesn't add any content
+      - Will possibly use that to register items instead of LethalLib next version
+    - Fixed Things being turned off in codeRebirth not working with dice
+    - Fixed Debug menu spawning the 1st item of the same name even if you click on subsequent ones
+
 -	**1.12.0**
     - Updated for the Update of Code Rebirth
     - Fixed Flying if another client existed

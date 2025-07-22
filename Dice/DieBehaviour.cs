@@ -125,6 +125,7 @@ namespace MysteryDice.Dice
                     DiceModel.GetComponent<Spinner>().NewDice = true;
                     break;
                 case DiceType.SACRIFICER:
+                    DiceModel.GetComponent<Spinner>().NewDice = true;
                     break;
                 case DiceType.SAINT:
                     DiceModel.transform.Find("halo").gameObject.AddComponent<HaloSpin>();
@@ -371,7 +372,7 @@ namespace MysteryDice.Dice
             ShowDefaultTooltip(randomEffect, diceRoll);
         }
 
-        public IEffect getRandomEffectByType(EffectType type, List<IEffect> effectsToUse)
+        public static IEffect getRandomEffectByType(EffectType type, List<IEffect> effectsToUse)
         {
             List<IEffect> effectsChosen = new List<IEffect>();
             foreach (IEffect effect in effectsToUse)

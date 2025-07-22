@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using DunGen;
 using System.Linq;
 using System.Reflection;
-using CodeRebirth.src.Content.Maps;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -50,7 +49,7 @@ namespace MysteryDice.Effects
                 SceneManager.MoveGameObjectToScene(agent, RoundManager.Instance.mapPropsContainer.scene);
                 if (trapToSpawn.name.Contains("Mimic"))
                 {
-                    ItemCrate ic = trap.GetComponent<ItemCrate>();
+                    CodeRebirth.src.Content.Maps.ItemCrate ic = trap.GetComponent<CodeRebirth.src.Content.Maps.ItemCrate>();
                     ic.health=1;
                     ic.digProgress=2;
                     if (ic.pickable != null) ic.pickable.IsLocked = false;
@@ -66,12 +65,9 @@ namespace MysteryDice.Effects
             if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(crateId, out var networkObj))
             {
                 GameObject trap = networkObj.gameObject; 
-                ItemCrate ic = trap.GetComponent<ItemCrate>();
+                CodeRebirth.src.Content.Maps.ItemCrate ic = trap.GetComponent<CodeRebirth.src.Content.Maps.ItemCrate>();
                 ic.OpenCrate();
             }
-               
-            
         }
-        
      }
 }

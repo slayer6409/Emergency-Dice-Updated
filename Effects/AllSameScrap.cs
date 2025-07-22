@@ -32,7 +32,7 @@ namespace MysteryDice.Effects
             Networker.Instance.SameScrapServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, GameNetworkManager.Instance.localPlayerController), UnityEngine.Random.Range(3, 5), item.itemName);
         }
 
-        public static void SameScrap(int userID, int amount, string scrapSpawns, bool usePos = true, Vector3 spawnPos = default)
+        public static void SameScrap(int userID, int amount, string scrapSpawns, bool usePos = true, Vector3 spawnPos = default, int networkPrefabIndex = -1)
         {
             var scrapToSpawn = scrapSpawns.Split(',');
             foreach (var scrapSpawn in scrapToSpawn)
@@ -46,6 +46,7 @@ namespace MysteryDice.Effects
 
                 int amountOfScrap = amount;
                 var item = Misc.GetItemByName(scrapSpawn,false);
+                
                 if (scrapSpawn == "takey") item = Misc.GetItemByName("Smol Takey", false);
                 if (item == null)
                 {
@@ -113,7 +114,21 @@ namespace MysteryDice.Effects
                             randomPosition = hit.point;
                         }
 
-                        GameObject obj = UnityEngine.Object.Instantiate(item.spawnPrefab, randomPosition, Quaternion.identity, RM.spawnedScrapContainer);
+                        var prefabToSpawn = item.spawnPrefab;
+                        if (networkPrefabIndex >= 0)
+                        {
+                            var prefabList = NetworkManager.Singleton.NetworkConfig.Prefabs.Prefabs;
+                            if (networkPrefabIndex < prefabList.Count)
+                            {
+                                prefabToSpawn = prefabList[networkPrefabIndex].Prefab;
+                            }
+                            else
+                            {
+                                Debug.LogWarning($"Invalid prefab index {networkPrefabIndex} (max {prefabList.Count - 1})");
+                            }
+                        }
+                        
+                        GameObject obj = UnityEngine.Object.Instantiate(prefabToSpawn, randomPosition, Quaternion.identity, RM.spawnedScrapContainer);
                         GrabbableObject component = obj.GetComponent<GrabbableObject>();
                         component.transform.rotation = Quaternion.Euler(component.itemProperties.restingRotation);
                         component.fallTime = 0f;
