@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DunGen;
 using System.Linq;
 using System.Reflection;
+using MysteryDice.MiscStuff;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;

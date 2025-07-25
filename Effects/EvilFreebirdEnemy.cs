@@ -11,7 +11,7 @@ namespace MysteryDice.Effects
     internal class EvilFreebirdEnemy : IEffect
     {
         public string Name => "Evil Freebird Enemy";
-        public EffectType Outcome => EffectType.Awful;
+        public EffectType Outcome => EffectType.GalMixed;
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "Freebird that has a higher chance to target players";
         

@@ -11,7 +11,7 @@ namespace MysteryDice.Effects
     internal class MoreLives : IEffect
     {
         public string Name => "Extra Lives";
-        public EffectType Outcome => EffectType.Good;
+        public EffectType Outcome => EffectType.GalGreat;
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "Everyone Gets an Extra Life";
 
@@ -20,7 +20,18 @@ namespace MysteryDice.Effects
             Networker.Instance.AddLifeAllServerRPC();
         }
     }
+    internal class AddLife : IEffect
+    {
+        public string Name => "Add One Life";
+        public EffectType Outcome => EffectType.Good;
+        public bool ShowDefaultTooltip => true;
+        public string Tooltip => "You get an Extra Life";
 
+        public void Use()
+        {
+            Networker.Instance.AddLifeServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, StartOfRound.Instance.localPlayerController));
+        }
+    }
     public class playerLifeController : MonoBehaviour
     {
         public int livesRemaining = 0;

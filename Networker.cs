@@ -13,6 +13,10 @@ using LethalLib;
 using LethalLib.Extras;
 using LethalLib.Modules;
 using MysteryDice.CompatThings;
+using MysteryDice.Extensions;
+using MysteryDice.Gal;
+using MysteryDice.MiscStuff;
+using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
@@ -55,6 +59,7 @@ namespace MysteryDice
                     cursedPeople.Add(result);
             }
             
+            
             if (IsServer) return;
             RequestSyncCursedServerRPC();
             DieBehaviour.AllowedEffects.Clear();
@@ -78,7 +83,73 @@ namespace MysteryDice
             yield return new WaitForSeconds(3.5f);
             DelaySuitGet();
             StartCoroutine(ManyAds.LoadRemoteTextLists());
+            AddControllerToPlayers();
+        }
 
+        public void AddControllerToPlayers()
+        {
+            foreach (var player in StartOfRound.Instance.allPlayerScripts)
+            {
+                if(player.IsLocalPlayer()) AddControllerServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, player));
+                else if(Misc.IsPlayerReal(player))
+                {
+                    InstantiateSpecialPrefabForPlayer(player);
+                }
+            }
+        }
+        private void InstantiateSpecialPrefabForPlayer(PlayerControllerB player)
+        {
+            string controllerName  = null;
+            GameObject prefab = null;
+
+            switch (player.playerSteamId)
+            {
+                case 76561198298343090: // mel
+                    controllerName  = "PissController";
+                    prefab = MysteryDice.PissPrefab;
+                    break;
+                case 9876561198984467725: // glitch
+                    controllerName  = "BaldController";
+                    prefab = MysteryDice.BaldPrefab;
+                    break;
+                case 76561198003293676: // beef
+                    controllerName  = "ShortController";
+                    prefab = MysteryDice.ShortPrefab;
+                    break;
+                case 76561199092131418: // cross
+                    controllerName  = "StinkyController";
+                    prefab = MysteryDice.StinkyPrefab;
+                    break;
+            }
+
+            if (prefab != null && player.transform.Find(controllerName) == null)
+            {
+                if (player.IsLocalPlayer())
+                {
+                    var instance = Instantiate(prefab, player.transform.position + new Vector3(0,2.5f,0), Quaternion.identity);
+                    instance.name = controllerName;
+                    var pt = instance.AddComponent<PlayerTracker>();
+                    pt.init(player, new Vector3(0,2.5f,0));
+                }
+                else
+                {
+                    var instance = Instantiate(prefab, player.transform.position + new Vector3(0,2.5f,0), Quaternion.identity, player.transform);
+                    instance.name = controllerName;
+                }
+                
+            }
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void AddControllerServerRPC(int playerID)
+        {
+            AddControllerClientRPC(playerID);
+        }
+
+        [ClientRpc]
+        public void AddControllerClientRPC(int playerID)
+        {
+            InstantiateSpecialPrefabForPlayer(StartOfRound.Instance.allPlayerScripts[playerID]);
         }
         
         //thanks xu
@@ -1121,6 +1192,12 @@ namespace MysteryDice
                     AddLifeClientRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player));
                 }
             }
+        } 
+        [ServerRpc(RequireOwnership = false)]
+        public void AddLifeServerRPC(int playerID)
+        {
+            var player = StartOfRound.Instance.allPlayerScripts[playerID];
+            AddLifeClientRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player));
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -1703,6 +1780,7 @@ namespace MysteryDice
             
             FreebirdEnemy.spawnEnemy(name, posToUse);
         }
+        
 
         [ServerRpc(RequireOwnership = false)]
         public void SpawnFreebirdTrapServerRPC(string name, bool random = false)
@@ -2006,6 +2084,18 @@ namespace MysteryDice
                 Paparazzi.MaxMinesToSpawn + 1));
             AddMovingTrapClientRPC("Paparazzi");
         }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void doMovingCraneServerRPC()
+        {
+            var crane = DynamicTrapEffect.getTrap("Autonomous Crane"); 
+            var gm = GameObject.Instantiate(crane.prefab, RoundManager.Instance.outsideAINodes[Random.Range(0, RoundManager.Instance.outsideAINodes.Length)].transform.position, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
+            var netObj = gm.GetComponent<NetworkObject>();
+            netObj.Spawn();
+            gm.name = "MovingCrane";
+            AddMovingTrapClientRPC("MovingCrane");
+        }
+        
         [ServerRpc(RequireOwnership = false)]
         public void doMadScienceServerRPC(int e)
         {
@@ -2320,9 +2410,9 @@ namespace MysteryDice
 
         [ServerRpc(RequireOwnership = false)]
         public void SameScrapServerRPC(int userID, int amount, string scrap, bool usePos = false,
-            Vector3 pos = default(Vector3), int networkPrefabIndex = -1)
+            Vector3 pos = default(Vector3), int networkPrefabIndex = -1, float weightMod = 1, float scrapValueMod = 1)
         {
-            AllSameScrap.SameScrap(userID, amount, scrap, usePos, pos, networkPrefabIndex);
+            AllSameScrap.SameScrap(userID, amount, scrap, usePos, pos, networkPrefabIndex, weightMod, scrapValueMod);
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -2396,6 +2486,11 @@ namespace MysteryDice
         public void spicyNuggiesServerRPC()
         {
             SpicyNuggies.Spawn();
+        }
+        [ServerRpc(RequireOwnership = false)]
+        public void HouseWinServerRPC()
+        {
+            HouseAlwaysWins.Spawn();
         }
 
         #endregion
@@ -3800,7 +3895,6 @@ namespace MysteryDice
             PlayerControllerB theUnluckyOne = validPlayers[UnityEngine.Random.Range(0, validPlayers.Count)];
             SpecialDetonatePlayerClientRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,theUnluckyOne));
         }
-        
         [ClientRpc]
         public void SpecialDetonatePlayerClientRPC(int clientID)
         {
@@ -3812,9 +3906,45 @@ namespace MysteryDice
             AudioSource.PlayClipAtPoint(clip, player.transform.position);
             StartCoroutine(SpawnExplosionAfterSFX(player.transform.position, 3, 10, 70, 10));
         }
+        [ServerRpc(RequireOwnership = false)]
+        public void GalDetonateServerRPC()
+        {
+            if (StartOfRound.Instance is null) return;
+            if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
+
+            GalDetonatePlayerClientRPC();
+        }
+        
+        [ClientRpc]
+        public void GalDetonatePlayerClientRPC()
+        {
+            if (StartOfRound.Instance.inShipPhase || !StartOfRound.Instance.shipHasLanded) return;
+            if (DiceGalAI.Instances.Count==0) return;
+            foreach (var gal in DiceGalAI.Instances)
+            {
+                MysteryDice.sounds.TryGetValue("MineTrigger", out AudioClip clip);
+                AudioSource.PlayClipAtPoint(clip, gal.transform.position);
+                StartCoroutine(SpawnExplosionAfterSFX(gal.transform.position, 3, 10, 70, 10));
+            }
+            
+            
+        }
+       
 
         #endregion
 
+        [ServerRpc(RequireOwnership = false)]
+        public void AllFlyServerRPC()
+        {
+            allFlyClientRPC();
+        }
+
+        [ClientRpc]
+        public void allFlyClientRPC()
+        {
+            Fly.CanFly = true;
+            Misc.SafeTipMessage("You can fly now!", "Double Tap Space to Fly!");
+        }
     }
 }
 

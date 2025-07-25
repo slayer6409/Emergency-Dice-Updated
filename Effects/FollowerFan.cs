@@ -27,7 +27,7 @@ namespace MysteryDice.Effects
             fan.name = "FollowerFan"+Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player);
             var netObj = fan.GetComponent<NetworkObject>();
             fan.GetComponentInChildren<CodeRebirth.src.Content.Maps.IndustrialFanBackCollider>().gameObject.SetActive(false);
-            fan.GetComponentInChildren<CodeRebirth.src.Content.Maps.IndustrialFanBackCollider>().industrialFan.pushForce *= -1;
+            //fan.GetComponentInChildren<CodeRebirth.src.Content.Maps.IndustrialFanBackCollider>().industrialFan.pushForce *= -1;
             netObj.Spawn();
             Networker.Instance.setSizeClientRPC(netObj.NetworkObjectId,new Vector3(0.4f,0.4f,0.4f));
             Networker.Instance.AddMovingTrapClientRPC(fan.name,true,Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player));

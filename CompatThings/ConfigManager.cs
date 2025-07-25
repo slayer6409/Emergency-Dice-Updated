@@ -142,6 +142,24 @@ namespace MysteryDice
             var accColorHexField = new HexColorInputFieldConfigItem(MysteryDice.DebugMenuAccentColor, false);
             var buttonColorHexField = new HexColorInputFieldConfigItem(MysteryDice.DebugButtonColor, false);
 
+            var GalActivateField = new BoolCheckBoxConfigItem(MysteryDice.ConfigGalAutomatic, false);
+            var GalActivateOwnerField = new BoolCheckBoxConfigItem(MysteryDice.ConfigOnlyOwnerDisablesGal, false);
+            var GalLuckyCooldownField = new IntInputFieldConfigItem(MysteryDice.ImFeelingLuckyCooldown,new IntInputFieldOptions()
+            {
+                Min = 10, 
+                Max = 600
+            });
+            var GalServeCooldownField = new IntInputFieldConfigItem(MysteryDice.OnTheHouseCooldown,new IntInputFieldOptions()
+            {
+                Min = 10, 
+                Max = 600
+            });
+            var GalDevilCooldownField = new IntInputFieldConfigItem(MysteryDice.DevilDealCooldown,new IntInputFieldOptions()
+            {
+                Min = 10, 
+                Max = 600
+            });
+
             //var adminKeybindStringField = new TextInputFieldConfigItem(MysteryDice.adminKeybind, false);
 
             LethalConfigManager.AddConfigItem(debugDiceBoolField);
@@ -185,6 +203,11 @@ namespace MysteryDice
             LethalConfigManager.AddConfigItem(rotationSpeedModifierSlider);
             LethalConfigManager.AddConfigItem(minNeckBreakTimerSlider);
             LethalConfigManager.AddConfigItem(maxNeckBreakTimerSlider);
+            LethalConfigManager.AddConfigItem(GalActivateField);
+            LethalConfigManager.AddConfigItem(GalActivateOwnerField);
+            LethalConfigManager.AddConfigItem(GalLuckyCooldownField);
+            LethalConfigManager.AddConfigItem(GalServeCooldownField);
+            LethalConfigManager.AddConfigItem(GalDevilCooldownField);
             LethalConfigManager.AddConfigItem(neckRotationsIntField);
             LethalConfigManager.AddConfigItem(BlameGlitchInsideBoolField);
             LethalConfigManager.AddConfigItem(BlameGlitchbothInsideOutsideBoolField);

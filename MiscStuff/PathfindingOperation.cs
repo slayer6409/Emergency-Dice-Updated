@@ -8,6 +8,8 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Experimental.AI;
 
+namespace MysteryDice.MiscStuff;
+
 public class FindPathThroughTeleportsOperation : PathfindingOperation
 {
     private EntranceTeleport[] entranceTeleports;

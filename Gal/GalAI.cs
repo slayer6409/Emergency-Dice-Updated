@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Events;
 using MysteryDice.Extensions;
+using MysteryDice.MiscStuff;
 
 namespace MysteryDice.Gal;
 [RequireComponent(typeof(SmartAgentNavigator))]

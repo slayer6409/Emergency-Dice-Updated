@@ -66,10 +66,14 @@ namespace MysteryDice.Effects
     {
         public PlayerControllerB player;
         public GameObject toLink;
+
+        public void Start()
+        {
+            Instantiate(MysteryDice.BaldPrefab, toLink.transform.position, Quaternion.identity, toLink.transform);
+        }
         public void Update()
         {
             toLink.transform.position = player.transform.position+new Vector3(0f, .55f, 0f);
         }
     }
-    
 }

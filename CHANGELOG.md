@@ -1,3 +1,9 @@
+-	**1.13.0**
+    - Fixed a bug where Delay can roll disabled effects
+    - \[Redacted]
+    - Hehehehehehe 
+    - Changed the classification of certain dice effects for the new thing ;D
+    - Documentation has actual info https://dice.slayer.games/
 -	**1.12.3**
     - Had to change some bundle things, so since I don't have the original sacrificer shader, and I am horrible with shader graphs, sacrificer has a weird new look (temporary until I fix it)
     - Fixed some issues with some rolls not triggering

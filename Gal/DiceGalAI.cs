@@ -1,3 +1,5 @@
+#nullable enable
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -57,6 +59,12 @@ public class DiceGalAI : GalAI
     private static readonly int deal = Animator.StringToHash("deal");
     private static readonly int serve = Animator.StringToHash("serve");
     private static readonly int RandomIdle = Animator.StringToHash("RandomIdle");
+    
+    public static List<IEffect> GalEffects = new List<IEffect>();
+    
+    private float _assCooldownEndTime = 0f;
+    private float _plateCooldownEndTime = 0f;
+    private float _headCooldownEndTime = 0f;
 
     public enum State
     {
@@ -136,6 +144,10 @@ public class DiceGalAI : GalAI
     [ServerRpc(RequireOwnership = false)]
     private void OnAssInteractServerRpc(PlayerControllerReference playerControllerReference)
     {
+        if (Time.time < _assCooldownEndTime) return;
+        
+        _assCooldownEndTime = Time.time + MysteryDice.DevilDealCooldown.Value;
+        
         HandleStateAnimationSpeedChanges(State.SpecialAction);
         OnAssInteractClientRpc(playerControllerReference);
         NetworkAnimator.SetTrigger(deal);
@@ -152,12 +164,36 @@ public class DiceGalAI : GalAI
         yield return null;
         if (IsServer && galState == State.SpecialAction)
         {
+            var ran = galRandom.Next(0, 4);
+            if (ran == 0)
+            {
+                ReturnToShipTogether.TeleportToShipTogether(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, playerDoingDeal));
+            }
+            else if (ran == 1)
+            {
+                Networker.Instance.ZombieToShipServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,
+                    playerDoingDeal));
+            }
+            else 
+            {
+                Networker.Instance.TeleportToShipServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,playerDoingDeal));
+            }
+            var RandomEffect = getRandomGalEffectByType(EffectType.GalAwful);
+            RandomEffect.Use();
+            Networker.Instance.LogEffectsToOwnerServerRPC(playerDoingDeal.playerUsername, RandomEffect.Name, -666);
             HandleStateAnimationSpeedChangesServerRpc((int)State.FollowingPlayer);
         }
         _assRoutine = null;
     }
     #endregion
 
+    public IEffect getRandomGalEffectByType(EffectType type)
+    {
+        var effects = GalEffects.Where(x=>x.Outcome==type).ToList();
+        if (effects.Count == 0) return GalEffects[galRandom.Next(0, GalEffects.Count)];
+        return effects[galRandom.Next(effects.Count)];
+    }
+    
     #region Plate Interact
     private void OnPlateTrigger(PlayerControllerB playerInteracting)
     {
@@ -170,6 +206,11 @@ public class DiceGalAI : GalAI
     [ServerRpc(RequireOwnership = false)]
     private void OnPlateInteractServerRpc(PlayerControllerReference playerControllerReference)
     {
+        
+        if (Time.time < _plateCooldownEndTime) return;
+        
+        _plateCooldownEndTime = Time.time + MysteryDice.OnTheHouseCooldown.Value;
+
         HandleStateAnimationSpeedChanges(State.SpecialAction);
         OnPlateInteractClientRpc(playerControllerReference);
         NetworkAnimator.SetTrigger(serve);
@@ -186,6 +227,9 @@ public class DiceGalAI : GalAI
         yield return null;
         if (IsServer && galState == State.SpecialAction)
         {
+            Networker.Instance.SameScrapServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, ownerPlayer),
+                1, MysteryDice.RegisteredDice[galRandom.Next(0, MysteryDice.RegisteredDice.Count)].itemName, true,
+                _onTheHouseInteractTrigger.transform.position);
             HandleStateAnimationSpeedChangesServerRpc((int)State.FollowingPlayer);
         }
         _plateRoutine = null;
@@ -202,6 +246,11 @@ public class DiceGalAI : GalAI
     [ServerRpc(RequireOwnership = false)]
     private void OnHeadInteractServerRpc(PlayerControllerReference playerControllerReference)
     {
+        
+        if (Time.time < _headCooldownEndTime) return;
+        
+        _headCooldownEndTime = Time.time + MysteryDice.ImFeelingLuckyCooldown.Value;
+
         HandleStateAnimationSpeedChanges(State.SpecialAction);
         OnHeadInteractClientRpc(playerControllerReference);
         NetworkAnimator.SetTrigger(spin);
@@ -216,33 +265,40 @@ public class DiceGalAI : GalAI
     private IEnumerator FeelingLuckyDeal(PlayerControllerB playerDoingDeal)
     {
         yield return null;
+        
+        NetworkAnimator.Animator.SetFloat(EffectChoice, 0);
+        IEffect? effectToUse = GalEffects[galRandom.Next(0, GalEffects.Count)];
+        yield return new WaitForSeconds(3);
+        if (IsServer && (galState != State.SpecialAction || effectToUse == null))
+        {
+            _feelingLuckyRoutine = null;
+            yield break;
+        }
+        switch (effectToUse.Outcome)
+        {
+            case EffectType.GalAwful:
+                Animator.SetInteger(EffectChoice, 1);
+                break;
+            case EffectType.GalBad:
+                Animator.SetInteger(EffectChoice, 2);
+                break;
+            case EffectType.GalMixed:
+                Animator.SetInteger(EffectChoice, 3);
+                break;
+            case EffectType.GalGreat:
+                Animator.SetInteger(EffectChoice, 4);
+                break;
+            default:
+                Animator.SetInteger(EffectChoice, 2);
+                break;
+        }
+        effectToUse.Use();
+
+        yield return new WaitForSeconds(2);
+        NetworkAnimator.Animator.SetFloat(EffectChoice, 0);
         if (IsServer && galState == State.SpecialAction)
         {
             HandleStateAnimationSpeedChangesServerRpc((int)State.FollowingPlayer);
-            NetworkAnimator.Animator.SetFloat(EffectChoice, 0);
-            var effectToUse = DieBehaviour.getRandomEffectByType(EffectType.SpecialPenalty, DieBehaviour.AllEffects);
-            yield return new WaitForSeconds(3);
-            switch (effectToUse.Outcome)
-            {
-                case EffectType.Awful:
-                    Animator.SetInteger(EffectChoice, 1);
-                    break;
-                case EffectType.Bad:
-                    Animator.SetInteger(EffectChoice, 2);
-                    break;
-                case EffectType.Mixed:
-                    Animator.SetInteger(EffectChoice, 3);
-                    break;
-                case EffectType.Great:
-                    Animator.SetInteger(EffectChoice, 4);
-                    break;
-                default:
-                    Animator.SetInteger(EffectChoice, 2);
-                    break;
-            }
-
-            yield return new WaitForSeconds(2);
-            NetworkAnimator.Animator.SetFloat(EffectChoice, 0);
         }
         _feelingLuckyRoutine = null;
     }

@@ -1,20 +1,15 @@
-﻿using BepInEx.Configuration;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using BepInEx.Configuration;
 using MysteryDice.Dice;
 using MysteryDice.Effects;
 using MysteryDice.Patches;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BombCollar;
-using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
-using static UnityEngine.EventSystems.EventTrigger;
 using Random = UnityEngine.Random;
 
-namespace MysteryDice
+namespace MysteryDice.MiscStuff
 {
     public class CustomEnemyConfig
     {

@@ -617,7 +617,7 @@ namespace MysteryDice.Dice
             SteveNames.Add(new ThreesCompany().Name);
             MysteryDice.MainRegisterNewEffect(new ThreesCompany());
             MysteryDice.MainRegisterNewEffect(new FreebirdTrap(), true);
-            MysteryDice.MainRegisterNewEffect(new EvilFreebirdEnemy(), true);
+            MysteryDice.MainRegisterNewEffect(new EvilFreebirdEnemy());
             MysteryDice.MainRegisterNewEffect(new MicroTrap(), true);
             SteveNames.Add(new ManyAds().Name);
             MysteryDice.MainRegisterNewEffect(new ManyAds());
@@ -625,7 +625,14 @@ namespace MysteryDice.Dice
             MysteryDice.MainRegisterNewEffect(new TulipBombers());
             SteveNames.Add(new MadScience().Name);
             MysteryDice.MainRegisterNewEffect(new MadScience());
+            MysteryDice.MainRegisterNewEffect(new MadderScience());
             MysteryDice.MainRegisterNewEffect(new SpecialDetonate(), true);
+            MysteryDice.MainRegisterNewEffect(new GalDetonate());
+            MysteryDice.MainRegisterNewEffect(new AllFly());
+            MysteryDice.MainRegisterNewEffect(new AddLife());
+            MysteryDice.MainRegisterNewEffect(new Overweight());
+            MysteryDice.MainRegisterNewEffect(new HouseAlwaysWins());
+            MysteryDice.MainRegisterNewEffect(new MovingCrane());
 
             if (MysteryDice.TooManyEmotesPresent)
             {

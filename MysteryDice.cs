@@ -15,6 +15,8 @@ using System.Linq;
 using BepInEx.Bootstrap;
 using LethalLib.Extras;
 using LethalThings;
+using MysteryDice.Gal;
+using MysteryDice.MiscStuff;
 using UnityEngine.AI;
 //using MysteryDice.Gal;
 using UnityEngine.InputSystem;
@@ -57,7 +59,7 @@ namespace MysteryDice
         public enum chatDebug { Host, Everyone, None};
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.12.3";
+        private const string modVersion = "1.12.4";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -78,7 +80,11 @@ namespace MysteryDice
             DebugMenuButtonPrefab,
             DebugSubButtonPrefab,
             DiceGal, 
-            AgentObjectPrefab;
+            AgentObjectPrefab,
+            BaldPrefab,
+            PissPrefab,
+            ShortPrefab,
+            StinkyPrefab;
         public static Jumpscare JumpscareScript;
 
         //public static AudioClip ExplosionSFX, DetonateSFX, MineSFX, AwfulEffectSFX, BadEffectSFX, GoodEffectSFX, JumpscareSFX, MeetingSFX, DawgSFX, AlarmSFX, PurrSFX, JawsSFX, FireAlarmSFX, PaparazziSFX;
@@ -155,6 +161,9 @@ namespace MysteryDice
         public static ConfigEntry<bool> SuperBrutalMode;
         public static ConfigEntry<int> brutalStartingScale;
         public static ConfigEntry<int> brutalMaxScale;
+        public static ConfigEntry<int> ImFeelingLuckyCooldown;
+        public static ConfigEntry<int> DevilDealCooldown;
+        public static ConfigEntry<int> OnTheHouseCooldown;
         public static ConfigEntry<int> brutalScaleType;
         public static ConfigEntry<bool> Bald;
         public static ConfigEntry<bool> CopyrightFree;
@@ -269,8 +278,24 @@ namespace MysteryDice
              ConfigGalAutomatic = BepInExConfig.Bind<bool>(
                 "Gal",
                 "Auto Activate",
-                true,
+                false,
                 "Makes the Gal automatically activate");
+             
+             ImFeelingLuckyCooldown = BepInExConfig.Bind<int>(
+                "Gal",
+                "Im Feeling Lucky Cooldown",
+                120,
+                "How long is the cooldown for I'm Feeling Lucky Gal Effect");
+             DevilDealCooldown = BepInExConfig.Bind<int>(
+                "Gal",
+                "Devil Deal Cooldown",
+                90,
+                "How long is the cooldown for Devil Deal Gal Effect");
+             OnTheHouseCooldown = BepInExConfig.Bind<int>(
+                "Gal",
+                "On The House Cooldown",
+                300,
+                "How long is the cooldown for On The House Gal Effect");
              
             DebugMenuFavoriteTextColor = BepInExConfig.Bind<string>(
                 "New Debug",
@@ -727,6 +752,12 @@ namespace MysteryDice
             EffectMenuButtonPrefab = LoadedAssets.LoadAsset<GameObject>("Effect");
             DebugMenuButtonPrefab = LoadedAssets2.LoadAsset<GameObject>("DebugButton");
             DebugSubButtonPrefab = LoadedAssets2.LoadAsset<GameObject>("SubmenuButton");
+            
+            
+            BaldPrefab = LoadedAssets2.LoadAsset<GameObject>("BaldController");
+            PissPrefab = LoadedAssets2.LoadAsset<GameObject>("PissController");
+            ShortPrefab = LoadedAssets2.LoadAsset<GameObject>("ShortController");
+            StinkyPrefab = LoadedAssets2.LoadAsset<GameObject>("StinkyController");
 
             JumpscareCanvasPrefab = LoadedAssets2.LoadAsset<GameObject>("JumpscareCanvas");
             JumpscareCanvasPrefab.AddComponent<Jumpscare>();
@@ -848,24 +879,32 @@ namespace MysteryDice
                 DieBehaviour.effectConfigs.Add(cfg);
                 //DieBehaviour.favConfigs.Add(fav);
                 if (cfg.Value)
-                    DieBehaviour.AllowedEffects.Add(effect);
-                switch (effect.Outcome)
                 {
-                    case EffectType.Awful:
-                        DieBehaviour.AwfulEffects.Add(effect);
-                        break;
-                    case EffectType.Bad:
-                        DieBehaviour.BadEffects.Add(effect);
-                        break;
-                    case EffectType.Mixed:
-                        DieBehaviour.MixedEffects.Add(effect);
-                        break;
-                    case EffectType.Good:
-                        DieBehaviour.GoodEffects.Add(effect);
-                        break;
-                    case EffectType.Great:
-                        DieBehaviour.GreatEffects.Add(effect);
-                        break;
+                    DieBehaviour.AllowedEffects.Add(effect);
+                    switch (effect.Outcome)
+                    {
+                        case EffectType.Awful:
+                            DieBehaviour.AwfulEffects.Add(effect);
+                            break;
+                        case EffectType.Bad:
+                            DieBehaviour.BadEffects.Add(effect);
+                            break;
+                        case EffectType.Mixed:
+                            DieBehaviour.MixedEffects.Add(effect);
+                            break;
+                        case EffectType.Good:
+                            DieBehaviour.GoodEffects.Add(effect);
+                            break;
+                        case EffectType.Great:
+                            DieBehaviour.GreatEffects.Add(effect);
+                            break;
+                        case EffectType.GalAwful:
+                        case EffectType.GalBad:
+                        case EffectType.GalMixed:
+                        case EffectType.GalGreat:
+                            DiceGalAI.GalEffects.Add(effect);
+                            break;
+                    }
                 }
             }
         }

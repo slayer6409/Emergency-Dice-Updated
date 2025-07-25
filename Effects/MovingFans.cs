@@ -6,6 +6,7 @@ using System.Linq;
 using AsmResolver.DotNet.Signatures;
 using GameNetcodeStuff;
 using JetBrains.Annotations;
+using MysteryDice.MiscStuff;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;

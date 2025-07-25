@@ -1,11 +1,8 @@
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using GameNetcodeStuff;
 using MysteryDice.Extensions;
-using MysteryDice.Patches;
 using PathfindingLib.Utilities;
 using Unity.Netcode;
 using UnityEngine;
@@ -13,7 +10,8 @@ using UnityEngine.AI;
 using UnityEngine.Events;
 using Random = UnityEngine.Random;
 
-namespace MysteryDice;
+namespace MysteryDice.MiscStuff;
+
 [RequireComponent(typeof(NavMeshAgent))]
 public class SmartAgentNavigator : NetworkBehaviour
 {

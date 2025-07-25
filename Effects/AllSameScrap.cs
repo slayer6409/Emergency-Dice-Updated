@@ -32,7 +32,7 @@ namespace MysteryDice.Effects
             Networker.Instance.SameScrapServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, GameNetworkManager.Instance.localPlayerController), UnityEngine.Random.Range(3, 5), item.itemName);
         }
 
-        public static void SameScrap(int userID, int amount, string scrapSpawns, bool usePos = true, Vector3 spawnPos = default, int networkPrefabIndex = -1)
+        public static void SameScrap(int userID, int amount, string scrapSpawns, bool usePos = true, Vector3 spawnPos = default, int networkPrefabIndex = -1, float weightMod = 1, float scrapValueMod = 1)
         {
             var scrapToSpawn = scrapSpawns.Split(',');
             foreach (var scrapSpawn in scrapToSpawn)
@@ -132,9 +132,9 @@ namespace MysteryDice.Effects
                         GrabbableObject component = obj.GetComponent<GrabbableObject>();
                         component.transform.rotation = Quaternion.Euler(component.itemProperties.restingRotation);
                         component.fallTime = 0f;
-                        component.scrapValue = (int)(UnityEngine.Random.Range(item.minValue, item.maxValue) * RM.scrapValueMultiplier);
+                        component.scrapValue = (int)(((UnityEngine.Random.Range(item.minValue, item.maxValue) * RM.scrapValueMultiplier))*scrapValueMod);
                         scrapValues.Add(component.scrapValue);
-                        scrapWeights.Add(component.itemProperties.weight);
+                        scrapWeights.Add(component.itemProperties.weight * weightMod);
 
                         NetworkObject netObj = obj.GetComponent<NetworkObject>();
                         netObj.Spawn();

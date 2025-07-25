@@ -15,6 +15,7 @@ using Unity.Netcode;
 using static LethalThings.DynamicBone.DynamicBoneColliderBase;
 using LCTarrotCard.Util;
 using LCTarrotCard;
+using MysteryDice.MiscStuff;
 
 namespace MysteryDice.Patches
 {
