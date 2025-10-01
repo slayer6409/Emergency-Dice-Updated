@@ -27,8 +27,8 @@ namespace MysteryDice.Effects
             for (int i = 0; i < MaskedSpawn; i++)
             {
                 Vector3 position = StartOfRound.Instance.middleOfShipNode.position;
-                GameObject gameObject = UnityEngine.Object.Instantiate(GetEnemies.allEnemies.Find(x=>x.enemyName=="Baboon Hawk").enemyPrefab, position, Quaternion.Euler(new Vector3(0f, 0f, 0f)));
-                 gameObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
+                GameObject gameObject = UnityEngine.Object.Instantiate(GetEnemies.allEnemies.Find(x=>x.enemyName=="Baboon hawk").enemyPrefab, position, Quaternion.Euler(new Vector3(0f, 0f, 0f)));
+                gameObject.GetComponentInChildren<NetworkObject>().Spawn(destroyWithScene: true);
                 RoundManager.Instance.SpawnedEnemies.Add(gameObject.GetComponent<EnemyAI>());
                 NetworkObjectReference netObj = gameObject.GetComponentInChildren<NetworkObject>();
             }

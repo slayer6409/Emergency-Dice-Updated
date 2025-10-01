@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using CodeRebirthLib.Extensions;
 using GameNetcodeStuff;
 using Unity.Netcode;
 using Unity.Netcode.Components;
@@ -9,6 +8,8 @@ using UnityEngine.AI;
 using UnityEngine.Events;
 using MysteryDice.Extensions;
 using MysteryDice.MiscStuff;
+using Dawn.Utils;
+using SmartAgentNavigator = MysteryDice.MiscStuff.SmartAgentNavigator;
 
 namespace MysteryDice.Gal;
 [RequireComponent(typeof(SmartAgentNavigator))]
@@ -97,7 +98,7 @@ public class GalAI : NetworkBehaviour, IHittable
     }
 
     public virtual void InActiveUpdate()
-    {
+    {  
     }
 
     private void BoomboxUpdate()
@@ -115,6 +116,7 @@ public class GalAI : NetworkBehaviour, IHittable
     private void IdleUpdate()
     {
         if (inActive) return;
+       
         idleTimer += Time.deltaTime;
         if (idleTimer <= idleNeededTimer) return;
 
@@ -135,6 +137,7 @@ public class GalAI : NetworkBehaviour, IHittable
     public virtual void Update()
     {
         if (!NetworkObject.IsSpawned) return;
+        
         InActiveUpdate();
         BoomboxUpdate();
         IdleUpdate();
@@ -144,6 +147,8 @@ public class GalAI : NetworkBehaviour, IHittable
     public virtual void ActivateGal(PlayerControllerB owner)
     {
         ownerPlayer = owner;
+        if(smartAgentNavigator==null) smartAgentNavigator ??= GetComponent<SmartAgentNavigator>()
+                                                              ?? GetComponentInChildren<SmartAgentNavigator>(true);
         DoGalRadarAction(true);
         GalVoice.PlayOneShot(ActivateSound);
         smartAgentNavigator.SetAllValues(true);
@@ -225,6 +230,22 @@ public class GalAI : NetworkBehaviour, IHittable
         EnablePhysics(enablePhysics);
     }
 
+    public void colliderOff()
+    {
+        foreach (Collider collider in colliders)
+        {
+            collider.enabled = false;
+        }
+    }
+
+    public void colliderFix()
+    {
+        foreach (Collider collider in colliders)
+        {
+            collider.enabled = physicsEnabled;
+        }
+    }
+    
     public void EnablePhysics(bool enablePhysics)
     {
         foreach (Collider collider in colliders)

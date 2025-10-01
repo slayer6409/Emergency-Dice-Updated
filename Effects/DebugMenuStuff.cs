@@ -436,7 +436,6 @@ public class DebugMenuStuff : MonoBehaviour
         hideStuff();
         foreach (Transform obj in scrollContent)
         {
-            
             Destroy(obj.gameObject);
         }
     }
@@ -859,7 +858,7 @@ public class DebugMenuStuff : MonoBehaviour
                         localPlayer.transform.position; 
                 }
                 int count = Keyboard.current.leftShiftKey.isPressed ? 5 : 1;
-                Networker.Instance.SameScrapServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, GameNetworkManager.Instance.localPlayerController),
+                Networker.Instance.SameScrapAdvancedServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, GameNetworkManager.Instance.localPlayerController),
                     count, scrap.itemName, localPlayer.isPlayerDead,
                     spawnPosition, networkPrefabIndex: prefabIndex);
                 Misc.SafeTipMessage($"Spawned {scrap.name}", $"Spawned at {spawnPosition}");
@@ -1249,7 +1248,6 @@ public class DebugMenuStuff : MonoBehaviour
             FilterItems(searchInput.text);
         });
 
-        
         GameObject effectObj2 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
         TMP_Text buttonText2 = effectObj2.transform.GetChild(0).GetComponent<TMP_Text>();
         buttonText2.text = $"POI Teleports";
@@ -1271,6 +1269,18 @@ public class DebugMenuStuff : MonoBehaviour
         {
             clearMainViewport();
             enemyTeleports();
+            FilterItems(searchInput.text);
+        });
+        
+        GameObject effectObj4 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
+        TMP_Text buttonText4 = effectObj4.transform.GetChild(0).GetComponent<TMP_Text>();
+        buttonText4.text = $"Scrap Teleports";
+
+        Button button4 = effectObj4.GetComponent<Button>();
+        button4.onClick.AddListener(() =>
+        {
+            clearMainViewport();
+            scrapTeleports();
             FilterItems(searchInput.text);
         });
         
@@ -1306,7 +1316,7 @@ public class DebugMenuStuff : MonoBehaviour
                 CloseSelectMenu();
             });
         }
-    }
+    }  
    
     public static void enemyTeleports()
     {
@@ -1324,6 +1334,27 @@ public class DebugMenuStuff : MonoBehaviour
                     .localPlayerController));
                 CloseSelectMenu();
                 GameNetworkManager.Instance.localPlayerController.isInsideFactory = !enemy.isOutside;
+                });
+        }
+    } 
+    public static void scrapTeleports()
+    {
+        var allScrap = GameObject.FindObjectsOfType<GrabbableObject>();
+        
+        foreach (var scrap in allScrap)
+        {
+            GameObject effectObj8 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, mainScrollContent);
+            TMP_Text buttonText8 = effectObj8.transform.GetChild(0).GetComponent<TMP_Text>();
+            buttonText8.text = scrap.name;
+
+            Button button8 = effectObj8.GetComponent<Button>();
+            button8.onClick.AddListener(() =>
+            {
+                
+                Networker.Instance.TeleportOrBringPlayerToPosServerRPC(scrap.transform.position, Array.IndexOf(StartOfRound.Instance.allPlayerScripts,StartOfRound.Instance
+                    .localPlayerController));
+                CloseSelectMenu();
+                GameNetworkManager.Instance.localPlayerController.isInsideFactory = !(scrap.transform.position.y<-1000); 
                 });
         }
     }

@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using MysteryDice.CompatThings;
+using MysteryDice.MiscStuff;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -284,6 +285,37 @@ namespace MysteryDice
             return gameObject.GetComponentInChildren<NetworkObject>();
         }
 
+        public static void ToggleAllScanPlayerNodes(bool fromConfig = false)
+        {
+            if(Networker.Instance.playerScanNodes==null) return;
+            var nodes = Networker.Instance.playerScanNodes.ToArray();
+            
+            foreach (var scanNode in Networker.Instance.playerScanNodes)
+            {
+                if (!scanNode) continue;
+                if (!scanNode.TryGetComponent<PlayerTracker>(out var tracker))
+                    continue;
+
+                if (fromConfig)
+                {
+                    if (tracker.trackedPlayer.IsLocalPlayer)
+                    {
+                        scanNode.SetActive(MysteryDice.showOwnScanNode.Value);
+                    }
+                    continue;
+                }
+
+                if (tracker.trackedPlayer.IsLocalPlayer && !MysteryDice.showOwnScanNode.Value)
+                {
+                    if(scanNode.activeSelf) scanNode.SetActive(false);
+                }
+                else
+                {
+                    scanNode.SetActive((!scanNode.activeSelf));
+                }
+            }
+        }
+        
         public static void ChatWrite(string chatMessage)
         {
             HUDManager.Instance.lastChatMessage = chatMessage;

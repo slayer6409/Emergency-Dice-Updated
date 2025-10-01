@@ -12,8 +12,8 @@ namespace MysteryDice.Effects
 {
     internal class RerollALL : IEffect
     {
-        public string Name => "$RerollALL";
-        public EffectType Outcome => EffectType.Great;
+        public string Name => "RerollALL";
+        public EffectType Outcome => EffectType.GalGreat;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "Try Again";
 

@@ -4,6 +4,7 @@ using LethalConfig;
 using BepInEx.Configuration;
 using MysteryDice.Dice;
 using MysteryDice.Effects;
+using MysteryDice.MiscStuff;
 
 namespace MysteryDice
 {
@@ -87,6 +88,10 @@ namespace MysteryDice
                 Min = 0, 
                 Max = 100
             });
+            var buttonStuff = new GenericButtonConfigItem("Clientside", "Toggle Controllers", "Hides/Shows the custom scannodes attached to people", "Toggle Scannodes", () =>
+            {
+                Misc.ToggleAllScanPlayerNodes();
+            });
             
             var EmergencyDiePriceSlider = new IntInputFieldConfigItem(MysteryDice.EmergencyDiePrice, true);
             var BrutalMinSlider = new IntInputFieldConfigItem(MysteryDice.brutalStartingScale, false);
@@ -159,6 +164,7 @@ namespace MysteryDice
                 Min = 10, 
                 Max = 600
             });
+            
 
             //var adminKeybindStringField = new TextInputFieldConfigItem(MysteryDice.adminKeybind, false);
 
@@ -229,6 +235,8 @@ namespace MysteryDice
             LethalConfigManager.AddConfigItem(AlarmBoolField);
             LethalConfigManager.AddConfigItem(LockUIBoolField);
             LethalConfigManager.AddConfigItem(AlarmHorribleBoolField);
+            LethalConfigManager.AddConfigItem(buttonStuff);
+            
 
             if (MysteryDice.SurfacedPresent)
             {

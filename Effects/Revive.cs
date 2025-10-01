@@ -1,16 +1,19 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Configuration;
 using GameNetcodeStuff;
 using Unity.Netcode;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace MysteryDice.Effects
 {
     internal class Revive : IEffect
     {
-        public string Name => "Revive";
-        public EffectType Outcome => EffectType.Great;
+        public string Name => "Revive All";
+        public EffectType Outcome => EffectType.GalGreat;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "Reviving everyone";
         public static int lives = 0;
@@ -136,5 +139,56 @@ namespace MysteryDice.Effects
 			StartOfRound.Instance.livingPlayers++;
 			StartOfRound.Instance.UpdatePlayerVoiceEffects();
         }
+
+        public static int CountDeadPlayers()
+        {
+	        var arr = StartOfRound.Instance.allPlayerScripts;
+	        int c = 0;
+	        for (int i = 0; i < arr.Length; i++)
+		        if (arr[i].isPlayerDead) c++;
+	        return c;
+        }
+
+        public static PlayerControllerB getRandomDeadPlayer()
+        {
+	        List<PlayerControllerB> players = new();
+	        foreach (var player in StartOfRound.Instance.allPlayerScripts)
+	        {
+		        if (player.isPlayerDead) players.Add(player);
+	        }
+	        if (players.Count == 0) return null;
+	        else return players[UnityEngine.Random.Range(0, players.Count)];
+        }
+        
+        public static IEnumerator reviveNext()
+        {
+	        yield return new WaitUntil(() => CountDeadPlayers() != 0);
+	        var player = getRandomDeadPlayer();
+	        Networker.Instance.RevivePlayerServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, player), StartOfRound.Instance.middleOfShipNode.position);
+        }
+    }
+
+    internal class ReviveNext : IEffect
+    {
+	    public string Name => "Revive Next";
+	    public EffectType Outcome => EffectType.Good;
+	    public bool ShowDefaultTooltip => false;
+	    public string Tooltip => "One Revive";
+	    public void Use()
+	    {
+		    Networker.Instance.reviveNextServerRPC();
+	    }
+    }
+    internal class RevivePercent : IEffect
+    {
+	    public string Name => "Revive Percent";
+	    public EffectType Outcome => EffectType.Great;
+	    public bool ShowDefaultTooltip => false;
+	    public string Tooltip => "Maybe Revives";
+	    public void Use()
+	    {
+		    var percent = Random.Range(0.01f, 0.65f);
+		    Networker.Instance.reviveChanceServerRPC(percent);
+	    }
     }
 }

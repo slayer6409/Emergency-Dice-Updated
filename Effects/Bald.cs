@@ -69,7 +69,7 @@ namespace MysteryDice.Effects
 
         public void Start()
         {
-            Instantiate(MysteryDice.BaldPrefab, toLink.transform.position, Quaternion.identity, toLink.transform);
+            Instantiate(MysteryDice.PlayerNodeController, toLink.transform.position, Quaternion.identity, toLink.transform);
         }
         public void Update()
         {

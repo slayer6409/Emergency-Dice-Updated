@@ -4,15 +4,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using CodeRebirthLib.Util.INetworkSerializables;
+using Dawn.Utils;
 using GameNetcodeStuff;
 using MysteryDice.Dice;
 using MysteryDice.Effects;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
-using MysteryDice.Extensions;
 using Debug = UnityEngine.Debug;
+using PlayerControllerBExtensions = MysteryDice.Extensions.PlayerControllerBExtensions;
 
 namespace MysteryDice.Gal;
 public class DiceGalAI : GalAI
@@ -95,13 +95,12 @@ public class DiceGalAI : GalAI
         DiceCharger diceCharger = diceChargers.OrderBy(x => Vector3.Distance(transform.position, x.transform.position)).First(); ;
         diceCharger.GalAI = this;
         GalCharger = diceCharger;
-        // Automatic activation if configured
+        
         if (MysteryDice.ConfigGalAutomatic.Value)
         {
             StartCoroutine(GalCharger.ActivateGalAfterLand());
         }
 
-        // Adding listener for interaction trigger
         GalCharger.ActivateOrDeactivateTrigger.onInteract.AddListener(GalCharger.OnActivateGal);
         _collisionTrigger.onInteract.AddListener(OnChestInteract);
         _onTheHouseInteractTrigger.onInteract.AddListener(OnPlateTrigger);
@@ -112,7 +111,7 @@ public class DiceGalAI : GalAI
     #region Chest Trigger
     private void OnChestInteract(PlayerControllerB playerInteracting)
     {
-        if (!playerInteracting.IsLocalPlayer() || playerInteracting != ownerPlayer)
+        if (!PlayerControllerBExtensions.IsLocalPlayer(playerInteracting) || playerInteracting != ownerPlayer)
             return;
 
         OnChestInteractServerRpc(playerInteracting);
@@ -135,7 +134,7 @@ public class DiceGalAI : GalAI
     #region Ass Trigger
     private void OnAssTrigger(PlayerControllerB playerInteracting)
     {
-        if (_assRoutine != null || !playerInteracting.IsLocalPlayer() || playerInteracting != ownerPlayer)
+        if (_assRoutine != null || !PlayerControllerBExtensions.IsLocalPlayer(playerInteracting) || playerInteracting != ownerPlayer)
             return;
 
         OnAssInteractServerRpc(playerInteracting);
@@ -197,7 +196,7 @@ public class DiceGalAI : GalAI
     #region Plate Interact
     private void OnPlateTrigger(PlayerControllerB playerInteracting)
     {
-        if (_plateRoutine != null || !playerInteracting.IsLocalPlayer() || playerInteracting != ownerPlayer)
+        if (_plateRoutine != null || !PlayerControllerBExtensions.IsLocalPlayer(playerInteracting) || playerInteracting != ownerPlayer)
             return;
 
         OnPlateInteractServerRpc(playerInteracting);
@@ -239,7 +238,7 @@ public class DiceGalAI : GalAI
     #region Head Interact
     private void OnHeadTrigger(PlayerControllerB playerInteracting)
     {
-        if (_feelingLuckyRoutine != null || !playerInteracting.IsLocalPlayer() || playerInteracting != ownerPlayer) return;
+        if (_feelingLuckyRoutine != null || !PlayerControllerBExtensions.IsLocalPlayer(playerInteracting) || playerInteracting != ownerPlayer) return;
         OnHeadInteractServerRpc(playerInteracting);
     }
 
@@ -265,41 +264,54 @@ public class DiceGalAI : GalAI
     private IEnumerator FeelingLuckyDeal(PlayerControllerB playerDoingDeal)
     {
         yield return null;
-        
+
         NetworkAnimator.Animator.SetFloat(EffectChoice, 0);
-        IEffect? effectToUse = GalEffects[galRandom.Next(0, GalEffects.Count)];
+
+        IEffect? effectToUse = null;
+        if (IsServer)
+            effectToUse = GalEffects[galRandom.Next(0, GalEffects.Count)];
+
         yield return new WaitForSeconds(3);
-        if (IsServer && (galState != State.SpecialAction || effectToUse == null))
+
+        if (!IsServer || galState != State.SpecialAction || effectToUse == null)
         {
             _feelingLuckyRoutine = null;
             yield break;
         }
+
+        int effectRollNumber = 0;
         switch (effectToUse.Outcome)
         {
             case EffectType.GalAwful:
-                Animator.SetInteger(EffectChoice, 1);
+                effectRollNumber = -666;
+                NetworkAnimator.Animator.SetInteger(EffectChoice, 1);
                 break;
             case EffectType.GalBad:
-                Animator.SetInteger(EffectChoice, 2);
+                effectRollNumber = -100;
+                NetworkAnimator.Animator.SetInteger(EffectChoice, 2);
                 break;
             case EffectType.GalMixed:
-                Animator.SetInteger(EffectChoice, 3);
+                effectRollNumber = 123;
+                NetworkAnimator.Animator.SetInteger(EffectChoice, 3);
                 break;
             case EffectType.GalGreat:
-                Animator.SetInteger(EffectChoice, 4);
+                effectRollNumber = 777;
+                NetworkAnimator.Animator.SetInteger(EffectChoice, 4);
                 break;
             default:
-                Animator.SetInteger(EffectChoice, 2);
+                NetworkAnimator.Animator.SetInteger(EffectChoice, 2);
                 break;
         }
+
+        Networker.Instance.LogEffectsToOwnerServerRPC(playerDoingDeal.playerUsername, effectToUse.Name, effectRollNumber);
         effectToUse.Use();
 
         yield return new WaitForSeconds(2);
         NetworkAnimator.Animator.SetFloat(EffectChoice, 0);
-        if (IsServer && galState == State.SpecialAction)
-        {
+
+        if (galState == State.SpecialAction)
             HandleStateAnimationSpeedChangesServerRpc((int)State.FollowingPlayer);
-        }
+
         _feelingLuckyRoutine = null;
     }
     #endregion
@@ -333,7 +345,7 @@ public class DiceGalAI : GalAI
         if (Agent.enabled)
             Agent.Warp(GalCharger.ChargeTransform.position);
 
-        transform.SetPositionAndRotation(GalCharger.ChargeTransform.position, GalCharger.ChargeTransform.rotation);
+        transform.SetPositionAndRotation(GalCharger.ChargeTransform.position, Quaternion.identity);
         HandleStateAnimationSpeedChangesServerRpc((int)state);
     }
 
@@ -373,9 +385,11 @@ public class DiceGalAI : GalAI
         }
     }
 
+    public bool colliderChecked = false;
     public override void InActiveUpdate()
     {
         base.InActiveUpdate();
+        
         inActive = galState == State.Inactive;
     }
 
@@ -387,8 +401,19 @@ public class DiceGalAI : GalAI
 
         if (inActive)
         {
+            if (!colliderChecked)
+            {
+                colliderOff();
+                colliderChecked = true;
+            }
             return;
         }
+        else if (colliderChecked)
+        {
+            colliderFix();
+            colliderChecked = false;
+        }
+        
         StoppingDistanceUpdate();
         if (galRandom.Next(500000) <= 3)
         {
@@ -404,6 +429,15 @@ public class DiceGalAI : GalAI
         return 1.3f;
     }
 
+    [ClientRpc]
+    public void playSoundFromGalClientRPC(string soundName)
+    {
+        MysteryDice.sounds.TryGetValue(soundName, out AudioClip clip);
+        if(clip == null) return;
+        _specialSource.clip = clip;
+        _specialSource.Play();
+    }
+    
     private void HostSideUpdate()
     {
         if (StartOfRound.Instance.shipIsLeaving || !StartOfRound.Instance.shipHasLanded || StartOfRound.Instance.inShipPhase)

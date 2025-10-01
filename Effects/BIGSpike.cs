@@ -18,7 +18,7 @@ namespace MysteryDice.Effects
         public static int MaxMinesToSpawn = 1;
 
         private static List<Vector3> allPositions = new List<Vector3>();
-        public EffectType Outcome => EffectType.Awful;
+        public EffectType Outcome => EffectType.GalBad;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "Ooga Booga";
         public void Use()

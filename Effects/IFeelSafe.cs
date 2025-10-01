@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Dawn;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -29,8 +30,7 @@ namespace MysteryDice.Effects
         [MethodImpl (MethodImplOptions.NoInlining)]
         public static void SpawnCratesOutside(float positionOffsetRadius = 5f)
         {
-            var safe = CodeRebirth.src.Plugin.Mod.MapObjectRegistry().Where(x => x.ObjectName == "Normal Metal Crate")
-                .First();
+            var safe = CratesOutside.getRandomCrate();
             System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed);
 
             int maxAttempts = 100;
@@ -43,7 +43,7 @@ namespace MysteryDice.Effects
             if (hit.collider != null)
             {
                 Vector3 spawnPoint = hit.point + hit.normal * -0.75f;
-                GameObject spawnedCrate = GameObject.Instantiate(safe.GameObject, spawnPoint, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
+                GameObject spawnedCrate = GameObject.Instantiate(safe, spawnPoint, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
                 spawnedCrate.transform.up = hit.normal;
                 spawnedCrate.GetComponent<NetworkObject>().Spawn();
                 SceneManager.MoveGameObjectToScene(spawnedCrate, RoundManager.Instance.mapPropsContainer.scene);

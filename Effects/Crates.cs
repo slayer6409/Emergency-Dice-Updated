@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Dawn;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -30,9 +31,8 @@ namespace MysteryDice.Effects
         [MethodImpl (MethodImplOptions.NoInlining)]
         public static GameObject getRandomCrate()
         {
-            var crates = CodeRebirth.src.Plugin.Mod.MapObjectRegistry()
-                .Where(x => x.ObjectName.Contains("crate", StringComparison.OrdinalIgnoreCase)).ToList();
-            return crates[UnityEngine.Random.Range(0, crates.Count)].GameObject;
+            var crates = Misc.getAllTraps().Where(x => x.name.ToLower().Contains("crate")).ToArray();
+            return crates[UnityEngine.Random.Range(0, crates.Length)].prefab;
         }
 
         [MethodImpl (MethodImplOptions.NoInlining)]

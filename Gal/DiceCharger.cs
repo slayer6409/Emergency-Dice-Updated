@@ -1,6 +1,8 @@
+using System.Collections;
 using Unity.Netcode;
 
 using MysteryDice.Extensions;
+using UnityEngine;
 
 namespace MysteryDice.Gal;
 public class DiceCharger : Charger
@@ -15,4 +17,5 @@ public class DiceCharger : Charger
         GalAI.GalCharger = this;
         netObj.Spawn();
     }
+
 }

@@ -48,7 +48,8 @@ namespace MysteryDice
             76561199094139351 /*Lizzie*/,
             76561198984467725 /*Glitch*/,
             76561198399127090 /*Xu*/,
-            76561198086086035 /*Nut*/
+            76561198086086035 /*Nut*/,
+            76561198298343090 /*Mel*/
         };
         public static HashSet<ulong> revokedAdmins = new();
         
@@ -59,7 +60,7 @@ namespace MysteryDice
         public enum chatDebug { Host, Everyone, None};
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.12.4";
+        private const string modVersion = "1.13.0";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
@@ -81,10 +82,10 @@ namespace MysteryDice
             DebugSubButtonPrefab,
             DiceGal, 
             AgentObjectPrefab,
-            BaldPrefab,
-            PissPrefab,
-            ShortPrefab,
-            StinkyPrefab;
+            PlayerNodeController;
+
+        public static Material jobApplication;
+        public static Material angyGlitch;
         public static Jumpscare JumpscareScript;
 
         //public static AudioClip ExplosionSFX, DetonateSFX, MineSFX, AwfulEffectSFX, BadEffectSFX, GoodEffectSFX, JumpscareSFX, MeetingSFX, DawgSFX, AlarmSFX, PurrSFX, JawsSFX, FireAlarmSFX, PaparazziSFX;
@@ -165,6 +166,7 @@ namespace MysteryDice
         public static ConfigEntry<int> DevilDealCooldown;
         public static ConfigEntry<int> OnTheHouseCooldown;
         public static ConfigEntry<int> brutalScaleType;
+        public static ConfigEntry<bool> showOwnScanNode;
         public static ConfigEntry<bool> Bald;
         public static ConfigEntry<bool> CopyrightFree;
         public static ConfigEntry<float> SoundVolume;
@@ -422,12 +424,13 @@ namespace MysteryDice
                 true,
                 "If the dice explode after rolling or not");
             
-            TwitchEnabled = BepInExConfig.Bind<bool>(
+            TwitchEnabled = BepInExConfig.Bind(
                 "Twitch",
                 "Enable Twitch Integration",
                 false,
                 "If Dice Twitch Integration is enabled (Needs TwitchChatAPI)");
 
+            
             useDiceOutside = BepInExConfig.Bind<bool>(
                 "Misc",
                 "Use Dice Outside",
@@ -497,8 +500,19 @@ namespace MysteryDice
                 "Custom",
                 "Custom Trap Events",
                 0,
-                "Sets the Number of Custom Trap Events");
+                "Sets the Number of Custom Trap Events"); 
+            
+            showOwnScanNode = BepInExConfig.Bind<bool>(
+                "Clientside",
+                "Show own Scan Node",
+                true,
+                "Makes it to where you can see your own scan node or not (only affects certain people for now)");
 
+            showOwnScanNode.SettingChanged += (s, e) =>
+            {
+                Misc.ToggleAllScanPlayerNodes();
+            };
+            
             minNeckBreakTimer = BepInExConfig.Bind<int>(
                 "NeckBreak",
                 "Min Break Time",
@@ -728,15 +742,19 @@ namespace MysteryDice
             sounds.Add("Steve", LoadedAssets2.LoadAsset<AudioClip>("Steve"));
             sounds.Add("Yeehaw", LoadedAssets2.LoadAsset<AudioClip>("Yeehaw"));
             sounds.Add("KeepDice", LoadedAssets2.LoadAsset<AudioClip>("KeepDice"));
+            sounds.Add("NancyHair", LoadedAssets2.LoadAsset<AudioClip>("NancySorryGlitch"));
+            sounds.Add("Lizard", LoadedAssets2.LoadAsset<AudioClip>("lizard"));
             
-
             WarningBracken = LoadedAssets.LoadAsset<Sprite>("bracken");
             WarningJester = LoadedAssets.LoadAsset<Sprite>("jester");
             WarningDeath = LoadedAssets.LoadAsset<Sprite>("death");
             WarningLuck = LoadedAssets.LoadAsset<Sprite>("luck");
             
-            DiceGal = LoadedAssets2.LoadAsset<GameObject>("DiceGal"); //gal commented
-            diceGalUnlockable = LoadedAssets2.LoadAsset<UnlockableItemDef>("DiceGalUnlockable"); //gal commented
+            jobApplication = LoadedAssets2.LoadAsset<Material>("JobApplication");
+            angyGlitch = LoadedAssets2.LoadAsset<Material>("AngyGlitch");
+            
+            DiceGal = LoadedAssets2.LoadAsset<GameObject>("DiceGal"); 
+            diceGalUnlockable = LoadedAssets2.LoadAsset<UnlockableItemDef>("DiceGalUnlockable");
             
             NetworkerPrefab = LoadedAssets.LoadAsset<GameObject>("Networker");
             NetworkerPrefab.name = "DiceNetworker";
@@ -744,7 +762,6 @@ namespace MysteryDice
             
             AgentObjectPrefab = LoadedAssets2.LoadAsset<GameObject>("AgentObject");
             if (aprilFoolsConfig.Value) AgentObjectPrefab.GetComponent<NavMeshAgent>().speed = 9;
-            //AgentObjectPrefab.AddComponent<SmartAgentNavigator>();
 
             EffectMenuPrefab = LoadedAssets.LoadAsset<GameObject>("Choose Effect");
             DebugMenuPrefab = LoadedAssets2.LoadAsset<GameObject>("DebugMenu");
@@ -754,10 +771,7 @@ namespace MysteryDice
             DebugSubButtonPrefab = LoadedAssets2.LoadAsset<GameObject>("SubmenuButton");
             
             
-            BaldPrefab = LoadedAssets2.LoadAsset<GameObject>("BaldController");
-            PissPrefab = LoadedAssets2.LoadAsset<GameObject>("PissController");
-            ShortPrefab = LoadedAssets2.LoadAsset<GameObject>("ShortController");
-            StinkyPrefab = LoadedAssets2.LoadAsset<GameObject>("StinkyController");
+            PlayerNodeController = LoadedAssets2.LoadAsset<GameObject>("PlayerNodeController");
 
             JumpscareCanvasPrefab = LoadedAssets2.LoadAsset<GameObject>("JumpscareCanvas");
             JumpscareCanvasPrefab.AddComponent<Jumpscare>();
@@ -776,9 +790,11 @@ namespace MysteryDice
             LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(AgentObjectPrefab);
             LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(PathfinderSpawner.spawnPrefab);
             LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(PathfinderPrefab);
+            LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(MysteryDice.DiceGal);
+            LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(diceGalUnlockable.unlockable.prefabObject);
             
-            if(diceGalUnlockable == null) CustomLogger.LogError("DiceGalUnlockable is null!"); //gal commented
-            LethalLib.Modules.Unlockables.RegisterUnlockable(MysteryDice.diceGalUnlockable, 150, StoreType.ShipUpgrade); //gal commented
+            if(diceGalUnlockable == null) CustomLogger.LogError("DiceGalUnlockable is null!"); 
+            LethalLib.Modules.Unlockables.RegisterUnlockable(MysteryDice.diceGalUnlockable, 1777, StoreType.ShipUpgrade);
 
             LoadDice();
             

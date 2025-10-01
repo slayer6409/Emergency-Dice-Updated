@@ -1,9 +1,18 @@
 -	**1.13.0**
     - Fixed a bug where Delay can roll disabled effects
     - \[Redacted]
-    - Hehehehehehe 
-    - Changed the classification of certain dice effects for the new thing ;D
-    - Documentation has actual info https://dice.slayer.games/
+      - Hehehehehehe 
+    - Changed the classification of certain dice effects for the \[Redacted] ;D
+    - Documentation will have actual info https://dice.slayer.games/
+    - There will be more updates in the upcoming days to fix some more things
+      - Yes I am assuming things will break, cuz when don't they :( lol  
+      - And I have a few more things planned, but I had to push this update since things broke
+    - Updated Dependencies to DawnLib from CoderebirthLib
+    - Sorry if things be broken
+      - I hope things work cuz I tested A LOT lol
+    - And thank you to Rodrigo (coding) and Xu (models) for all their help :D
+      - Mu is bald
+
 -	**1.12.3**
     - Had to change some bundle things, so since I don't have the original sacrificer shader, and I am horrible with shader graphs, sacrificer has a weird new look (temporary until I fix it)
     - Fixed some issues with some rolls not triggering

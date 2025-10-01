@@ -19,7 +19,7 @@ namespace MysteryDice.Effects
             {
                 var item = StartOfRound.Instance.allItemsList
                     .itemsList[Random.Range(0, StartOfRound.Instance.allItemsList.itemsList.Count)].itemName;
-                Networker.Instance.SameScrapServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController), 1, item, weightMod: 5, scrapValueMod: 4);
+                Networker.Instance.SameScrapAdvancedServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,GameNetworkManager.Instance.localPlayerController), 1, item, weightMod: 5, scrapValueMod: 4);
             }
         }
     }

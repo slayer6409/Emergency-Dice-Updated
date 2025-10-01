@@ -9,11 +9,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Dawn.Utils;
 using LethalLib;
 using LethalLib.Extras;
 using LethalLib.Modules;
 using MysteryDice.CompatThings;
-using MysteryDice.Extensions;
 using MysteryDice.Gal;
 using MysteryDice.MiscStuff;
 using Unity.Mathematics;
@@ -23,7 +23,10 @@ using UnityEngine.PlayerLoop;
 using UnityEngine.SceneManagement;
 using static MysteryDice.Effects.MovingLandmines;
 using Debug = UnityEngine.Debug;
+using PlayerControllerBExtensions = MysteryDice.Extensions.PlayerControllerBExtensions;
 using Random = UnityEngine.Random;
+using SmartAgentNavigator = MysteryDice.MiscStuff.SmartAgentNavigator;
+
 // ReSharper disable Unity.PerformanceAnalysis
 namespace MysteryDice
 {
@@ -37,6 +40,7 @@ namespace MysteryDice
         public List<AudioSource> AudioSources = new List<AudioSource>();
         public List<AudioSource> FreebirdAudioSources = new List<AudioSource>();
         public List<ulong> cursedPeople = new();
+        public List<GameObject> playerScanNodes = new();
         public static IReadOnlyList<EntranceTeleport> EntrancePoints => _entrancePoints;
 
 
@@ -44,8 +48,7 @@ namespace MysteryDice
         {
             StartOfRound.Instance.StartNewRoundEvent.AddListener(OnNewRoundStart);
         }
-
-
+        
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
@@ -90,7 +93,7 @@ namespace MysteryDice
         {
             foreach (var player in StartOfRound.Instance.allPlayerScripts)
             {
-                if(player.IsLocalPlayer()) AddControllerServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, player));
+                if(PlayerControllerBExtensions.IsLocalPlayer(player)) AddControllerServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, player));
                 else if(Misc.IsPlayerReal(player))
                 {
                     InstantiateSpecialPrefabForPlayer(player);
@@ -99,44 +102,96 @@ namespace MysteryDice
         }
         private void InstantiateSpecialPrefabForPlayer(PlayerControllerB player)
         {
-            string controllerName  = null;
+            string topText = "", bottomText="";
+            Color backgroundColor = Color.black, textColor = Color.black;
+            
             GameObject prefab = null;
 
             switch (player.playerSteamId)
             {
                 case 76561198298343090: // mel
-                    controllerName  = "PissController";
-                    prefab = MysteryDice.PissPrefab;
+                //case 76561198216220844: //Macho
+                    topText  = "Piss Girl";
+                    bottomText = "Likes Piss";
+                    backgroundColor = new Color32(255, 255, 0, 255);
+                    textColor = new Color32(152, 108, 0, 255);
                     break;
                 case 9876561198984467725: // glitch
-                    controllerName  = "BaldController";
-                    prefab = MysteryDice.BaldPrefab;
+                    topText  = "Bald";
+                    bottomText = "Shiny Head";
+                    backgroundColor = new Color32(0, 255, 0, 255);
+                    textColor = new Color32(0, 123, 0, 255);
                     break;
                 case 76561198003293676: // beef
-                    controllerName  = "ShortController";
-                    prefab = MysteryDice.ShortPrefab;
+                    topText  = "Short";
+                    bottomText = "1 mm tall";
+                    backgroundColor = new Color32(255, 0, 0, 255);
+                    textColor = new Color32(80, 0, 0, 255);
                     break;
                 case 76561199092131418: // cross
-                    controllerName  = "StinkyController";
-                    prefab = MysteryDice.StinkyPrefab;
+                    topText  = "Stinky";
+                    bottomText = "Eww Stinky";
+                    backgroundColor = new Color32(0, 0, 255, 255);
+                    textColor = new Color32(0, 255, 0, 255);
                     break;
+                case 76561198077184650: //Me
+                    topText  = "Dice Man";
+                    bottomText = "Sacrificer Broken";
+                    backgroundColor = new Color32(0, 0, 0, 255);
+                    textColor = new Color32(0, 0, 0, 255);
+                    break;
+                case 76561198216220844: //Macho
+                //case 76561198298343090: // mel
+                    topText  = "Macho";
+                    bottomText = "Macho Macho Macho";
+                    backgroundColor = new Color32(150, 0, 255, 255);
+                    textColor = new Color32(255, 0, 0, 255);
+                    break;
+                case 76561198399127090: //Xu
+                    topText  = "Hi Mu!";
+                    bottomText = " ";
+                    backgroundColor = new Color32(236, 189, 196, 255);
+                    textColor = new Color32(250, 138, 170, 255);
+                    break;
+                case 76561199094139351: //Lizzie
+                    topText  = "Lizzie!";
+                    bottomText = "Friends of the Blob";
+                    backgroundColor = new Color32(236, 20, 196, 255);
+                    textColor = new Color32(250, 180, 170, 255);
+                    break;
+                case 76561198164429786: //Rodrigo
+                    topText  = "Boom Bird";
+                    bottomText = "Go Scarab";
+                    backgroundColor = new Color32(0, 255, 0, 255);
+                    textColor = new Color32(0, 0, 0, 255);
+                    break;
+                case 76561198086086035: //Nut
+                    topText  = "Suit Guy";
+                    bottomText = "Makes Cool Suits";
+                    backgroundColor = new Color32(136, 0, 180, 255);
+                    textColor = new Color32(0, 0, 0, 255);
+                    break;
+                    
             }
 
-            if (prefab != null && player.transform.Find(controllerName) == null)
+            prefab = MysteryDice.PlayerNodeController;
+            if (prefab != null && player.transform.Find("CustomPlayerScanNode") == null)
             {
-                if (player.IsLocalPlayer())
-                {
-                    var instance = Instantiate(prefab, player.transform.position + new Vector3(0,2.5f,0), Quaternion.identity);
-                    instance.name = controllerName;
-                    var pt = instance.AddComponent<PlayerTracker>();
-                    pt.init(player, new Vector3(0,2.5f,0));
-                }
-                else
-                {
-                    var instance = Instantiate(prefab, player.transform.position + new Vector3(0,2.5f,0), Quaternion.identity, player.transform);
-                    instance.name = controllerName;
-                }
-                
+                ForceScanColorOnItem fsn;
+                ScanNodeProperties scnnode;
+                if (topText == "") return;
+                if (PlayerControllerBExtensions.IsLocalPlayer(player) && !MysteryDice.showOwnScanNode.Value) return;
+                var instance = Instantiate(prefab, player.transform.position + new Vector3(0,2.5f,0), Quaternion.identity);
+                var pt = instance.AddComponent<PlayerTracker>();
+                pt.init(player, new Vector3(0,2.5f,0));
+                fsn = instance.GetComponentInChildren<ForceScanColorOnItem>();
+                fsn.borderColor = backgroundColor;
+                fsn.textColor = textColor;
+                scnnode = instance.GetComponentInChildren<ScanNodeProperties>();
+                scnnode.headerText = topText;
+                scnnode.subText = bottomText;
+                if (player.playerSteamId == 76561198077184650) instance.AddComponent<RainbowScanNode>();
+                playerScanNodes.Add(instance);
             }
         }
 
@@ -155,7 +210,7 @@ namespace MysteryDice
         //thanks xu
         private void OnNewRoundStart()
         {
-            if (MysteryDice.CodeRebirthPresent) CodeRebirthCheckConfigs.ListAll();
+            if (MysteryDice.CodeRebirthPresent) CodeRebirthCheckConfigs.listAll();
             _entrancePoints = FindObjectsByType<EntranceTeleport>(FindObjectsSortMode.InstanceID);
             foreach (EntranceTeleport? entrance in _entrancePoints)
             {
@@ -202,6 +257,8 @@ namespace MysteryDice
             HyperShake.FixedUpdate();
             LeverShake.FixedUpdate();
             Drunk.FixedUpdate();
+            Lizard.FixedUpdate();
+            ChangePlaces.FixedUpdate();
             TwitchSpawner();
             if (SelectEffect.ReviveOpen && SelectEffect.EffectMenu == null) SelectEffect.ReviveOpen = false;
         }
@@ -1042,7 +1099,14 @@ namespace MysteryDice
 
             return validPlayers;
         }
-
+        [ServerRpc(RequireOwnership = false)]
+        public void DoLizardServerRPC()
+        {
+            if (StartOfRound.Instance is null) return;
+            if (Lizard.isRunning) return;
+            Lizard.isRunning = true;
+        }
+        
         [ServerRpc(RequireOwnership = false)]
         public void ConfusionPlayerServerRPC(bool stupidMode)
         {
@@ -1162,6 +1226,21 @@ namespace MysteryDice
             if (SelectEffect.ReviveOpen) SelectEffect.RefreshRevives();
         }
 
+        [ServerRpc(RequireOwnership = false)]
+        public void reviveNextServerRPC()
+        {
+            Networker.Instance.StartCoroutine(Revive.reviveNext());
+        }
+        [ServerRpc(RequireOwnership = false)]
+        public void reviveChanceServerRPC(float percentChance)
+        {
+            foreach (var player in StartOfRound.Instance.allPlayerScripts)
+            {
+                if(!player.isPlayerDead) continue;
+                if(Random.value < percentChance) RevivePlayerServerRpc(Array.IndexOf(StartOfRound.Instance.allPlayerScripts, player), StartOfRound.Instance.middleOfShipNode.position);
+            }
+        }
+        
         [ServerRpc(RequireOwnership = false)]
         public void RevivePlayerServerRpc(int ID, Vector3 SpawnPosition)
         {
@@ -1460,6 +1539,13 @@ namespace MysteryDice
 
         #region playSound
 
+        [ServerRpc(RequireOwnership = false)]
+        public void PlaySoundFromGalServerRPC(string soundName)
+        {
+            if(DiceGalAI.Instances[0] == null) return;
+            DiceGalAI.Instances[0].GetComponent<DiceGalAI>().playSoundFromGalClientRPC(soundName);
+        }
+        
         [ServerRpc(RequireOwnership = false)]
         public void PlaySoundServerRPC(string sound)
         {
@@ -2221,11 +2307,28 @@ namespace MysteryDice
             SwapPlayerClientRPC(userID, randomPlayer);
         }
 
+        [ServerRpc(RequireOwnership = false)]
+        public void doSwapperServerRPC()
+        {
+            ChangePlaces.doingStuff = true;
+        }
+
         [ClientRpc]
         public void SwapPlayerClientRPC(int userID, int otherUserID)
         {
             if (IsServer) return;
             Swap.SwapPlayers(userID, otherUserID);
+        }
+
+        [ClientRpc]
+        public void swapAllPlayersClientRpc(int[] playerIDs, Vector3[] playerPositions, bool[] inside)
+        {
+            for (int i = 0; i < playerIDs.Length; i++)
+            {
+                var player = StartOfRound.Instance.allPlayerScripts[playerIDs[i]];
+                player.isInsideFactory = inside[i];
+                player.TeleportPlayer(playerPositions[i]);
+            }
         }
 
         #endregion
@@ -2410,6 +2513,13 @@ namespace MysteryDice
 
         [ServerRpc(RequireOwnership = false)]
         public void SameScrapServerRPC(int userID, int amount, string scrap, bool usePos = false,
+            Vector3 pos = default(Vector3))
+        {
+            AllSameScrap.SameScrap(userID, amount, scrap, usePos, pos);
+        }
+        
+        [ServerRpc(RequireOwnership = false)]
+        public void SameScrapAdvancedServerRPC(int userID, int amount, string scrap, bool usePos = false,
             Vector3 pos = default(Vector3), int networkPrefabIndex = -1, float weightMod = 1, float scrapValueMod = 1)
         {
             AllSameScrap.SameScrap(userID, amount, scrap, usePos, pos, networkPrefabIndex, weightMod, scrapValueMod);
@@ -2544,18 +2654,18 @@ namespace MysteryDice
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void explodeItemServerRPC(ulong objectId, bool egg, int count)
+        public void explodeItemServerRPC(ulong objectId, bool egg, int count, Vector3 position = default)
         {
-            explodeItemClientRPC(objectId, egg, count);
+            explodeItemClientRPC(objectId, egg, count, position);
         }
 
         [ClientRpc]
-        public void explodeItemClientRPC(ulong objectId, bool egg, int count)
+        public void explodeItemClientRPC(ulong objectId, bool egg, int count, Vector3 position)
         {
             if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(objectId, out var networkObj))
             {
                 GameObject obj = networkObj.gameObject;
-
+                if(position!=default) obj.GetComponent<GrabbableObject>().FallToGround(false, true, position);
                 if (egg)
                 {
                     RoundManager.Instance.StartCoroutine(EggFountain.explodeEgg(obj, count));
@@ -2574,6 +2684,52 @@ namespace MysteryDice
         {
             HeatSeakingCutieFly.doSpawnCutie();
         }
+
+        #region turretMineExploder
+
+        [ServerRpc(RequireOwnership = false)]
+        public void turretMineExploderServerRPC(bool turret)
+        {
+            if(turret) TurretExploder.explodeAllMines();
+            else MineExploder.explodeAllMines();
+        }
+
+        #endregion
+
+        #region RedPill Stuff
+
+        [ServerRpc(RequireOwnership = false)]
+        public void doRedPillStuffServerRPC(bool bald)
+        {
+            var redPill = GetEnemies.allEnemies.Find(x => x.enemyName == "Red pill");
+            var pos = RoundManager.Instance.insideAINodes[Random.Range(0, RoundManager.Instance.insideAINodes.Length)].gameObject.transform.position;
+            
+            var enemy = GameObject.Instantiate(redPill.enemyPrefab, pos, Quaternion.identity);
+            var netObj = enemy.GetComponent<NetworkObject>();
+            netObj.Spawn();
+            NetworkObjectReference enemyRef = netObj;
+            RoundManager.Instance.SpawnedEnemies.Add(enemy.GetComponent<EnemyAI>());
+            
+            doRedPillFixClientRPC(bald, enemyRef);
+        }
+        
+        [ClientRpc]
+        public void doRedPillFixClientRPC(bool bald, NetworkObjectReference enemyRef)
+        {
+            if (!enemyRef.TryGet(out var networkObj))
+            {
+                return;
+            }
+            var go = networkObj.gameObject;
+            var changer = go.GetComponent<RedPillChanger>();
+            if (changer == null)
+                changer = go.AddComponent<RedPillChanger>();
+            var matToUse = bald ? MysteryDice.angyGlitch : MysteryDice.jobApplication;
+            changer.RedPillMaterial=matToUse;
+            changer.RedPill = networkObj.gameObject;
+            changer.isBald = true;
+        }
+        #endregion
         
         #region HealAndRestore
 

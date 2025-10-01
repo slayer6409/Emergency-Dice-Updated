@@ -633,6 +633,14 @@ namespace MysteryDice.Dice
             MysteryDice.MainRegisterNewEffect(new Overweight());
             MysteryDice.MainRegisterNewEffect(new HouseAlwaysWins());
             MysteryDice.MainRegisterNewEffect(new MovingCrane());
+            MysteryDice.MainRegisterNewEffect(new Lizard());
+            MysteryDice.MainRegisterNewEffect(new MineExploder());
+            MysteryDice.MainRegisterNewEffect(new TurretExploder());
+            MysteryDice.MainRegisterNewEffect(new GlitchPill());
+            MysteryDice.MainRegisterNewEffect(new JobAppPill());
+            MysteryDice.MainRegisterNewEffect(new ChangePlaces());
+            MysteryDice.MainRegisterNewEffect(new ReviveNext());
+            MysteryDice.MainRegisterNewEffect(new RevivePercent());
 
             if (MysteryDice.TooManyEmotesPresent)
             {

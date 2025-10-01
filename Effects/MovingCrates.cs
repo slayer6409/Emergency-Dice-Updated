@@ -50,6 +50,7 @@ namespace MysteryDice.Effects
                 SceneManager.MoveGameObjectToScene(agent, RoundManager.Instance.mapPropsContainer.scene);
                 if (trapToSpawn.name.Contains("Mimic"))
                 {
+                    
                     CodeRebirth.src.Content.Maps.ItemCrate ic = trap.GetComponent<CodeRebirth.src.Content.Maps.ItemCrate>();
                     ic.health=1;
                     ic.digProgress=2;

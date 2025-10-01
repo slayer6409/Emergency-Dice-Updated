@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using GameNetcodeStuff;
 using MysteryDice.Patches;
-using Surfaced;
 using Unity.Netcode;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -33,7 +32,7 @@ namespace MysteryDice.Effects
                 GameObject obj = networkObj.gameObject;
                 Bertha b = obj.GetComponentInChildren<Bertha>();
                 b.hasExploded = true;
-                b.StartCoroutine(InstantExplodingBerthas.DetonateDelay2(Misc.GetRandomAlivePlayer(), b, time));
+                b.StartCoroutine(InstantExplodingBerthas.DetonateDelay2(Misc.GetRandomAlivePlayer(), b.NetworkObject.NetworkObjectId, time));
             }
         }
       

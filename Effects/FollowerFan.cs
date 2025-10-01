@@ -26,6 +26,7 @@ namespace MysteryDice.Effects
                 player.transform.position - player.transform.forward * 3f, Quaternion.identity);
             fan.name = "FollowerFan"+Array.IndexOf(StartOfRound.Instance.allPlayerScripts,player);
             var netObj = fan.GetComponent<NetworkObject>();
+            
             fan.GetComponentInChildren<CodeRebirth.src.Content.Maps.IndustrialFanBackCollider>().gameObject.SetActive(false);
             //fan.GetComponentInChildren<CodeRebirth.src.Content.Maps.IndustrialFanBackCollider>().industrialFan.pushForce *= -1;
             netObj.Spawn();

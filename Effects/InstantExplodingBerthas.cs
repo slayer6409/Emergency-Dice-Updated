@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using GameNetcodeStuff;
 using MysteryDice.Patches;
-using Surfaced;
 using Unity.Netcode;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -88,24 +84,30 @@ namespace MysteryDice.Effects
                 }
             }
         }
-        public static IEnumerator DetonateDelay2(PlayerControllerB playerWhoCollided, Bertha bertha, float time)
+        public static IEnumerator DetonateDelay2(PlayerControllerB playerWhoCollided, ulong bertharef, float time)
         {
-            bertha.mineAudio.PlayOneShot(bertha.mineTrigger, 1f);
-            yield return new WaitForSeconds(time);
-            bertha.Detonate(playerWhoCollided);
-            bertha.BoomLight.SetActive(true);
-            yield return new WaitForSeconds(0.1f);
-            bertha.transform.parent.transform.Find("BigBertha").gameObject.SetActive(false);
-            yield return new WaitForSeconds(0.2f);
-            bertha.BoomLight.SetActive(false);
-            foreach (Collider collider in bertha.GetComponentsInChildren<Collider>())
+            
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(bertharef, out var networkObj))
             {
-                collider.enabled = false;
-            }
-            yield return new WaitForSeconds(10f);
-            if (StartOfRound.Instance.IsServer)
-            {
-                bertha.NetworkObject.Despawn();
+                GameObject obj = networkObj.gameObject;
+                Bertha bertha = obj.GetComponent<Bertha>();
+                bertha.mineAudio.PlayOneShot(bertha.mineTrigger, 1f);
+                yield return new WaitForSeconds(time);
+                bertha.Detonate(playerWhoCollided);
+                bertha.BoomLight.SetActive(true);
+                yield return new WaitForSeconds(0.1f);
+                bertha.transform.parent.transform.Find("BigBertha").gameObject.SetActive(false);
+                yield return new WaitForSeconds(0.2f);
+                bertha.BoomLight.SetActive(false);
+                foreach (Collider collider in bertha.GetComponentsInChildren<Collider>())
+                {
+                    collider.enabled = false;
+                }
+                yield return new WaitForSeconds(10f);
+                if (StartOfRound.Instance.IsServer)
+                {
+                    bertha.NetworkObject.Despawn();
+                }
             }
         }
 

@@ -152,7 +152,7 @@ namespace MysteryDice.Patches
             EggBoots.eggBootsEnabled = false;
             Martyrdom.doMinesDrop = false;
             Confusion.isConfused = false;
-          
+            Lizard.isRunning = false;
             
             if (LeverShake.IsShaking)
             {

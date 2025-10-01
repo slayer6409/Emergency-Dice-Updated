@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CodeRebirthLib;
-using CodeRebirthLib.ContentManagement.Enemies;
-using CodeRebirthLib.ContentManagement.MapObjects;
+using CodeRebirth;
+using Dawn;
 using UnityEngine;
 
 namespace MysteryDice.CompatThings;
@@ -56,36 +55,43 @@ public class CodeRebirthCheckConfigs
      */
     
     
-    public static CRMapObjectDefinition getTrap(string trapName)
+    public static DawnMapObjectInfo getTrap(string trapName)
     {
-        CodeRebirth.src.Plugin.Mod.MapObjectRegistry().TryGetFromMapObjectName(trapName, out var trap);
-        return trap;
+        var trap = LethalContent.MapObjects.Where(x => x.Value.MapObject.name==trapName);
+        var keyValuePairs = trap as KeyValuePair<NamespacedKey<DawnMapObjectInfo>, DawnMapObjectInfo>[] ?? trap.ToArray();
+        if(keyValuePairs.Count()==0) return null;
+        return keyValuePairs.First().Value;
+        
     }
  
     public static EnemyType getEnemy(string enemyName)
     {
-        CodeRebirth.src.Plugin.Mod.EnemyRegistry().TryGetFromEnemyName(enemyName, out var enemy);
-        return enemy?.EnemyType;
+        var enemy = LethalContent.Enemies.Where(x => x.Value.EnemyType.enemyName==enemyName);
+        var enemies = enemy as KeyValuePair<NamespacedKey<DawnEnemyInfo>, DawnEnemyInfo>[] ?? enemy.ToArray();
+        if(enemies.Count()==0) return null;
+        return enemies.First().Value.EnemyType;
+    }
+
+    public static void listAll()
+    {
+        foreach (var thing in LethalContent.MapObjects)
+        {
+            MysteryDice.ExtendedLogging(thing.Value.MapObject.name);   
+        }
+        foreach (var thing in LethalContent.Enemies)
+        {
+            MysteryDice.ExtendedLogging(thing.Value.EnemyType.enemyName);
+        }
     }
     
-    public static void ListAll()
-    {
-        foreach (CRMapObjectDefinition def in CodeRebirth.src.Plugin.Mod.MapObjectRegistry())
-        {
-            MysteryDice.ExtendedLogging("Trap: "+def.ObjectName);
-        }
-        foreach (var def in CodeRebirth.src.Plugin.Mod.EnemyRegistry())
-        {
-            MysteryDice.ExtendedLogging("Enemy: "+def.EnemyType.enemyName);
-        }
-    }
     public static List<trap> getSpawnPrefabs()
     {
+        
         List<trap> spawnPrefabs = new List<trap>();
-        foreach (var trap in CRMod.AllMapObjects())
+        foreach (var trap in LethalContent.MapObjects)
         {
-            MysteryDice.ExtendedLogging($"added {trap.ObjectName} to traps");
-            spawnPrefabs.Add(new trap(trap.ObjectName, trap.GameObject));
+            MysteryDice.ExtendedLogging($"added {trap.Value.MapObject.name} to traps");
+            spawnPrefabs.Add(new trap(trap.Value.MapObject.name, trap.Value.MapObject));
         }
         return spawnPrefabs;
     }
