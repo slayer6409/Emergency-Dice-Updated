@@ -60,11 +60,11 @@ namespace MysteryDice
         public enum chatDebug { Host, Everyone, None};
         private const string modGUID = "Theronguard.EmergencyDice";
         private const string modName = "Emergency Dice Updated";
-        private const string modVersion = "1.13.0";
+        private const string modVersion = "1.13.2";
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static ManualLogSource CustomLogger;
-        public static AssetBundle LoadedAssets, LoadedAssets2;
+        public static AssetBundle  LoadedAssets, LoadedAssets2;
 
         
         internal static IngameKeybinds Keybinds = null!;
@@ -72,12 +72,12 @@ namespace MysteryDice
         public static UnlockableItemDef diceGalUnlockable;  
         public static GameObject NetworkerPrefab,
             JumpscareCanvasPrefab,
+            SpiderCanvasPrefab,
+            SpiderMoverPrefab,
             JumpscareOBJ,
             PathfinderPrefab,
-            EffectMenuPrefab,
             DebugMenuPrefab,
             NewSelectMenuPrefab,
-            EffectMenuButtonPrefab,
             DebugMenuButtonPrefab,
             DebugSubButtonPrefab,
             DiceGal, 
@@ -110,7 +110,6 @@ namespace MysteryDice
         public static bool BombCollarPresent = false;
         public static bool MoreCompanyPresent = false;
         public static bool LethalConfigPresent = false;
-        public static bool notlmPresent = false;
         public static Assembly LCOfficeAssembly;
         public static bool terminalLockout = false;
         public static CustomConfigs customCfg;
@@ -180,6 +179,8 @@ namespace MysteryDice
         //public static ConfigEntry<bool> DisableSizeBased;
         public static ConfigEntry<bool> doDiceExplosion;
         public static ConfigEntry<bool> DieEmergencyAsScrap;
+        public static ConfigEntry<bool> DisableGal;
+        public static ConfigEntry<int> GalPrice;
         public static ConfigEntry<bool> LoversOnStart;
         public static ConfigEntry<bool> DebugMenuClosesAfter;
         public static ConfigEntry<bool> TwitchEnabled;
@@ -282,6 +283,16 @@ namespace MysteryDice
                 "Auto Activate",
                 false,
                 "Makes the Gal automatically activate");
+             DisableGal = BepInExConfig.Bind<bool>(
+                "Gal",
+                "Disable Completely",
+                false,
+                "Makes the gal not show up in the shop, and adds the gal effects to the dice pool");
+             GalPrice = BepInExConfig.Bind<int>(
+                "Gal",
+                "Price",
+                1777,
+                "Sets the price of the Gal.");
              
              ImFeelingLuckyCooldown = BepInExConfig.Bind<int>(
                 "Gal",
@@ -700,7 +711,6 @@ namespace MysteryDice
             customCfg = new CustomConfigs(BepInExConfig);
             customCfg.GenerateConfigs(CustomEnemyEventCount.Value, CustomItemEventCount.Value, CustomTrapEventCount.Value);
             DieBehaviour.Config();
-            NetcodeWeaver();
 
             if (superDebugMode.Value) db(); 
 
@@ -763,10 +773,8 @@ namespace MysteryDice
             AgentObjectPrefab = LoadedAssets2.LoadAsset<GameObject>("AgentObject");
             if (aprilFoolsConfig.Value) AgentObjectPrefab.GetComponent<NavMeshAgent>().speed = 9;
 
-            EffectMenuPrefab = LoadedAssets.LoadAsset<GameObject>("Choose Effect");
             DebugMenuPrefab = LoadedAssets2.LoadAsset<GameObject>("DebugMenu");
             NewSelectMenuPrefab = LoadedAssets2.LoadAsset<GameObject>("NewSelectMenu");
-            EffectMenuButtonPrefab = LoadedAssets.LoadAsset<GameObject>("Effect");
             DebugMenuButtonPrefab = LoadedAssets2.LoadAsset<GameObject>("DebugButton");
             DebugSubButtonPrefab = LoadedAssets2.LoadAsset<GameObject>("SubmenuButton");
             
@@ -775,6 +783,8 @@ namespace MysteryDice
 
             JumpscareCanvasPrefab = LoadedAssets2.LoadAsset<GameObject>("JumpscareCanvas");
             JumpscareCanvasPrefab.AddComponent<Jumpscare>();
+            SpiderCanvasPrefab = LoadedAssets2.LoadAsset<GameObject>("SpiderCanvas");
+            SpiderMoverPrefab = LoadedAssets2.LoadAsset<GameObject>("SpiderMover");
             
             PathfinderPrefab = LoadedAssets.LoadAsset<GameObject>("Pathfinder");
             PathfinderPrefab.AddComponent<Pathfinder.PathfindBehaviour>();
@@ -794,7 +804,7 @@ namespace MysteryDice
             LethalLib.Modules.NetworkPrefabs.RegisterNetworkPrefab(diceGalUnlockable.unlockable.prefabObject);
             
             if(diceGalUnlockable == null) CustomLogger.LogError("DiceGalUnlockable is null!"); 
-            LethalLib.Modules.Unlockables.RegisterUnlockable(MysteryDice.diceGalUnlockable, 1777, StoreType.ShipUpgrade);
+            if(!DisableGal.Value) LethalLib.Modules.Unlockables.RegisterUnlockable(MysteryDice.diceGalUnlockable, GalPrice.Value, StoreType.ShipUpgrade);
 
             LoadDice();
             
@@ -896,7 +906,16 @@ namespace MysteryDice
                 //DieBehaviour.favConfigs.Add(fav);
                 if (cfg.Value)
                 {
-                    DieBehaviour.AllowedEffects.Add(effect);
+                    if (effect is GalEffect galEffect)
+                    {
+                        DiceGalAI.GalEffects.Add(galEffect);
+                        if(DisableGal.Value) DieBehaviour.AllowedEffects.Add(galEffect);
+                    }
+                    else
+                    {
+                        DieBehaviour.AllowedEffects.Add(effect);
+                    }
+                    
                     switch (effect.Outcome)
                     {
                         case EffectType.Awful:
@@ -913,12 +932,6 @@ namespace MysteryDice
                             break;
                         case EffectType.Great:
                             DieBehaviour.GreatEffects.Add(effect);
-                            break;
-                        case EffectType.GalAwful:
-                        case EffectType.GalBad:
-                        case EffectType.GalMixed:
-                        case EffectType.GalGreat:
-                            DiceGalAI.GalEffects.Add(effect);
                             break;
                     }
                 }
@@ -987,33 +1000,7 @@ namespace MysteryDice
             if (isPresent) MysteryDice.CustomLogger.LogMessage(logMessage);
             return isPresent;
         }
-        private static void NetcodeWeaver()
-        {
-            try
-            {
-                var types = Assembly.GetExecutingAssembly().GetTypes();
-                foreach (var type in types)
-                {
-                    var methods = type.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
-                    foreach (var method in methods)
-                    {
-                        var attributes = method.GetCustomAttributes(typeof(RuntimeInitializeOnLoadMethodAttribute), false);
-                        if (attributes.Length > 0)
-                        {
-                            method.Invoke(null, null);
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                
-            }
-          
-        }
-
-
-
+        
         public static void ExtendedLogging(string logMessage, LogLevel level = LogLevel.Info)
         {
             if(DebugLogging.Value) CustomLogger.Log(level, logMessage);

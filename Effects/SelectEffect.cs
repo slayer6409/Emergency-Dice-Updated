@@ -46,7 +46,7 @@ namespace MysteryDice.Effects
                 GameObject.Destroy(EffectMenu);
                 EffectMenu = null;
             }
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
 
 
             Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
@@ -59,7 +59,7 @@ namespace MysteryDice.Effects
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
 
-            GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
             TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
             Panel.text = "Choose a Category";
             TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
@@ -75,7 +75,7 @@ namespace MysteryDice.Effects
 
            
 
-            GameObject effectObj6 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            GameObject effectObj6 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
             TMP_Text buttonText6 = effectObj6.transform.GetChild(0).GetComponent<TMP_Text>();
             buttonText6.text = $"Spawn Stuff";
             Button button6 = effectObj6.GetComponent<Button>();
@@ -86,7 +86,7 @@ namespace MysteryDice.Effects
             });
 
             
-            GameObject effectObj7 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            GameObject effectObj7 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
             TMP_Text buttonText7 = effectObj7.transform.GetChild(0).GetComponent<TMP_Text>();
             buttonText7.text = $"Player Functions";
 
@@ -101,7 +101,7 @@ namespace MysteryDice.Effects
             if (isSpecial())
             {
                 
-                GameObject effectObj9 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj9 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText9 = effectObj9.transform.GetChild(0).GetComponent<TMP_Text>();
                 buttonText9.text = $"Special Functions";
 
@@ -114,7 +114,7 @@ namespace MysteryDice.Effects
             }
             if (su)
             {
-                GameObject effectObj8 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj8 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText8 = effectObj8.transform.GetChild(0).GetComponent<TMP_Text>();
                 buttonText8.text = $"Grant/Revoke Admin";
 
@@ -160,7 +160,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
 
             TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
             Panel.text = "Spawn an Enemy";
@@ -192,7 +192,7 @@ namespace MysteryDice.Effects
 
             foreach (var enemy in allEnemies)
             {
-                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
 
                 bool isFavorite = favoriteEnemyNames.Contains(enemy.enemyType.enemyName);
@@ -233,7 +233,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
 
             TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
             Panel.text = "Spawn an Mini Enemy";
@@ -265,7 +265,7 @@ namespace MysteryDice.Effects
 
             foreach (var enemy in allEnemies)
             {
-                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
 
                 bool isFavorite = favoriteEnemyNames.Contains(enemy.enemyType.enemyName);
@@ -307,7 +307,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
 
             TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
             Panel.text = "Spawn a Trap";
@@ -340,7 +340,7 @@ namespace MysteryDice.Effects
 
             foreach (var trap in allTraps)
             {
-                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
 
                 bool isFavorite = favoriteTrapNames.Contains(trap.prefabToSpawn.name);
@@ -387,7 +387,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
             TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
             Panel.text = "Spawn Scrap";
             Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
@@ -419,7 +419,7 @@ namespace MysteryDice.Effects
 
             foreach (var scrap in allScraps)
             {
-                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
 
                 bool isFavorite = favoriteScrapNames.Contains(scrap.spawnableItem.itemName);
@@ -464,7 +464,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
             TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
             Panel.text = "Spawn Objects";
 
@@ -495,7 +495,7 @@ namespace MysteryDice.Effects
 
             foreach (var scrap in allObjects)
             {
-                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
                 buttonText.text = $"{scrap.spawnableObject.name}";
 
@@ -518,7 +518,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
             TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
             Panel.text = "Spawn Shop Items";
             Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
@@ -550,7 +550,7 @@ namespace MysteryDice.Effects
 
             foreach (var item in allShopItems)
             {
-                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
 
                 bool isFavorite = favoriteShopItemNames.Contains(item.itemName);
@@ -590,7 +590,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
             TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
             Panel.text = "Grant Admin";
 
@@ -618,7 +618,7 @@ namespace MysteryDice.Effects
             foreach (var player in allPlayers)
             {
                 if(!Misc.IsPlayerReal(player))continue;
-                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
                 buttonText.text = $"{player.playerUsername}";
 
@@ -641,7 +641,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
             TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
             Panel.text = "Spawn Functions";
 
@@ -656,7 +656,7 @@ namespace MysteryDice.Effects
 
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None; 
-            GameObject effectObj2 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            GameObject effectObj2 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
             TMP_Text buttonText2 = effectObj2.transform.GetChild(0).GetComponent<TMP_Text>();
             buttonText2.text = $"Spawn Enemy";
 
@@ -666,7 +666,7 @@ namespace MysteryDice.Effects
                 CloseSelectMenu();
                 spawnEnemy(full, complete,su);
             });
-            GameObject effectObj3 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            GameObject effectObj3 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
             TMP_Text buttonText3 = effectObj3.transform.GetChild(0).GetComponent<TMP_Text>();
             buttonText3.text = $"Spawn Scrap";
 
@@ -677,7 +677,7 @@ namespace MysteryDice.Effects
                 spawnScrap(full, complete,su);
             });
 
-            GameObject effectObj5 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            GameObject effectObj5 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
             TMP_Text buttonText5 = effectObj5.transform.GetChild(0).GetComponent<TMP_Text>();
             buttonText5.text = $"Spawn Shop Items";
 
@@ -688,7 +688,7 @@ namespace MysteryDice.Effects
                 spawnShopItems(full, complete,su);
             });
 
-            GameObject effectObj4 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            GameObject effectObj4 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
             TMP_Text buttonText4 = effectObj4.transform.GetChild(0).GetComponent<TMP_Text>();
             buttonText4.text = $"Spawn Trap";
 
@@ -701,7 +701,7 @@ namespace MysteryDice.Effects
           
             if(isSpecial() || StartOfRound.Instance.localPlayerController.IsHost)
             {
-                GameObject effectObj6 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj6 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText6 = effectObj6.transform.GetChild(0).GetComponent<TMP_Text>();
                 buttonText6.text = $"Spawn Outside Objects";
 
@@ -721,7 +721,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
             TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
             Panel.text = "Special Functions";
 
@@ -737,7 +737,7 @@ namespace MysteryDice.Effects
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None; 
             
-            GameObject effectObj8 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            GameObject effectObj8 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
             TMP_Text buttonText8 = effectObj8.transform.GetChild(0).GetComponent<TMP_Text>();
             buttonText8.text = $"Play Sound";
 
@@ -748,7 +748,7 @@ namespace MysteryDice.Effects
                 ShowSoundMenu(full, complete,su);
             });
             
-            GameObject effectObj9 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            GameObject effectObj9 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
             TMP_Text buttonText9 = effectObj9.transform.GetChild(0).GetComponent<TMP_Text>();
             buttonText9.text = $"Spawn miniture Enemy";
 
@@ -767,7 +767,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
             TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
             Panel.text = "Player Functions";
 
@@ -783,7 +783,7 @@ namespace MysteryDice.Effects
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None; 
             
-            GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
             TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
             buttonText.text = $"Revive Player";
 
@@ -793,7 +793,7 @@ namespace MysteryDice.Effects
                 CloseSelectMenu();
                 RevivePlayer(full, complete, su);
             });
-            GameObject effectObj2 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            GameObject effectObj2 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
             TMP_Text buttonText2 = effectObj2.transform.GetChild(0).GetComponent<TMP_Text>();
             buttonText2.text = $"Teleport to Player";
 
@@ -804,7 +804,7 @@ namespace MysteryDice.Effects
                 TeleportPlayer(full, complete, su);
             });
             
-            GameObject effectObj3 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            GameObject effectObj3 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
             TMP_Text buttonText3 = effectObj3.transform.GetChild(0).GetComponent<TMP_Text>();
             buttonText3.text = $"Bring Player";
 
@@ -817,7 +817,7 @@ namespace MysteryDice.Effects
 
             if (isSpecial())
             {
-                GameObject effectObj4 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj4 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText4 = effectObj4.transform.GetChild(0).GetComponent<TMP_Text>();
                 buttonText4.text = $"Force Suit";
 
@@ -837,7 +837,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
             TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
             Panel.text = "Teleport Player";
 
@@ -865,7 +865,7 @@ namespace MysteryDice.Effects
             foreach (var player in allPlayers)
             {
                 if(!player.isPlayerControlled)continue;
-                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
                 buttonText.text = $"{player.playerUsername}";
 
@@ -905,7 +905,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
             TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
             Panel.text = "Force Suit";
 
@@ -933,7 +933,7 @@ namespace MysteryDice.Effects
             foreach (var player in allPlayers)
             {
                 if(!player.isPlayerControlled)continue;
-                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
                 buttonText.text = $"{player.playerUsername}";
 
@@ -952,7 +952,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
             TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
             Panel.text = "Force Suit";
 
@@ -983,7 +983,7 @@ namespace MysteryDice.Effects
             foreach (var suit in Networker.orderedSuits)
             {
                 string SuitName = items[suit.syncedSuitID.Value].unlockableName;
-                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
                 
                 buttonText.text = $"{SuitName}";
@@ -994,7 +994,7 @@ namespace MysteryDice.Effects
                     Networker.Instance.suitStuffServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,players), suit.syncedSuitID.Value);
                 });
             }
-            GameObject effectObj2 = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+            GameObject effectObj2 = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
             TMP_Text buttonText2 = effectObj2.transform.GetChild(0).GetComponent<TMP_Text>();
             
             buttonText2.text = $"Refresh Suits";
@@ -1037,7 +1037,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
             TMP_Text Panel = EffectMenu.transform.Find("Panel/Text (TMP)").GetComponent<TMP_Text>();
             Panel.text = "Revive Player";
 
@@ -1067,7 +1067,7 @@ namespace MysteryDice.Effects
             {
                 if(!player.isPlayerDead)continue;
                 count++;
-                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
                 buttonText.text = $"{player.playerUsername}";
 
@@ -1092,7 +1092,7 @@ namespace MysteryDice.Effects
             }
             if (count == 0)
             {
-                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
                 buttonText.text = $"No Dead Players";
             }
@@ -1105,7 +1105,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
 
             Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
             Button exitButton = EffectMenu.transform.Find("Panel/Exit").GetComponent<Button>();
@@ -1134,7 +1134,7 @@ namespace MysteryDice.Effects
             
             foreach (IEffect effect in effects)
             {
-                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
                 
                 FavoriteEffectManager.FavoriteData favoritesData = FavoriteEffectManager.LoadFavorites();
@@ -1184,7 +1184,7 @@ namespace MysteryDice.Effects
                 EffectMenu = null;
             }
 
-            EffectMenu = GameObject.Instantiate(MysteryDice.EffectMenuPrefab);
+            EffectMenu = GameObject.Instantiate(MysteryDice.NewSelectMenuPrefab);
 
             Transform scrollContent = EffectMenu.transform.Find("Panel/Panel/Scroll View/Viewport/Content");
             Button exitButton = EffectMenu.transform.Find("Panel/Exit").GetComponent<Button>();
@@ -1200,7 +1200,7 @@ namespace MysteryDice.Effects
 
             foreach (var entry in MysteryDice.sounds.OrderBy(x=>x.Key))
             {
-                GameObject effectObj = GameObject.Instantiate(MysteryDice.EffectMenuButtonPrefab, scrollContent);
+                GameObject effectObj = GameObject.Instantiate(MysteryDice.DebugMenuButtonPrefab, scrollContent);
                 TMP_Text buttonText = effectObj.transform.GetChild(0).GetComponent<TMP_Text>();
 
                 buttonText.text = entry.Key;

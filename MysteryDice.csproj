@@ -33,7 +33,7 @@
     <PackageReference Include="Rune580.Mods.LethalCompany.InputUtils" Version="0.7.4" />
     <PackageReference Include="TeamXiaolan.DawnLib.DuskMod" Version="0.2.6" PrivateAssets="all" />
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" PrivateAssets="all" />    
-    <PackageReference Include="LethalCompany.GameLibs.Steam" Version="70.0.0-ngd.0" PrivateAssets="all" />
+    <PackageReference Include="LethalCompany.GameLibs.Steam" Version="73.0.0-ngd.0" PrivateAssets="all" />
     <PackageReference Include="TeamXiaolan.DawnLib" Version="*" PrivateAssets="all" />
   </ItemGroup>
   
@@ -87,7 +87,12 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
   </ItemGroup>
   
-  <Sdk Name="Evaisa.NetcodePatcher.MSBuild" Version="4.3.0" />
+  <Sdk Name="Evaisa.NetcodePatcher.MSBuild" Version="4.4.2" />  
+  <PropertyGroup>
+    <NetcodePatcherUnityVersion>2022.3.62</NetcodePatcherUnityVersion>
+    <NetcodePatcherNetcodeVersion>1.12.0</NetcodePatcherNetcodeVersion>
+    <NetcodePatcherTransportVersion>1.0.0</NetcodePatcherTransportVersion>
+  </PropertyGroup>
   <ItemGroup>
     <NetcodePatch Include="$(TargetPath)" />
   </ItemGroup>
@@ -99,12 +104,17 @@
       <FilesToCopy Include="C:\Users\andre\source\repos\Emergency-Dice-main\CHANGELOG.md" />
       <FilesToCopy Include="C:\Users\andre\source\repos\Emergency-Dice-main\README.md" />
       <FilesToCopy Include="C:\Users\andre\source\repos\Emergency-Dice-main\manifest.json" />
+      <FilesToCopy Include="C:\Users\andre\DicePoltergiestCompat\bin\Debug\netstandard2.1\DicePoltergeistCompat.dll" />
+      <FilesToCopy Include="C:\Users\andre\DiceWeatherRegistryCompat\bin\Debug\netstandard2.1\DiceWeatherRegistryCompat.dll" />
+      <FilesToCopy Include="C:\Users\andre\Documents\DiceTwitchIntegration\bin\Debug\netstandard2.1\DiceTwitchIntegration.dll" />
     </ItemGroup>
 
     <Message Importance="high" Text="Copying MysteryDice outputs..." />
 
     <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="C:\Users\andre\Desktop\MysteryDice\Regular" />
     <Copy SourceFiles="C:\Users\andre\source\repos\Emergency-Dice-main\bin\Debug\netstandard2.1\MysteryDice.dll" DestinationFolder="C:\Users\andre\DiceMod\Assets\LethalCompany\Plugins" />
+    <Copy SourceFiles="C:\Users\andre\DicePoltergiestCompat\bin\Debug\netstandard2.1\DicePoltergeistCompat.dll" DestinationFolder="C:\Users\andre\DiceMod\Assets\LethalCompany\Plugins" />
+    <Copy SourceFiles="C:\Users\andre\DiceWeatherRegistryCompat\bin\Debug\netstandard2.1\DiceWeatherRegistryCompat.dll" DestinationFolder="C:\Users\andre\DiceMod\Assets\LethalCompany\Plugins" />
 
     <Exec Command="cd &quot;C:\Users\andre\Desktop\MysteryDice&quot; &amp;&amp; call &quot;Make Zip.bat&quot;" />
   </Target>

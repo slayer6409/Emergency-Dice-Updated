@@ -20,10 +20,12 @@ namespace MysteryDice.Effects
         }
 
     }
-    internal class StupidConfusion : IEffect
+    internal class StupidConfusion : GalEffect
     {
         public string Name => "Stupid Confusion";
-        public EffectType Outcome => EffectType.GalMixed;
+        public EffectType RealOutcome => EffectType.Awful;
+        public EffectType NoGalOutcome => EffectType.Bad;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "??????????????????????????????????????????????????";
       

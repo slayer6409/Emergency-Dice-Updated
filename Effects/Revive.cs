@@ -10,10 +10,12 @@ using Random = UnityEngine.Random;
 
 namespace MysteryDice.Effects
 {
-    internal class Revive : IEffect
+    internal class Revive : GalEffect
     {
         public string Name => "Revive All";
-        public EffectType Outcome => EffectType.GalGreat;
+        public EffectType RealOutcome => EffectType.Great;
+        public EffectType NoGalOutcome => EffectType.Great;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "Reviving everyone";
         public static int lives = 0;

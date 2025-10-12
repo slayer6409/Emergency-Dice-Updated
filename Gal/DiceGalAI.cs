@@ -177,7 +177,7 @@ public class DiceGalAI : GalAI
             {
                 Networker.Instance.TeleportToShipServerRPC(Array.IndexOf(StartOfRound.Instance.allPlayerScripts,playerDoingDeal));
             }
-            var RandomEffect = getRandomGalEffectByType(EffectType.GalAwful);
+            var RandomEffect = getRandomGalEffectByType(EffectType.Awful);
             RandomEffect.Use();
             Networker.Instance.LogEffectsToOwnerServerRPC(playerDoingDeal.playerUsername, RandomEffect.Name, -666);
             HandleStateAnimationSpeedChangesServerRpc((int)State.FollowingPlayer);
@@ -282,19 +282,19 @@ public class DiceGalAI : GalAI
         int effectRollNumber = 0;
         switch (effectToUse.Outcome)
         {
-            case EffectType.GalAwful:
+            case EffectType.Awful:
                 effectRollNumber = -666;
                 NetworkAnimator.Animator.SetInteger(EffectChoice, 1);
                 break;
-            case EffectType.GalBad:
+            case EffectType.Bad:
                 effectRollNumber = -100;
                 NetworkAnimator.Animator.SetInteger(EffectChoice, 2);
                 break;
-            case EffectType.GalMixed:
+            case EffectType.Mixed:
                 effectRollNumber = 123;
                 NetworkAnimator.Animator.SetInteger(EffectChoice, 3);
                 break;
-            case EffectType.GalGreat:
+            case EffectType.Great:
                 effectRollNumber = 777;
                 NetworkAnimator.Animator.SetInteger(EffectChoice, 4);
                 break;

@@ -8,10 +8,13 @@ using static MysteryDice.Effects.ZombieToShip;
 
 namespace MysteryDice.Effects
 {
-    internal class HouseAlwaysWins : IEffect
+    internal class HouseAlwaysWins : GalEffect
     {
         public string Name => "House Always Wins";
-        public EffectType Outcome => EffectType.GalAwful;
+        
+        public EffectType RealOutcome => EffectType.Awful;
+        public EffectType NoGalOutcome => EffectType.Awful;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "We Always win";
 

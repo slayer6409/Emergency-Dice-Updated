@@ -4,10 +4,12 @@ using UnityEngine;
 
 namespace MysteryDice.Effects
 {
-    internal class AllFly : IEffect
+    internal class AllFly : GalEffect
     {
         public string Name => "Everyone Can Fly!";
-        public EffectType Outcome => EffectType.GalGreat;
+        public EffectType RealOutcome => EffectType.Great;
+        public EffectType NoGalOutcome => EffectType.Great;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "Double tap space to fly!!! (Like Minecraft!)";
 

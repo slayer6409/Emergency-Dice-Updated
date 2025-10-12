@@ -8,10 +8,12 @@ using Random = UnityEngine.Random;
 
 namespace MysteryDice.Effects
 {
-    internal class MoreLives : IEffect
+    internal class MoreLives : GalEffect
     {
         public string Name => "Extra Lives";
-        public EffectType Outcome => EffectType.GalGreat;
+        public EffectType RealOutcome => EffectType.Great;
+        public EffectType NoGalOutcome => EffectType.Great;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "Everyone Gets an Extra Life";
 

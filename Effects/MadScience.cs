@@ -17,10 +17,12 @@ namespace MysteryDice.Effects
             Networker.Instance.doMadScienceServerRPC(1);
         }
     }
-    internal class MadderScience : IEffect
+    internal class MadderScience : GalEffect
     {
         public string Name => "Madder Science";
-        public EffectType Outcome => EffectType.GalAwful;
+        public EffectType RealOutcome => EffectType.Awful;
+        public EffectType NoGalOutcome => EffectType.Awful;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "MUWAHAHAHAHA";
 

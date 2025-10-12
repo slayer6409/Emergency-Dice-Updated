@@ -12,7 +12,9 @@ namespace MysteryDice.Effects
     internal class MineExploder : IEffect
     {
         public string Name => "Mine Exploder";
-        public EffectType Outcome => EffectType.GalGreat;
+        public EffectType RealOutcome => EffectType.Great;
+        public EffectType NoGalOutcome => EffectType.Great;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "Explode all mines";
 
@@ -32,10 +34,12 @@ namespace MysteryDice.Effects
         
     }
     
-    internal class TurretExploder : IEffect
+    internal class TurretExploder : GalEffect
     {
         public string Name => "Turret Exploder";
-        public EffectType Outcome => EffectType.GalGreat;
+        public EffectType RealOutcome => EffectType.Great;
+        public EffectType NoGalOutcome => EffectType.Great;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "Explode all turrets";
 
@@ -50,7 +54,7 @@ namespace MysteryDice.Effects
             foreach (var turret in turrets)
             {
                 Landmine.SpawnExplosion(turret.transform.position, true, 0f, 0f, 0, 2);
-                turret.GetComponent<NetworkObject>().Despawn(true);
+                if(turret) turret.GetComponent<NetworkObject>().Despawn(true);
             }
         }
         

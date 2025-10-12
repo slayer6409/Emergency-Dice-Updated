@@ -5,10 +5,12 @@ using UnityEngine;
 
 namespace MysteryDice.Effects
 {
-    internal class MovingCrane : IEffect
+    internal class MovingCrane : GalEffect
     {
         public string Name => "Moving Crane";
-        public EffectType Outcome => EffectType.GalAwful;
+        public EffectType RealOutcome => EffectType.Awful;
+        public EffectType NoGalOutcome => EffectType.Bad;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "Dear Lord what have I done";
 

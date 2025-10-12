@@ -444,6 +444,7 @@ public class DebugMenuStuff : MonoBehaviour
     {
         EffectMenu.transform.Find("DebugMenu/Background/TopText").gameObject.SetActive(false);
         EffectMenu.transform.Find("DebugMenu/Background/BottomText").gameObject.SetActive(false);
+        EffectMenu.transform.Find("DebugMenu/Background/SizeModifiers").gameObject.SetActive(false);
     }
 
     public static void clearSubViewport()
@@ -554,6 +555,7 @@ public class DebugMenuStuff : MonoBehaviour
         //     .ToList();
 
         
+        EffectMenu.transform.Find("DebugMenu/Background/SizeModifiers").gameObject.SetActive(true);
          
         var allEnemies = GetEnemies.allEnemies.GroupBy(x=>x.enemyName).Select(g=>g.First()).OrderBy(e => favoriteEnemyNames.Contains(e.enemyName) ? 0 : 1)
             .ThenBy(e => e.enemyName)
@@ -569,22 +571,27 @@ public class DebugMenuStuff : MonoBehaviour
             buttonText.text = $"{favoriteMarker} {enemy.enemyName}";
             buttonText.color = isFavorite ? Color.red : TextColor;
 
+            var sizeMod = EffectMenu.transform.Find("DebugMenu/Background/SizeModifiers").gameObject;
             Button button = effectObj.GetComponent<Button>();
             button.onClick.AddListener(() =>
             {
                 CloseSelectMenu();
+                
+                var sizex = float.Parse(sizeMod.transform.Find("X").GetComponent<TMP_InputField>().text);
+                var sizey = float.Parse(sizeMod.transform.Find("Y").GetComponent<TMP_InputField>().text);
+                var sizez = float.Parse(sizeMod.transform.Find("Z").GetComponent<TMP_InputField>().text);
 
                 if (StartOfRound.Instance.localPlayerController.isPlayerDead)
                 {
                     Networker.Instance.SpawnEnemyAtPosServerRPC(enemy.enemyName,
                         StartOfRound.Instance.spectateCamera.transform.position, true,
-                        new Vector3(0.25f, 0.25f, 0.25f));
+                        new Vector3(sizex, sizey, sizez));
                 }
                 else
                 {
                     Networker.Instance.SpawnEnemyAtPosServerRPC(enemy.enemyName,
                         StartOfRound.Instance.localPlayerController.transform.position, true,
-                        new Vector3(0.25f, 0.25f, 0.25f));
+                        new Vector3(sizex, sizey, sizez));
                 }
 
                 string outsideInside =
@@ -1127,7 +1134,7 @@ public class DebugMenuStuff : MonoBehaviour
             
             GameObject effectObj9 = GameObject.Instantiate(MysteryDice.DebugSubButtonPrefab, subScrollContent);
             TMP_Text buttonText9 = effectObj9.transform.GetChild(0).GetComponent<TMP_Text>();
-            buttonText9.text = $"Spawn miniture Enemy";
+            buttonText9.text = $"Spawn Sized Enemy";
 
             Button button9 = effectObj9.GetComponent<Button>();
             button9.onClick.AddListener(() =>

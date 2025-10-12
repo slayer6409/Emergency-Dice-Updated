@@ -8,10 +8,12 @@ using UnityEngine.AI;
 
 namespace MysteryDice.Effects
 {
-    internal class EvilFreebirdEnemy : IEffect
+    internal class EvilFreebirdEnemy : GalEffect
     {
         public string Name => "Evil Freebird Enemy";
-        public EffectType Outcome => EffectType.GalMixed;
+        public EffectType RealOutcome => EffectType.Mixed;
+        public EffectType NoGalOutcome => EffectType.Bad;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "Freebird that has a higher chance to target players";
         

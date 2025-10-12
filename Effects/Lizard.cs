@@ -6,10 +6,12 @@ using UnityEngine;
 
 namespace MysteryDice.Effects
 {
-    internal class Lizard : IEffect
+    internal class Lizard : GalEffect
     {
         public string Name => "Lizard";
-        public EffectType Outcome => EffectType.GalMixed;
+        public EffectType RealOutcome => EffectType.Mixed;
+        public EffectType NoGalOutcome => EffectType.GalOnly;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "Lizard Lizard Lizard Lizard";
 

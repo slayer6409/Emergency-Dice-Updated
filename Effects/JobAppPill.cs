@@ -11,10 +11,12 @@ using UnityEngine.AI;
 
 namespace MysteryDice.Effects
 {
-    internal class JobAppPill : IEffect
+    internal class JobAppPill : GalEffect
     {
         public string Name => "Now Hiring";
-        public EffectType Outcome => EffectType.GalAwful;
+        public EffectType RealOutcome => EffectType.Awful;
+        public EffectType NoGalOutcome => EffectType.Bad;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "Are you looking for a job?";
 
@@ -24,10 +26,12 @@ namespace MysteryDice.Effects
         }
         
     } 
-    internal class GlitchPill : IEffect
+    internal class GlitchPill : GalEffect
     {
         public string Name => "Bald and Angry";
-        public EffectType Outcome => EffectType.GalAwful;
+        public EffectType RealOutcome => EffectType.Awful;
+        public EffectType NoGalOutcome => EffectType.Bad;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "He is in denial";
 

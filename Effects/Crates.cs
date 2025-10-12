@@ -28,14 +28,14 @@ namespace MysteryDice.Effects
             Networker.Instance.CratesOutsideServerRPC();
         }
 
-        [MethodImpl (MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining|MethodImplOptions.NoOptimization)]
         public static GameObject getRandomCrate()
         {
             var crates = Misc.getAllTraps().Where(x => x.name.ToLower().Contains("crate")).ToArray();
             return crates[UnityEngine.Random.Range(0, crates.Length)].prefab;
         }
 
-        [MethodImpl (MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining|MethodImplOptions.NoOptimization)]
         public static void SpawnCratesOutside(int MinesToSpawn, float positionOffsetRadius = 5f)
         {
             
@@ -67,7 +67,7 @@ namespace MysteryDice.Effects
             }
         }
         
-        [MethodImpl (MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining|MethodImplOptions.NoOptimization)]
         public static void SpawnCratesInside(int MinesToSpawn, float positionOffsetRadius = 5f)
         {
            

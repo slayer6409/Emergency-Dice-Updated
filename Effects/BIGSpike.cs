@@ -11,14 +11,16 @@ using Random = UnityEngine.Random;
 
 namespace MysteryDice.Effects
 {
-    internal class BIGSpike : IEffect
+    internal class BIGSpike : GalEffect
     {
         public string Name => "BS";
         public static int MinMinesToSpawn = 1;
         public static int MaxMinesToSpawn = 1;
 
         private static List<Vector3> allPositions = new List<Vector3>();
-        public EffectType Outcome => EffectType.GalBad;
+        public EffectType RealOutcome => EffectType.Awful;
+        public EffectType NoGalOutcome => EffectType.Bad;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "Ooga Booga";
         public void Use()

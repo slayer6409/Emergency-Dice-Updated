@@ -10,10 +10,12 @@ using Random = UnityEngine.Random;
 
 namespace MysteryDice.Effects
 {
-    internal class ChangePlaces : IEffect
+    internal class ChangePlaces : GalEffect
     {
         public string Name => "Change Places";
-        public EffectType Outcome => EffectType.GalMixed;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
+        public EffectType RealOutcome => EffectType.Mixed;
+        public EffectType NoGalOutcome => EffectType.Awful;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "Musical Chairs gone wrong";
         public static bool doingStuff = false;

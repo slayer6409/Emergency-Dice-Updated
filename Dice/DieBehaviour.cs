@@ -140,7 +140,6 @@ namespace MysteryDice.Dice
                     break;
                 case DiceType.STEVE:
                     DiceModel = gameObject.transform.Find("SteveLeLePoissonDé").gameObject;
-                    //DiceModel.GetComponent<Spinner>().SurfacedDie = true;
                     break;
             }
             
@@ -641,6 +640,7 @@ namespace MysteryDice.Dice
             MysteryDice.MainRegisterNewEffect(new ChangePlaces());
             MysteryDice.MainRegisterNewEffect(new ReviveNext());
             MysteryDice.MainRegisterNewEffect(new RevivePercent());
+            MysteryDice.MainRegisterNewEffect(new Hehehe());
 
             if (MysteryDice.TooManyEmotesPresent)
             {

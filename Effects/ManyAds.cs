@@ -271,7 +271,20 @@ namespace MysteryDice.Effects
                 return;
             } 
             HUDManager.Instance.CreateToolAdModel(-100, item);
-            HUDManager.Instance.BeginDisplayAd(top, bottom);
+            doAdStuff(top, bottom);
+        }
+
+        public static void doAdStuff(string top, string bottom)
+        {
+            MysteryDice.ExtendedLogging($"Do Ad Stuff: {top} {bottom}");
+            var hm = HUDManager.Instance;
+            hm.advertTopText.text = top;
+            hm.advertBottomText.text = bottom;
+            if (hm.displayAdCoroutine != null)
+            {
+                hm.StopCoroutine(hm.displayAdCoroutine);
+            }
+            hm.displayAdCoroutine = hm.StartCoroutine(hm.displayAd());
         }
         
         public static void CreatePrefabAdModel(GameObject prefab)
@@ -317,7 +330,7 @@ namespace MysteryDice.Effects
                 return;
             } 
             HUDManager.Instance.CreateFurnitureAdModel(unlockable);
-            HUDManager.Instance.BeginDisplayAd(top, bottom);
+            doAdStuff(top, bottom);
         }
         
         public static void showRandomAd()

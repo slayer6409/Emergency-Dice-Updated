@@ -10,10 +10,12 @@ using UnityEngine;
 
 namespace MysteryDice.Effects
 {
-    internal class RerollALL : IEffect
+    internal class RerollALL : GalEffect
     {
         public string Name => "RerollALL";
-        public EffectType Outcome => EffectType.GalGreat;
+        public EffectType RealOutcome => EffectType.Great;
+        public EffectType NoGalOutcome => EffectType.Great;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => false;
         public string Tooltip => "Try Again";
 

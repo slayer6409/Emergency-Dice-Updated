@@ -20,10 +20,10 @@ namespace MysteryDice.Effects
             Networker.Instance.SpecialDetonateServerRPC();
         }
     }
-    internal class GalDetonate : IEffect
+    internal class GalDetonate : GalEffect
     {
         public string Name => "Gal Detonate";
-        public EffectType Outcome => EffectType.GalBad;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "Kaboom";
 
@@ -31,5 +31,7 @@ namespace MysteryDice.Effects
         {
             Networker.Instance.GalDetonateServerRPC();
         }
+        public EffectType RealOutcome => EffectType.Awful;
+        public EffectType NoGalOutcome => EffectType.GalOnly;
     }
 }

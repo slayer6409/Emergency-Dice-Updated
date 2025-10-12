@@ -1,4 +1,20 @@
--	**1.13.0**
+-	**1.13.3**
+    - Forgot to Update the other dlls so it should *properly* be updated for v73 now 
+    - Fixed ad stuff not working randomly
+    - Other various fixes 
+    - 1 Single new event 
+
+- 	**1.13.2**
+    - Updated for v73
+
+- 	**1.13.1**
+    - Potentially fixed errors when surfaced isn't present
+      - Hopefully what I did doesn't break syncing
+    - Added the ability to disable the gal in configs so she won't show up
+      - If you disable her, the gal effects can show up in dice
+    - Added a config to change the gal price
+
+- 	**1.13.0**
     - Fixed a bug where Delay can roll disabled effects
     - \[Redacted]
       - Hehehehehehe 

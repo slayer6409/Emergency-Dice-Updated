@@ -8,20 +8,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using Dawn.Utils;
-using LethalLib;
-using LethalLib.Extras;
-using LethalLib.Modules;
 using MysteryDice.CompatThings;
 using MysteryDice.Gal;
 using MysteryDice.MiscStuff;
-using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 using UnityEngine.SceneManagement;
-using static MysteryDice.Effects.MovingLandmines;
+using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
 using PlayerControllerBExtensions = MysteryDice.Extensions.PlayerControllerBExtensions;
 using Random = UnityEngine.Random;
@@ -2027,6 +2021,24 @@ namespace MysteryDice
 
         #endregion
 
+        [ServerRpc(RequireOwnership = false)]
+        public void HeheheServerRpc(int player)
+        {
+            HeheheClientRPC(player);
+        }
+        
+        
+        [ClientRpc]
+        public void HeheheClientRPC(int client)
+        {
+            if (StartOfRound.Instance.localPlayerController == StartOfRound.Instance.allPlayerScripts[client])
+            {
+                if(Hehehe.spiderCanvas ==null) Hehehe.spiderCanvas = GameObject.Instantiate(MysteryDice.SpiderCanvasPrefab);
+                if (Hehehe.spiderCanvas != null)
+                    GameObject.Instantiate(MysteryDice.SpiderMoverPrefab, Hehehe.spiderCanvas.transform);
+            }
+        }
+        
         #region BerthaOutside
 
         [ServerRpc(RequireOwnership = false)]
@@ -2034,6 +2046,7 @@ namespace MysteryDice
         {
             BerthaOutside.SpawnBerthaOutside(amount);
         }
+       
 
         [ServerRpc(RequireOwnership = false)]
         public void BIGBerthaServerRPC()
@@ -2112,7 +2125,7 @@ namespace MysteryDice
                 yield return null;
             }
 
-            transform.localScale = targetScale; // Ensure it reaches exactly the target scale
+            transform.localScale = targetScale;
         }
 
         [ServerRpc(RequireOwnership = false)]

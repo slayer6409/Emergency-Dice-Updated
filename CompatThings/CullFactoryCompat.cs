@@ -27,7 +27,8 @@ internal static class CullFactorySoftCompat
         }
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    
+    [MethodImpl(MethodImplOptions.NoInlining|MethodImplOptions.NoOptimization)]
     internal static void RefreshGrabbableObjectPosition(GrabbableObject item)
     {
         item.EnableItemMeshes(true); // base fallback
@@ -37,7 +38,8 @@ internal static class CullFactorySoftCompat
         }
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    
+    [MethodImpl(MethodImplOptions.NoInlining|MethodImplOptions.NoOptimization)]
     internal static void RefreshLightPosition(Light light)
     {
         if (CullFactoryAvailable)

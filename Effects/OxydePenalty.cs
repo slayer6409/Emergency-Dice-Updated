@@ -23,7 +23,7 @@ namespace MysteryDice.Effects
             Networker.Instance.doOxydePenaltyServerRpc();
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining|MethodImplOptions.NoOptimization)]
         public static void doPenalty()
         {
             foreach (var enemyLevelSpawner in EnemyLevelSpawner.enemyLevelSpawners)

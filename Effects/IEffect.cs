@@ -16,10 +16,7 @@ namespace MysteryDice.Effects
         Great,
         Penalty,
         SpecialPenalty,
-        GalGreat,
-        GalBad,
-        GalMixed,
-        GalAwful
+        GalOnly
     }
 
     /// <summary>

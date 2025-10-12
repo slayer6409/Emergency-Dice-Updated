@@ -6,10 +6,12 @@ using Random = UnityEngine.Random;
 
 namespace MysteryDice.Effects
 {
-    internal class Overweight : IEffect
+    internal class Overweight : GalEffect
     {
         public string Name => "Overweight";
-        public EffectType Outcome => EffectType.GalMixed;
+        public EffectType RealOutcome => EffectType.Good;
+        public EffectType NoGalOutcome => EffectType.Mixed;
+        public EffectType Outcome => MysteryDice.DisableGal.Value ? NoGalOutcome : RealOutcome;
         public bool ShowDefaultTooltip => true;
         public string Tooltip => "Heavy but Valuable";
 

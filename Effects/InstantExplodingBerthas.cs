@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using GameNetcodeStuff;
 using MysteryDice.Patches;
 using Unity.Netcode;
@@ -24,6 +25,8 @@ namespace MysteryDice.Effects
             Networker.Instance.InstantExplodeBerthaServerRPC();
         }
 
+        
+        [MethodImpl(MethodImplOptions.NoInlining|MethodImplOptions.NoOptimization)]
         public static void SpawnBerthaOutside(int MinesToSpawn, float positionOffsetRadius = 5f)
         {
             int spawnedMines = 0;
@@ -84,6 +87,9 @@ namespace MysteryDice.Effects
                 }
             }
         }
+        
+        
+        [MethodImpl(MethodImplOptions.NoInlining|MethodImplOptions.NoOptimization)]
         public static IEnumerator DetonateDelay2(PlayerControllerB playerWhoCollided, ulong bertharef, float time)
         {
             
@@ -110,7 +116,8 @@ namespace MysteryDice.Effects
                 }
             }
         }
-
+        
+        [MethodImpl(MethodImplOptions.NoInlining|MethodImplOptions.NoOptimization)]
         public static float GetShortestDistanceSqr(Vector3 position, List<Vector3> positions)
         {
             float shortestLength = float.MaxValue;
