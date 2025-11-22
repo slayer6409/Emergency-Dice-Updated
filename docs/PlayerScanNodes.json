@@ -7,8 +7,8 @@
     "isRainbow": false
   },
   "76561198984467725": {
-    "top": "Bald fish",
-    "bottom": "I am a bald fish",
+    "top": "Fish",
+    "bottom": "He be a fish",
     "bg": "#00FF00",
     "text": "#007B00",
     "isRainbow": false
@@ -144,6 +144,13 @@
     "bottom": "RAWRRRRRR",
     "bg": "#FA8AAA",
     "text": "#FFFFFF",
+    "isRainbow": false
+  },
+  "76561198128230606": {
+    "top": "Troho",
+    "bottom": "Totally a mimic",
+    "bg": "#524f50",
+    "text": "#000000",
     "isRainbow": false
   }
 }
