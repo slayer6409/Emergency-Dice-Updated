@@ -57,10 +57,10 @@
   },
   "76561199094139351": {
     "top": "Lizzie!",
-    "bottom": "Friends of the Blob",
+    "bottom": "Slayer's Best Friend",
     "bg": "#EC14C4",
     "text": "#FAB4AA",
-    "isRainbow": false
+    "isRainbow": true
   },
   "76561198164429786": {
     "top": "Boom Bird",
