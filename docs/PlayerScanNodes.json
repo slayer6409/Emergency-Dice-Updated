@@ -7,8 +7,8 @@
     "isRainbow": false
   },
   "76561198984467725": {
-    "top": "Gudetama",
-    "bottom": "Egg Head",
+    "top": "Fish",
+    "bottom": "Bald man",
     "bg": "#ffd247",
     "text": "#ffffff",
     "isRainbow": false
@@ -170,6 +170,13 @@
   "76561198027741798": {
     "top": "Hello Kitty",
     "bottom": "5 Apples Tall",
+    "bg": "#ffffff",
+    "text": "#ff6e94",
+    "isRainbow": false
+  },
+  "FunX the Cool": {
+    "top": "FunX the Cool",
+    "bottom": "Fun is an Aztec Whistle",
     "bg": "#ffffff",
     "text": "#ff6e94",
     "isRainbow": false
