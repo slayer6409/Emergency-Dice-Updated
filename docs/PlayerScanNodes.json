@@ -1,184 +1,177 @@
 {
-  "76561198298343090": {
-    "top": "Piss Girl",
-    "bottom": "Likes Piss",
-    "bg": "#FFFF00",
-    "text": "#986C00",
-    "isRainbow": false
-  },
-  "76561198984467725": {
-    "top": "Bob the balder",
-    "bottom": "Can he fish it",
-    "bg": "#ffd247",
-    "text": "#ffffff",
-    "isRainbow": false
-  },
-  "76561198003293676": {
-    "top": "Short",
-    "bottom": "Just a spec",
-    "bg": "#FF0000",
-    "text": "#3C0000",
-    "isRainbow": false
-  },
-  "76561199092131418": {
-    "top": "Tuxedo Sam",
-    "bottom": "Little bow tie",
-    "bg": "#0000FF",
-    "text": "#00FF00",
-    "isRainbow": false
-  },
-  "76561198077184650": {
-    "top": "Dice Man",
-    "bottom": "Hehe Dice Funny",
-    "bg": "#000000",
-    "text": "#000000",
-    "isRainbow": true
-  },
-  "76561198216220844": {
-    "top": "ohcaM",
-    "bottom": "ohcaM ohcaM ohcaM",
-    "bg": "#9600FF",
-    "text": "#FF0000",
-    "isRainbow": false
-  },
-  "76561198399127090": {
-    "top": "Hi Mu!",
-    "bottom": " ",
-    "bg": "#ECBDC4",
-    "text": "#FA8AAA",
-    "isRainbow": false
-  },
-  "76561198195911589": {
-    "top": "Mu!",
-    "bottom": "Bald Birthday Girl",
-    "bg": "#ECBDC4",
-    "text": "#FA8AAA",
-    "isRainbow": false
-  },
-  "76561199094139351": {
-    "top": "My Melody",
-    "bottom": "Adorable",
-    "bg": "#efafd8",
-    "text": "#ffffff",
-    "isRainbow": true
-  },
-  "76561198164429786": {
-    "top": "Boom Bird",
-    "bottom": "Go Scarab",
-    "bg": "#00FF00",
-    "text": "#000000",
-    "isRainbow": false
-  },
-  "76561198086086035": {
-    "top": "Suit Guy",
-    "bottom": "He suit",
-    "bg": "#8800B4",
-    "text": "#000000",
-    "isRainbow": false
-  },
-  "76561199062430236": {
-    "top": "Seraphi",
-    "bottom": "The Cryptid",
-    "bg": "#00BBFF",
-    "text": "#0032C3",
-    "isRainbow": false
-  },
-  "76561198154072417": {
-    "top": "Kuromi",
-    "bottom": "Cute",
-    "bg": "#7814FF",
-    "text": "#000000",
-    "isRainbow": false
-  },
-  "76561198046185322": {
-    "top": "Badtz-Maru",
-    "bottom": "Mischievous",
-    "bg": "#000000",
-    "text": "#ffffff",
-    "isRainbow": false
-  },
-  "76561198291058317": {
-    "top": "Storm",
-    "bottom": "Glitch's Wife",
-    "bg": "#0000FF",
-    "text": "#000000",
-    "isRainbow": false
-  },
-  "76561198298676562": {
-    "top": "Jakune Beecu",
-    "bottom": "I'm thinking Beeku, Beeku Ooh-ee-ooh",
-    "bg": "#BEBEBE",
-    "text": "#000000",
-    "isRainbow": false
-  },
-  "76561198067589770": {
-    "top": "Pompompurin",
-    "bottom": "",
-    "bg": "#FEFCAC",
-    "text": "#A65C18",
-    "isRainbow": false
-  },
-  "76561199182474292": {
-    "top": "Rat",
-    "bottom": "Happy Birthday Rat",
-    "bg": "#000000",
-    "text": "#FFFFFF",
-    "isRainbow": false
-  },
-  "76561198993437314": {
-    "top": "Fumo",
-    "bottom": "Fumo Fumo Fumo",
-    "bg": "#B40028",
-    "text": "#000000",
-    "isRainbow": false
-  },
-  "76561198261033887": {
-    "top": "Bald Boy",
-    "bottom": "Trite Lover",
-    "bg": "#FE6B02",
-    "text": "#FFFFFF",
-    "isRainbow": false
-  },
-  "76561198252920041": {
-    "top": "Al3m33da",
-    "bottom": "RAWRRRRRRRRRRRRRRRRRRR",
-    "bg": "#FA8AAA",
-    "text": "#FFFFFF",
-    "isRainbow": false
-  },
-  "76561198128230606": {
-    "top": "Troho",
-    "bottom": "Totally a mimic",
-    "bg": "#524f50",
-    "text": "#000000",
-    "isRainbow": false
-  },
-  "76561198017839976": {
-    "top": "Angle",
-    "bottom": "Is never mean to Kento or Glitch ever",
-    "bg": "#52C3CB",
-    "text": "#000000",
-    "isRainbow": false
-  },
-  "76561198147053540": {
-    "top": "Hailie They/Them",
-    "bottom": "WATCH OUT FOR THAT PIT!!!!",
-    "bg": "#52C3CB",
-    "text": "#000000",
-    "isRainbow": false
-  },
-  "76561198027741798": {
-    "top": "Hello Kitty",
-    "bottom": "5 Apples Tall",
-    "bg": "#ffffff",
-    "text": "#ff6e94",
-    "isRainbow": false
-  },
-  "FunX the Cool": {
-    "top": "FunX the Cool",
-    "bottom": "Fun is an Aztec Whistle",
-    "bg": "#ffffff",
-    "text": "#ff6e94",
-    "isRainbow": false
-  }
+    "76561198984467725": {
+        "top": "Mr Bald Fish",
+        "bottom": "Fish is bald",
+        "bg": "#00FF00",
+        "text": "#007B00",
+        "isRainbow": false
+    },
+    "76561198003293676": {
+        "top": "Short",
+        "bottom": "Just a spec",
+        "bg": "#FF0000",
+        "text": "#3C0000",
+        "isRainbow": false
+    },
+    "76561199092131418": {
+        "top": "Stinky",
+        "bottom": "Ewwwwwwww",
+        "bg": "#0000FF",
+        "text": "#00FF00",
+        "isRainbow": false
+    },
+    "76561198077184650": {
+        "top": "Dice Man",
+        "bottom": "Hehe Dice Funny",
+        "bg": "#000000",
+        "text": "#000000",
+        "isRainbow": true
+    },
+    "76561198216220844": {
+        "top": "ohcaM",
+        "bottom": "ohcaM ohcaM ohcaM",
+        "bg": "#9600FF",
+        "text": "#FF0000",
+        "isRainbow": false
+    },
+    "76561198399127090": {
+        "top": "Hi Mu!",
+        "bottom": " ",
+        "bg": "#ECBDC4",
+        "text": "#FA8AAA",
+        "isRainbow": false
+    },
+    "76561198195911589": {
+        "top": "Mu!",
+        "bottom": "Bald Birthday Girl",
+        "bg": "#ECBDC4",
+        "text": "#FA8AAA",
+        "isRainbow": false
+    },
+    "76561199094139351": {
+        "top": "Linda Bell",
+        "bottom": "Slayer's Best Friend",
+        "bg": "#EC14C4",
+        "text": "#FAB4AA",
+        "isRainbow": true
+    },
+    "76561198164429786": {
+        "top": "Boom Bird",
+        "bottom": "Go Scarab",
+        "bg": "#00FF00",
+        "text": "#000000",
+        "isRainbow": false
+    },
+    "76561198086086035": {
+        "top": "Suit Guy",
+        "bottom": "He suit",
+        "bg": "#8800B4",
+        "text": "#000000",
+        "isRainbow": false
+    },
+    "76561199062430236": {
+        "top": "Seraphi",
+        "bottom": "The Cryptid",
+        "bg": "#00BBFF",
+        "text": "#0032C3",
+        "isRainbow": false
+    },
+    "76561198154072417": {
+        "top": "Draga",
+        "bottom": "Titties that break things",
+        "bg": "#7814FF",
+        "text": "#000000",
+        "isRainbow": false
+    },
+    "76561198046185322": {
+        "top": "Dorje",
+        "bottom": "He fly and spray",
+        "bg": "#FF6E00",
+        "text": "#000000",
+        "isRainbow": false
+    },
+    "76561198291058317": {
+        "top": "Storm",
+        "bottom": "Glitch's Wife",
+        "bg": "#0000FF",
+        "text": "#000000",
+        "isRainbow": false
+    },
+    "76561198298676562": {
+        "top": "Jakune Beecu",
+        "bottom": "I'm thinking Beeku, Beeku Ooh-ee-ooh",
+        "bg": "#BEBEBE",
+        "text": "#000000",
+        "isRainbow": false
+    },
+    "76561198067589770": {
+        "top": "Pepsi",
+        "bottom": "Lethal Evolved",
+        "bg": "#0000FF",
+        "text": "#FFFFFF",
+        "isRainbow": false
+    },
+    "76561199182474292": {
+        "top": "Rat",
+        "bottom": "Happy Birthday Rat",
+        "bg": "#000000",
+        "text": "#FFFFFF",
+        "isRainbow": false
+    },
+    "76561198993437314": {
+        "top": "Fumo",
+        "bottom": "Fumo Fumo Fumo",
+        "bg": "#B40028",
+        "text": "#000000",
+        "isRainbow": false
+    },
+    "76561198261033887": {
+        "top": "Bald Boy",
+        "bottom": "Trite Lover",
+        "bg": "#FE6B02",
+        "text": "#FFFFFF",
+        "isRainbow": false
+    },
+    "76561198252920041": {
+        "top": "Al3m33da",
+        "bottom": "RAWRRRRRRRRRRRRRRRRRRR",
+        "bg": "#FA8AAA",
+        "text": "#FFFFFF",
+        "isRainbow": false
+    },
+    "76561198128230606": {
+        "top": "Troho",
+        "bottom": "Totally a mimic",
+        "bg": "#524f50",
+        "text": "#000000",
+        "isRainbow": false
+    },
+    "76561198017839976": {
+        "top": "Angle",
+        "bottom": "Is never mean to Kento or Glitch ever",
+        "bg": "#52C3CB",
+        "text": "#000000",
+        "isRainbow": false
+    },
+    "76561198147053540": {
+        "top": "Hailie They/Them",
+        "bottom": "WATCH OUT FOR THAT PIT!!!!",
+        "bg": "#52C3CB",
+        "text": "#000000",
+        "isRainbow": false
+    },
+    "76561198027741798": {
+        "top": "Hello Kitty",
+        "bottom": "5 Apples Tall",
+        "bg": "#ffffff",
+        "text": "#ff6e94",
+        "isRainbow": false
+    },
+    "FunX the Cool": {
+        "top": "FunX the Cool",
+        "bottom": "Fun is an Aztec Whistle",
+        "bg": "#ffffff",
+        "text": "#ff6e94",
+        "isRainbow": false
+    }
 }
