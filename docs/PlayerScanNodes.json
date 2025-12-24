@@ -173,5 +173,26 @@
         "bg": "#ffffff",
         "text": "#ff6e94",
         "isRainbow": false
+    },
+    "Pyro": {
+        "top": "Pyro",
+        "bottom": "Lizzie's adopted child",
+        "bg": "#ff6e94",
+        "text": "#000000",
+        "isRainbow": false
+    },
+    "Fixxxer": {
+        "top": "Fixxxer",
+        "bottom": "I don't know you well enough :D",
+        "bg": "#00ff00",
+        "text": "#000000",
+        "isRainbow": false
+    },
+    "MyNameGage45": {
+        "top": "MyNameGage45",
+        "bottom": "Same as Fixxxer :D",
+        "bg": "#0000ff",
+        "text": "#000000",
+        "isRainbow": true
     }
 }
