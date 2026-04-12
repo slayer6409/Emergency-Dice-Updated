@@ -7,8 +7,8 @@
         "isRainbow": false
     },
     "76561198003293676": {
-        "top": "Short",
-        "bottom": "Just a spec",
+        "top": "Short Beef",
+        "bottom": "Now even smaller",
         "bg": "#FF0000",
         "text": "#3C0000",
         "isRainbow": false
@@ -158,7 +158,7 @@
         "bottom": "WATCH OUT FOR THAT PIT!!!!",
         "bg": "#52C3CB",
         "text": "#000000",
-        "isRainbow": false
+        "isRainbow": true
     },
     "76561198027741798": {
         "top": "Pinata",
@@ -196,7 +196,7 @@
         "isRainbow": true
     },
     "76561198298343090": {
-        "top": "Mel",
+        "top": "Who tf is Mel",
         "bottom": "Have a great day mel",
         "bg": "#fff763",
         "text": "#000000",
