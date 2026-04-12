@@ -194,5 +194,12 @@
         "bg": "#0000ff",
         "text": "#000000",
         "isRainbow": true
+    },
+    "76561198298343090": {
+        "top": "Mel",
+        "bottom": "Have a great day mel",
+        "bg": "#fff763",
+        "text": "#000000",
+        "isRainbow": false
     }
 }
