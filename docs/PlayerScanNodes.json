@@ -201,5 +201,19 @@
         "bg": "#fff763",
         "text": "#000000",
         "isRainbow": false
+    },
+    "76561198298343090": {
+        "top": "ZeRoyalViking",
+        "bottom": "PeeRoyalViking ",
+        "bg": "#ff0000",
+        "text": "#000000",
+        "isRainbow": false
+    },
+    "76561199073601733": {
+        "top": "Foopy",
+        "bottom": "ModPack Creator Cohort",
+        "bg": "#008080",
+        "text": "#000000",
+        "isRainbow": false
     }
 }
